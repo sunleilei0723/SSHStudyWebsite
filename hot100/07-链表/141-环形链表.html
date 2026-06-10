@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>141. 环形链表 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--paper:#fffdf8;--ink:#151822;--muted:#5f6470;--purple:#7a4fe3;--purple-soft:#ede7fc;--green:#24c2a0;--green-soft:#e0f9f3;--pink:#e9578f;--pink-soft:#ffe2ec;--yellow:#ffd42a;--yellow-soft:#fff8db;--blue:#47c7f4;--blue-soft:#e3f6fd;--terminal:#111722;--line:rgba(21,24,34,.1);--shadow:6px 7px 0 var(--ink);--shadow-sm:3px 4px 0 var(--ink);--radius:14px}
+html{font-size:17px;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;color:var(--ink);font-family:"Nunito","Noto Sans SC",sans-serif;background:#d7d3c6;line-height:1.6}
+.scroll-bar{position:fixed;top:0;left:0;height:5px;z-index:999;background:var(--purple);border-radius:0 3px 3px 0;transition:width .15s}
+.frame{width:min(880px,100vw);margin:0 auto;position:relative;overflow:visible;background:radial-gradient(circle,rgba(21,24,34,.1) 1.4px,transparent 1.6px) 0 0/20px 20px,linear-gradient(var(--line) 1px,transparent 1px) 0 33%/100% 190px,linear-gradient(90deg,var(--line) 1px,transparent 1px) 50% 0/330px 100%,var(--paper);padding:28px 38px 40px}
+/* ===== SITE NAV ===== */
+.site-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 1.2rem;padding:.72rem .9rem;border:4px solid var(--ink);border-radius:18px;background:#fff;box-shadow:var(--shadow-sm);position:sticky;top:10px;z-index:80}
+.site-nav .nav-brand{display:flex;align-items:center;gap:.5rem;text-decoration:none;font-family:"Baloo 2",sans-serif;font-size:1.02rem;font-weight:800;color:var(--purple)}
+.site-nav .nav-dot{width:14px;height:14px;border:3px solid var(--ink);border-radius:50%;background:var(--yellow);flex:0 0 auto}
+.site-nav .nav-links{display:flex;gap:8px;flex-wrap:wrap}
+.site-nav .nav-links a{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:2px 12px;border:3px solid var(--ink);border-radius:999px;background:#fff;color:var(--ink);text-decoration:none;font-size:.72rem;font-weight:900;line-height:1.1;box-shadow:2px 3px 0 var(--ink)}
+.site-nav .nav-links a.primary{background:var(--yellow)}
+@media(max-width:640px){.site-nav{position:sticky;top:10px}.site-nav .nav-links a{font-size:.68rem;padding:2px 10px}}
+.hero{position:relative;padding:1rem 0 1.5rem;margin-bottom:1.5rem;border-bottom:4px solid var(--ink)}
+.hero-top{display:flex;align-items:center;gap:12px;margin-bottom:.8rem;flex-wrap:wrap}
+.hero-badge{display:inline-grid;place-items:center;min-width:52px;min-height:36px;padding:2px 14px;border:4px solid var(--ink);border-radius:999px;background:var(--yellow);box-shadow:var(--shadow-sm);font-family:"Baloo 2",sans-serif;font-size:.85rem;font-weight:800}
+.hero-badge.easy{background:var(--green-soft);color:var(--green)}.hero-badge.medium{background:var(--yellow-soft);color:#b8860b}.hero-badge.hard{background:var(--pink-soft);color:var(--pink)}
+.hero-tag{display:inline-grid;place-items:center;min-height:32px;padding:2px 12px;border:3px solid rgba(21,24,34,.3);border-radius:999px;background:rgba(255,255,255,.7);font-size:.7rem;font-weight:800;letter-spacing:.02em}
+.hero-title{font-family:"Baloo 2",sans-serif;font-size:2.4rem;font-weight:800;line-height:1.15;letter-spacing:-.01em}
+.hero-title .accent{color:var(--purple)}
+.hero-desc{margin-top:.6rem;font-size:.88rem;color:var(--muted);line-height:1.65;max-width:600px}
+.section{margin-bottom:2rem;animation:fadeUp .5s ease both}
+.section:nth-child(2){animation-delay:.05s}.section:nth-child(3){animation-delay:.1s}.section:nth-child(4){animation-delay:.15s}.section:nth-child(5){animation-delay:.2s}.section:nth-child(6){animation-delay:.25s}.section:nth-child(7){animation-delay:.3s}.section:nth-child(8){animation-delay:.35s}
+.section-head{display:flex;align-items:center;gap:10px;margin-bottom:.8rem}
+.section-num{display:inline-grid;place-items:center;min-width:38px;min-height:38px;border:4px solid var(--ink);border-radius:10px;background:var(--purple);color:#fff;box-shadow:var(--shadow-sm);font-family:"Baloo 2",sans-serif;font-size:1rem;font-weight:800}
+.section-num.c2{background:var(--green)}.section-num.c3{background:var(--pink)}.section-num.c4{background:var(--yellow);color:var(--ink)}.section-num.c5{background:var(--blue)}.section-num.c6{background:var(--pink)}.section-num.c7{background:var(--green)}.section-num.c8{background:var(--purple)}
+.section-title{font-family:"Baloo 2",sans-serif;font-size:1.2rem;font-weight:800}
+.section-line{flex:1;height:3px;background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px);border-radius:2px;opacity:.25}
+.card{padding:1.1rem 1.3rem;border:4px solid var(--ink);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow);margin-bottom:.8rem}
+.card p{margin:.4rem 0;font-size:.88rem;line-height:1.65}.card strong{color:var(--purple)}
+.card .highlight{display:inline;padding:1px 6px;border-radius:5px;background:var(--yellow-soft);font-weight:800}
+.card code{font-family:"Roboto Mono",monospace;font-size:.82rem;background:#f1f1f1;border-radius:5px;padding:1px 5px}
+.card ul{padding-left:1.2rem;margin:.4rem 0}.card li{margin:.25rem 0;font-size:.85rem;line-height:1.55}
+.step-flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:.8rem 0}
+.step-pill{display:inline-grid;place-items:center;min-height:42px;padding:4px 16px;border:4px solid var(--ink);border-radius:999px;background:#fff;box-shadow:var(--shadow-sm);font-size:.82rem;font-weight:800;text-align:center}
+.step-pill.active{background:var(--purple);color:#fff}.step-pill.done{background:var(--green);color:#fff}
+.step-arrow{font-size:1.5rem;font-weight:900;color:var(--pink);line-height:1}
+.code-block{position:relative;border:4px solid var(--ink);border-radius:var(--radius);background:var(--terminal);box-shadow:var(--shadow);overflow:hidden;margin:.8rem 0}
+.code-tabs{display:flex;border-bottom:3px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04)}
+.code-tab{padding:.5rem 1.1rem;font-family:"Roboto Mono",monospace;font-size:.72rem;font-weight:700;color:rgba(255,255,255,.4);cursor:pointer;border:none;background:none;transition:all .15s}
+.code-tab:hover{color:rgba(255,255,255,.7)}
+.code-tab.active{color:#fff;background:rgba(255,255,255,.08);box-shadow:inset 0 -3px 0 var(--purple)}
+.code-content{padding:.9rem 1.1rem;font-family:"Roboto Mono",monospace;font-size:.78rem;line-height:1.75;color:#c9d1d9;overflow-x:auto}
+.code-content .kw{color:#ff7b72}.code-content .fn{color:#d2a8ff}.code-content .str{color:#a5d6ff}.code-content .num{color:#79c0ff}.code-content .cmt{color:#6e7681;font-style:italic}
+.code-content .line{display:block;padding:0 .4rem;border-radius:4px;transition:background .15s}
+.code-content .line:hover{background:rgba(255,255,255,.04)}
+.code-content .line.hl{background:rgba(122,79,227,.15);border-left:3px solid var(--purple);padding-left:calc(.4rem - 3px)}
+.code-panel{display:none}.code-panel.active{display:block}
+.copy-btn{position:absolute;top:.5rem;right:.6rem;padding:.25rem .6rem;border:2px solid rgba(255,255,255,.2);border-radius:6px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);font-size:.62rem;font-weight:700;cursor:pointer;transition:all .15s;font-family:"Roboto Mono",monospace}
+.copy-btn:hover{background:rgba(255,255,255,.12);color:#fff}
+.demo{border:4px solid var(--ink);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow);overflow:hidden;margin:.8rem 0}
+.demo-header{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;border-bottom:3px solid var(--ink);background:var(--yellow-soft,#fff8db)}
+.demo-header-title{font-family:"Baloo 2",sans-serif;font-size:.9rem;font-weight:800}
+.demo-controls{display:flex;align-items:center;gap:6px}
+.demo-btn{width:34px;height:34px;display:grid;place-items:center;border:3px solid var(--ink);border-radius:8px;background:#fff;box-shadow:2px 3px 0 var(--ink);font-size:.9rem;cursor:pointer;transition:all .1s;font-weight:900}
+.demo-btn:hover{transform:translate(-1px,-1px);box-shadow:3px 4px 0 var(--ink)}
+.demo-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+.demo-btn.auto-btn{width:auto;padding:0 10px;font-family:"Roboto Mono",monospace;font-size:.6rem;font-weight:700}
+.demo-btn.auto-btn.running{background:var(--pink);color:#fff}
+.demo-step-label{font-family:"Roboto Mono",monospace;font-size:.65rem;font-weight:700;color:var(--muted);min-width:60px;text-align:center}
+.demo-body{padding:1rem 1.2rem;min-height:180px}
+.demo-cell{width:48px;height:48px;display:grid;place-items:center;border:3px solid var(--ink);border-radius:8px;font-family:"Roboto Mono",monospace;font-size:1.05rem;font-weight:700;background:#fff;box-shadow:2px 3px 0 var(--ink);transition:all .25s}
+.demo-cell.current{background:var(--purple);color:#fff;box-shadow:4px 5px 0 var(--ink);transform:translateY(-3px)}
+.demo-cell.found{background:var(--green);color:#fff;box-shadow:4px 5px 0 var(--ink);transform:translateY(-3px)}
+.demo-cell.slow{background:var(--purple-soft);color:var(--purple);border-color:var(--purple)}
+.demo-cell.fast{background:var(--pink-soft);color:var(--pink);border-color:var(--pink)}
+.demo-cell.meet{background:var(--green);color:#fff;box-shadow:4px 5px 0 var(--ink);transform:translateY(-3px)}
+.demo-link{display:flex;align-items:center;gap:2px;flex-wrap:wrap;margin:.6rem 0}
+.demo-arrow{font-size:1.2rem;font-weight:900;color:var(--pink);margin:0 2px}
+.demo-ptr-label{font-family:"Roboto Mono",monospace;font-size:.7rem;font-weight:700;margin-top:.3rem}
+.demo-ptr-label.slow{color:var(--purple)}.demo-ptr-label.fast{color:var(--pink)}
+.demo-info{margin-top:.8rem;padding:.6rem .8rem;border:3px solid var(--ink);border-radius:10px;background:var(--blue-soft);font-size:.78rem;font-weight:700;line-height:1.5}
+.demo-info code{font-family:"Roboto Mono",monospace;background:#fff;border-radius:4px;padding:1px 4px;font-size:.72rem}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:.8rem 0}
+.note{padding:1rem;border:4px solid var(--ink);border-radius:var(--radius);background:#fff;box-shadow:3px 4px 0 var(--ink)}
+.note strong{display:block;margin-bottom:.4rem;font-family:"Baloo 2",sans-serif;font-size:.95rem;font-weight:800}
+.note:nth-child(1) strong{color:var(--purple)}.note:nth-child(2) strong{color:var(--green)}.note:nth-child(3) strong{color:var(--pink)}
+.note p{margin:0;font-size:.78rem;color:var(--muted);line-height:1.5;font-weight:700}
+.note code{font-family:"Roboto Mono",monospace;background:#f1f1f1;border-radius:4px;padding:1px 4px;font-size:.72rem}
+.related{display:flex;gap:8px;flex-wrap:wrap}
+.related-chip{display:inline-grid;place-items:center;min-height:34px;padding:2px 14px;border:3px solid var(--ink);border-radius:999px;background:#fff;box-shadow:var(--shadow-sm);font-size:.72rem;font-weight:800;cursor:pointer;transition:all .15s;text-decoration:none;color:var(--ink)}
+.related-chip:hover{transform:translateY(-2px);box-shadow:4px 5px 0 var(--ink)}
+.related-chip .num{color:var(--purple);margin-right:4px}
+.footer{margin-top:2rem;padding-top:1rem;border-top:4px dashed rgba(21,24,34,.15);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
+.footer-text{font-size:.68rem;color:var(--muted);font-weight:700;letter-spacing:.02em}
+.footer-text span{color:var(--purple)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{0%{transform:scale(0);opacity:0}60%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+@media(prefers-reduced-motion){*,*::before,*::after{animation:none!important;transition:none!important}}
+@media(max-width:640px){.frame{padding:18px 16px 28px}.hero-title{font-size:1.8rem}.step-flow{gap:6px}.step-pill{min-height:36px;padding:2px 10px;font-size:.72rem}.demo-cell{width:38px;height:38px;font-size:.88rem}.notes{grid-template-columns:1fr}.code-content{font-size:.7rem}}
+/* ===== PROBLEM STATEMENT ===== */
+.hero-desc{font-size:1.08rem!important;color:var(--ink)!important;font-weight:900!important;line-height:1.72!important;max-width:760px!important}
+.hero-desc code,.hero-desc .highlight{background:var(--yellow-soft,#fff8db);color:var(--ink);border-radius:7px;padding:1px 7px;font-weight:900}
+.hero-desc strong{color:var(--pink);font-weight:900}
+</style>
+</head>
+<body>
+<div class="scroll-bar" id="scrollBar"></div>
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+<div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge easy">Easy</span>
+      <span class="hero-tag">哈希表</span>
+      <span class="hero-tag">双指针</span>
+    </div>
+    <h1 class="hero-title">#141 <span class="accent">环形链表</span></h1>
+    <p class="hero-desc">给你一个链表的头节点 <code>head</code>，判断链表中是否有环。如果链表中有某个节点，可以通过连续跟踪 <code>next</code> 指针再次到达，则链表中存在环。</p>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><span class="section-num c2">2</span><span class="section-title">题目拆解</span><div class="section-line"></div></div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">单链表</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill done">判断有无环</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">快慢指针</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">相遇=有环</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>只需判断<strong>是否有环</strong>，不需要找环入口</li>
+        <li><span class="highlight">快慢指针</span>：慢指针走1步，快指针走2步</li>
+        <li>如果有环，快指针一定会追上慢指针</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><span class="section-num c3">3</span><span class="section-title">解题思路</span><div class="section-line"></div></div>
+    <div class="card">
+      <p><strong>快慢指针法 O(n) O(1)</strong></p>
+      <p>像操场跑步：快的人每圈都会比慢的人多走一步，最终一定会在环内相遇。如果快指针走到 <code>null</code>，说明无环。</p>
+      <div class="step-flow">
+        <span class="step-pill">slow 走1步</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">fast 走2步</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">fast==null? 无环</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">slow==fast? 有环</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><span class="section-num c4">4</span><span class="section-title">代码演示</span><div class="section-line"></div></div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">hasCycle</span>(head):</span>
+<span class="line">    slow = fast = head</span>
+<span class="line hl">    <span class="kw">while</span> fast <span class="kw">and</span> fast.next:</span>
+<span class="line hl">        slow = slow.next       <span class="cmt"># 慢指针走1步</span></span>
+<span class="line hl">        fast = fast.next.next  <span class="cmt"># 快指针走2步</span></span>
+<span class="line hl">        <span class="kw">if</span> slow <span class="kw">is</span> fast:</span>
+<span class="line hl">            <span class="kw">return</span> <span class="num">True</span>   <span class="cmt"># 相遇 → 有环</span></span>
+<span class="line">    <span class="kw">return</span> <span class="num">False</span>  <span class="cmt"># fast 到达末尾 → 无环</span></span>
+        </div>
+      </div>
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public boolean</span> <span class="fn">hasCycle</span>(ListNode head) {</span>
+<span class="line">    ListNode slow = head, fast = head;</span>
+<span class="line hl">    <span class="kw">while</span> (fast != <span class="kw">null</span> &amp;&amp; fast.next != <span class="kw">null</span>) {</span>
+<span class="line hl">        slow = slow.next;</span>
+<span class="line hl">        fast = fast.next.next;</span>
+<span class="line hl">        <span class="kw">if</span> (slow == fast) <span class="kw">return true</span>;</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return false</span>;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">bool</span> <span class="fn">hasCycle</span>(ListNode *head) {</span>
+<span class="line">    ListNode *slow = head, *fast = head;</span>
+<span class="line hl">    <span class="kw">while</span> (fast &amp;&amp; fast->next) {</span>
+<span class="line hl">        slow = slow->next;</span>
+<span class="line hl">        fast = fast->next->next;</span>
+<span class="line hl">        <span class="kw">if</span> (slow == fast) <span class="kw">return true</span>;</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return false</span>;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><span class="section-num c5">5</span><span class="section-title">题解过程</span><div class="section-line"></div></div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">逐步演示：3→2→0→-4→(回到2)</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 5</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body"><div id="demoArea"></div><div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><span class="section-num c6">6</span><span class="section-title">易错要点</span><div class="section-line"></div></div>
+    <div class="notes">
+      <article class="note"><strong>循环条件</strong><p>必须检查 <code>fast && fast.next</code>，不能只检查 <code>fast</code>，否则 <code>fast.next.next</code> 可能空指针。</p></article>
+      <article class="note"><strong>初始位置</strong><p>slow 和 fast 都从 head 出发，第一次移动后再比较。如果初始就比较，会误判为有环。</p></article>
+      <article class="note"><strong>一定能追上</strong><p>快指针每次比慢指针多走1步，距离每轮减1，有限步内必然相遇（不会跳过）。</p></article>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><span class="section-num c7">7</span><span class="section-title">扩展思考</span><div class="section-line"></div></div>
+    <div class="card">
+      <ul>
+        <li><strong>哈希表法</strong>：遍历并记录每个节点的引用，遇到重复则有环，O(n) 空间</li>
+        <li><strong>找环入口</strong>：142 题，相遇后从 head 再出发一个指针，与 slow 同速走，再次相遇即为入口</li>
+        <li><strong>计算环长度</strong>：相遇后 slow 继续走，再次相遇时走过的步数即为环长</li>
+        <li><strong>快指针走3步</strong>：可能跳过慢指针，不一定能相遇，必须走2步</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><span class="section-num c8">8</span><span class="section-title">相关题目</span><div class="section-line"></div></div>
+    <div class="related">
+      <a class="related-chip" href="142-环形链表II.html"><span class="num">#142</span>环形链表II</a>
+      <a class="related-chip" href="206-反转链表.html"><span class="num">#206</span>反转链表</a>
+      <a class="related-chip" href="160-相交链表.html"><span class="num">#160</span>相交链表</a>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#141 环形链表</span>
+  </div>
+</main>
+
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('scrollBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100+'%'});
+function switchTab(lang){document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));event.target.classList.add('active');document.getElementById('panel-'+lang).classList.add('active')}
+function copyCode(){const active=document.querySelector('.code-panel.active .code-content');navigator.clipboard.writeText(active.innerText).then(()=>{const btn=document.querySelector('.copy-btn');btn.textContent='COPIED!';setTimeout(()=>btn.textContent='COPY',1500)})}
+
+// 链表: 3→2→0→-4→(回到2，形成环)
+// 节点索引: 0:3, 1:2, 2:0, 3:-4, 环回到1
+const NODES=[3,2,0,-4];
+const STEPS=[
+  {slow:0,fast:0,msg:'初始：slow=节点3, fast=节点3，都在起点'},
+  {slow:1,fast:2,msg:'第1步：slow→节点2(走1步), fast→节点0(走2步)'},
+  {slow:2,fast:1,msg:'第2步：slow→节点0(走1步), fast→节点2(走2步，-4→2绕环)'},
+  {slow:3,fast:3,msg:'第3步：slow→节点-4(走1步), fast→节点-4(走2步，0→-4)'},
+  {slow:1,fast:1,msg:'第4步：slow→节点2(走1步), fast→节点2(走2步) → 相遇！有环！',meet:true},
+];
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  const area=document.getElementById('demoArea');
+  let html='<div class="demo-link">';
+  NODES.forEach((v,i)=>{
+    let cls='demo-cell';
+    if(s){
+      if(s.meet&&i===s.slow)cls='demo-cell meet';
+      else if(i===s.slow)cls='demo-cell slow';
+      else if(i===s.fast)cls='demo-cell fast';
+    }
+    html+=`<div class="${cls}">${v}</div>`;
+    if(i<NODES.length-1)html+='<span class="demo-arrow">→</span>';
+  });
+  // 环回箭头
+  html+='<span class="demo-arrow">→↩</span>';
+  html+='</div>';
+  if(s){
+    html+=`<div style="display:flex;gap:16px;margin-top:.4rem">`;
+    html+=`<span class="demo-ptr-label slow">slow = 节点${NODES[s.slow]}</span>`;
+    html+=`<span class="demo-ptr-label fast">fast = 节点${NODES[s.fast]}</span>`;
+    html+='</div>';
+  }
+  area.innerHTML=html;
+  document.getElementById('demoInfo').innerHTML=s?s.msg:'点击 ▶ 开始逐步演示';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';step=-1;render();
+  autoId=setInterval(()=>{if(step<STEPS.length-1){step++;render()}else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}},1200);
+}
+render();
+</script>
+</body>
+</html>

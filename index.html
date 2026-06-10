@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>孙雷雷的学习网页</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --paper:#fffdf8;
+  --ink:#151822;
+  --muted:#5f6470;
+  --purple:#7a4fe3;
+  --purple-soft:#ede7fc;
+  --green:#24c2a0;
+  --green-soft:#e0f9f3;
+  --pink:#e9578f;
+  --pink-soft:#ffe2ec;
+  --yellow:#ffd42a;
+  --yellow-soft:#fff8db;
+  --blue:#47c7f4;
+  --blue-soft:#e3f6fd;
+  --line:rgba(21,24,34,.1);
+  --shadow:6px 7px 0 var(--ink);
+  --shadow-sm:3px 4px 0 var(--ink);
+}
+html{font-size:17px;-webkit-font-smoothing:antialiased}
+body{
+  min-height:100vh;
+  color:var(--ink);
+  font-family:"Nunito","Noto Sans SC",sans-serif;
+  background:#d7d3c6;
+  line-height:1.6;
+}
+a{color:inherit;text-decoration:none}
+.frame{
+  width:min(1080px,100vw);
+  min-height:100vh;
+  margin:0 auto;
+  overflow:visible;
+  background:
+    radial-gradient(circle,rgba(21,24,34,.1) 1.4px,transparent 1.6px) 0 0/20px 20px,
+    linear-gradient(var(--line) 1px,transparent 1px) 0 35%/100% 190px,
+    linear-gradient(90deg,var(--line) 1px,transparent 1px) 50% 0/330px 100%,
+    var(--paper);
+  padding:28px 38px 44px;
+}
+.site-nav{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  margin-bottom:1.4rem;padding:.72rem .9rem;
+  border:4px solid var(--ink);border-radius:18px;
+  background:#fff;box-shadow:var(--shadow-sm);
+  position:sticky;top:10px;z-index:80;
+}
+.nav-brand{
+  display:flex;align-items:center;gap:.5rem;
+  font-family:"Baloo 2",sans-serif;font-size:1.05rem;font-weight:800;color:var(--purple);
+}
+.nav-dot{width:14px;height:14px;border:3px solid var(--ink);border-radius:50%;background:var(--yellow)}
+.nav-links{display:flex;gap:8px;flex-wrap:wrap}
+.nav-links a{
+  display:inline-flex;align-items:center;min-height:34px;padding:2px 13px;
+  border:3px solid var(--ink);border-radius:999px;background:#fff;
+  font-size:.74rem;font-weight:900;box-shadow:2px 3px 0 var(--ink);
+}
+.nav-links a.primary{background:var(--yellow)}
+.hero{
+  display:grid;grid-template-columns:minmax(0,1fr);gap:28px;align-items:end;
+  padding:1.2rem 0 2rem;border-bottom:4px solid var(--ink);
+}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:.45rem;
+  width:max-content;margin-bottom:1rem;padding:.2rem .65rem;
+  border:3px solid var(--ink);border-radius:999px;background:var(--purple-soft);
+  color:var(--purple);font-size:.72rem;font-weight:900;letter-spacing:.04em;
+}
+h1{
+  max-width:720px;
+  font-family:"Baloo 2","Nunito",sans-serif;
+  font-size:clamp(2.6rem,6vw,5.4rem);
+  line-height:.92;letter-spacing:0;font-weight:800;
+}
+h1 span{color:var(--pink)}
+.hero p{max-width:620px;margin-top:1.1rem;color:var(--muted);font-size:1rem;font-weight:700}
+.section{padding:2rem 0 0}
+.section-head{display:flex;align-items:center;gap:.8rem;margin-bottom:1rem}
+.section-badge{
+  display:inline-grid;place-items:center;min-width:58px;height:36px;
+  border:4px solid var(--ink);border-radius:999px;background:var(--yellow);
+  box-shadow:var(--shadow-sm);font-family:"Baloo 2",sans-serif;font-weight:800;
+}
+.section-title{font-size:1.25rem;font-weight:900}
+.section-line{height:4px;flex:1;border-top:4px dashed rgba(21,24,34,.18)}
+.course-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
+.course-card{
+  min-height:230px;padding:1rem;
+  border:4px solid var(--ink);border-radius:18px;background:#fff;
+  box-shadow:var(--shadow-sm);
+  transition:transform .18s,box-shadow .18s;
+}
+.course-card:hover{transform:translate(-2px,-2px);box-shadow:6px 7px 0 var(--ink)}
+.course-card.featured{background:linear-gradient(135deg,var(--yellow-soft),#fff 58%,var(--blue-soft))}
+.course-top{display:flex;align-items:center;justify-content:space-between;gap:.8rem;margin-bottom:1rem}
+.course-chip{
+  padding:.18rem .55rem;border:3px solid var(--ink);border-radius:999px;
+  background:var(--purple);color:#fff;font-size:.68rem;font-weight:900;
+}
+.course-icon{
+  display:grid;place-items:center;width:52px;height:52px;border:4px solid var(--ink);
+  border-radius:15px;background:var(--pink);box-shadow:var(--shadow-sm);
+  font-family:"Baloo 2",sans-serif;font-size:1.5rem;font-weight:800;color:#fff;
+}
+.course-card h2{font-size:1.35rem;line-height:1.15;margin-bottom:.55rem;font-weight:900}
+.course-card p{color:var(--muted);font-size:.88rem;font-weight:700}
+.course-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:1rem}
+.course-meta span{
+  padding:.15rem .5rem;border:2px solid rgba(21,24,34,.2);border-radius:999px;
+  background:rgba(255,255,255,.75);font-size:.68rem;font-weight:900;color:var(--muted);
+}
+.interactive-grid{display:grid;grid-template-columns:1.05fr .95fr 1fr;gap:18px}
+.play-card{
+  min-height:220px;padding:1rem;border:4px solid var(--ink);border-radius:18px;
+  background:#fff;box-shadow:var(--shadow-sm);
+}
+.play-card:nth-child(1){background:linear-gradient(135deg,var(--pink-soft),#fff 58%)}
+.play-card:nth-child(2){background:linear-gradient(135deg,var(--green-soft),#fff 58%)}
+.play-card:nth-child(3){background:linear-gradient(135deg,var(--blue-soft),#fff 58%)}
+.play-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:.8rem}
+.play-title{font-size:1.05rem;font-weight:900}
+.play-mark{
+  display:grid;place-items:center;min-width:42px;height:38px;padding:0 .5rem;
+  border:3px solid var(--ink);border-radius:12px;background:var(--yellow);
+  box-shadow:2px 3px 0 var(--ink);font-family:"Baloo 2",sans-serif;font-weight:800;
+}
+.play-card p{color:var(--muted);font-size:.82rem;font-weight:800;line-height:1.55}
+.result-box{
+  margin:.9rem 0;padding:.75rem;border:3px solid var(--ink);border-radius:14px;
+  background:#fff;font-weight:900;min-height:74px;
+}
+.result-box small{display:block;color:var(--muted);font-size:.68rem;margin-bottom:.2rem}
+.action-btn{
+  display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:2px 14px;
+  border:3px solid var(--ink);border-radius:999px;background:var(--yellow);
+  box-shadow:2px 3px 0 var(--ink);font-weight:900;cursor:pointer;font-family:inherit;
+}
+.action-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+.todo-plan{display:grid;gap:9px;margin-top:.8rem}
+.todo-step{
+  display:flex;gap:10px;align-items:flex-start;padding:.58rem .68rem;
+  border:3px solid var(--ink);border-radius:12px;background:#fff;font-weight:900;
+}
+.todo-step span{
+  display:grid;place-items:center;flex:0 0 26px;height:26px;border:3px solid var(--ink);
+  border-radius:50%;background:var(--yellow);font-family:"Baloo 2",sans-serif;font-weight:800;line-height:1;
+}
+.todo-step small{display:block;color:var(--muted);font-size:.68rem;line-height:1.35;margin-top:.12rem}
+.timer-display{
+  margin:.75rem 0 .5rem;font-family:"Baloo 2",sans-serif;font-size:3.25rem;font-weight:800;line-height:1;
+  display:inline-block;padding:.4rem .7rem;border:4px solid var(--ink);border-radius:18px;background:#fff;
+  box-shadow:var(--shadow-sm);
+}
+.timer-options{display:flex;gap:8px;flex-wrap:wrap}
+.timer-options button,.timer-controls button{
+  min-height:34px;padding:2px 12px;border:3px solid var(--ink);border-radius:999px;
+  background:#fff;box-shadow:2px 3px 0 var(--ink);font-weight:900;cursor:pointer;
+}
+.timer-options button.active{background:var(--purple);color:#fff}
+.timer-controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:.75rem}
+.timer-controls button.primary{background:var(--yellow)}
+.timer-controls button:disabled{opacity:.55;cursor:not-allowed}
+.footer{
+  margin-top:2.5rem;padding-top:1rem;border-top:4px dashed rgba(21,24,34,.15);
+  color:var(--muted);font-size:.72rem;font-weight:900;
+}
+@media(max-width:860px){
+  .frame{padding:18px 16px 30px}
+  .site-nav{position:sticky;top:10px}
+  .hero{grid-template-columns:1fr}
+  .course-grid{grid-template-columns:1fr}
+  .interactive-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<main class="frame">
+  <nav class="site-nav" aria-label="主导航">
+    <a class="nav-brand" href="index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a class="primary" href="index.html">主页</a>
+      <a href="hot100/index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div>
+      <div class="eyebrow">Study Dashboard</div>
+      <h1>孙雷雷的<span>学习网页</span></h1>
+      <p>这里先只放一个主入口：LeetCode Hot 100。把打开、抽题、计时和复盘放在同一个小桌面里，开始学习时不用再找来找去。</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <span class="section-badge">MAIN</span>
+      <span class="section-title">当前入口</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="course-grid">
+      <a class="course-card featured" href="hot100/index.html">
+        <div class="course-top">
+          <span class="course-chip">正在建设</span>
+          <span class="course-icon">100</span>
+        </div>
+        <h2>LeetCode Hot 100</h2>
+        <p>当前主页暂时只放这一条学习主线。进入后再看完整题目列表、专题分组和每一道题的教学卡。</p>
+        <div class="course-meta"><span>24 题完成</span><span>7 个专题</span><span>交互演示</span></div>
+      </a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <span class="section-badge">PLAY</span>
+      <span class="section-title">互动学习板</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="interactive-grid">
+      <div class="play-card">
+        <div class="play-head">
+          <div class="play-title">今日抽题</div>
+          <div class="play-mark">RND</div>
+        </div>
+        <p>不想纠结先看哪题时，抽一张已经做好的教学卡。</p>
+        <div class="result-box" id="pickResult"><small>当前结果</small>点击按钮开始抽题</div>
+        <button class="action-btn" id="pickBtn" type="button">抽一题</button>
+      </div>
+
+      <div class="play-card">
+        <div class="play-head">
+          <div class="play-title">Microsoft To Do 计划</div>
+          <div class="play-mark">TODO</div>
+        </div>
+        <p>先不接入账号，先把未来要做的事情定清楚。</p>
+        <div class="todo-plan">
+          <div class="todo-step"><span>1</span><div>确定清单结构<small>例如：Hot 100 今日、复盘、错题回看。</small></div></div>
+          <div class="todo-step"><span>2</span><div>接 Microsoft Graph<small>需要登录授权，读取/创建 To Do task。</small></div></div>
+          <div class="todo-step"><span>3</span><div>和题目页联动<small>从题卡一键生成“复盘这题”的待办。</small></div></div>
+        </div>
+      </div>
+
+      <div class="play-card">
+        <div class="play-head">
+          <div class="play-title">专注计时</div>
+          <div class="play-mark">FOCUS</div>
+        </div>
+        <p>给一题一个短时段，先让注意力进场。</p>
+        <div class="timer-display" id="timerDisplay">25:00</div>
+        <div class="timer-options">
+          <button type="button" data-minutes="15">15m</button>
+          <button class="active" type="button" data-minutes="25">25m</button>
+          <button type="button" data-minutes="40">40m</button>
+        </div>
+        <div class="timer-controls">
+          <button class="primary" id="timerStart" type="button">开始</button>
+          <button id="timerPause" type="button" disabled>暂停</button>
+          <button id="timerReset" type="button">重置</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">主页 → LeetCode Hot 100 → 各题教学卡</footer>
+</main>
+<script>
+const picks=[
+  {name:"两数之和",meta:"#01 · 哈希",href:"hot100/01-哈希/01-两数之和.html"},
+  {name:"接雨水",meta:"#42 · 双指针",href:"hot100/02-双指针/42-接雨水.html"},
+  {name:"无重复字符的最长子串",meta:"#03 · 滑动窗口",href:"hot100/03-滑动窗口/03-无重复字符的最长子串.html"},
+  {name:"反转链表",meta:"#206 · 链表",href:"hot100/07-链表/206-反转链表.html"},
+  {name:"搜索二维矩阵 II",meta:"#240 · 矩阵",href:"hot100/06-矩阵/240-搜索二维矩阵II.html"}
+];
+const pickBtn=document.getElementById("pickBtn");
+const pickResult=document.getElementById("pickResult");
+pickBtn.addEventListener("click",()=>{
+  const item=picks[Math.floor(Math.random()*picks.length)];
+  pickResult.innerHTML=`<small>${item.meta}</small><a href="${item.href}">${item.name}</a>`;
+});
+
+const timerDisplay=document.getElementById("timerDisplay");
+const timerStart=document.getElementById("timerStart");
+const timerPause=document.getElementById("timerPause");
+const timerReset=document.getElementById("timerReset");
+let selectedMinutes=25;
+let remainingSeconds=selectedMinutes*60;
+let timerId=null;
+function renderTimer(){
+  const minutes=Math.floor(remainingSeconds/60);
+  const seconds=remainingSeconds%60;
+  timerDisplay.textContent=`${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
+}
+function setTimerRunning(isRunning){
+  timerStart.disabled=isRunning;
+  timerPause.disabled=!isRunning;
+}
+document.querySelectorAll(".timer-options button").forEach(button=>{
+  button.addEventListener("click",()=>{
+    clearInterval(timerId);
+    timerId=null;
+    setTimerRunning(false);
+    document.querySelectorAll(".timer-options button").forEach(item=>item.classList.remove("active"));
+    button.classList.add("active");
+    selectedMinutes=Number(button.dataset.minutes);
+    remainingSeconds=selectedMinutes*60;
+    renderTimer();
+  });
+});
+timerStart.addEventListener("click",()=>{
+  if(timerId) return;
+  setTimerRunning(true);
+  timerId=setInterval(()=>{
+    remainingSeconds=Math.max(0,remainingSeconds-1);
+    renderTimer();
+    if(remainingSeconds===0){
+      clearInterval(timerId);
+      timerId=null;
+      setTimerRunning(false);
+      timerDisplay.textContent="完成!";
+    }
+  },1000);
+});
+timerPause.addEventListener("click",()=>{
+  clearInterval(timerId);
+  timerId=null;
+  setTimerRunning(false);
+});
+timerReset.addEventListener("click",()=>{
+  clearInterval(timerId);
+  timerId=null;
+  remainingSeconds=selectedMinutes*60;
+  setTimerRunning(false);
+  renderTimer();
+});
+renderTimer();
+</script>
+</body>
+</html>

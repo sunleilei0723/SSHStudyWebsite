@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>01. 两数之和 | Color Card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --page:#f4f3f0;
+  --card:#fff;
+  --ink:#070707;
+  --muted:#5d5d62;
+  --line:#e2e0dc;
+  --purple:#8357e8;
+  --blue:#0f6bff;
+  --sky:#41c7ed;
+  --yellow:#fbff43;
+  --black:#050505;
+  --green:#008a75;
+  --pink:#ef5b8f;
+  --shadow:0 22px 70px rgba(0,0,0,.1);
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{
+  margin:0;
+  min-height:100vh;
+  color:var(--ink);
+  background:var(--page);
+  font-family:"Manrope","Noto Sans SC",sans-serif;
+}
+code,pre{font-family:"Roboto Mono","Cascadia Code",monospace}
+.page{
+  width:min(1180px,calc(100% - 32px));
+  margin:0 auto;
+  padding:28px 0 64px;
+}
+.hero-shell,.section-shell{
+  position:relative;
+  overflow:hidden;
+  border-radius:24px;
+  border:1px solid var(--line);
+  background:
+    linear-gradient(135deg,var(--blue) 0 18%,transparent 18%),
+    repeating-linear-gradient(45deg,var(--blue) 0 36px,var(--blue) 36px 72px,var(--black) 72px 100px,var(--yellow) 100px 136px,var(--purple) 136px 168px);
+  box-shadow:var(--shadow);
+  padding:28px;
+}
+.hero-card,.white-card{
+  position:relative;
+  z-index:1;
+  overflow:hidden;
+  border-radius:20px;
+  border:1px solid rgba(0,0,0,.1);
+  background:rgba(255,255,255,.97);
+  box-shadow:0 18px 56px rgba(0,0,0,.15);
+}
+.topbar{
+  min-height:54px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  padding:0 24px;
+  border-bottom:1px solid #eeeeec;
+}
+.logo{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-family:"Instrument Serif",serif;
+  font-size:1.25rem;
+}
+.logo::before{
+  content:"";
+  width:17px;
+  height:17px;
+  border-radius:50%;
+  background:var(--purple);
+}
+.tags{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.tag{
+  display:inline-flex;
+  align-items:center;
+  min-height:28px;
+  padding:5px 11px;
+  border:1px solid #dedede;
+  border-radius:999px;
+  color:#3c3c40;
+  background:#fff;
+  font-size:.72rem;
+  font-weight:800;
+}
+.tag.easy{color:var(--green);border-color:rgba(0,138,117,.32)}
+.hero{
+  position:relative;
+  display:grid;
+  grid-template-columns:1.05fr .95fr;
+  gap:28px;
+  min-height:520px;
+  padding:46px;
+}
+.hero::before{
+  content:"";
+  position:absolute;
+  left:42px;
+  right:42px;
+  top:70px;
+  height:112px;
+  border:1px dashed #d8d8d8;
+}
+.hero::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:132px;
+  height:38px;
+  background:#f1f4f6;
+}
+.hero-copy,.hero-visual{position:relative;z-index:1}
+.micro{
+  display:inline-flex;
+  padding:4px 7px;
+  border-radius:2px;
+  background:#303030;
+  color:#fff;
+  font-family:"Roboto Mono",monospace;
+  font-size:.6rem;
+  font-weight:700;
+}
+h1{
+  max-width:620px;
+  margin:12px 0 0;
+  font-family:"Instrument Serif","Noto Serif SC",serif;
+  font-size:clamp(4rem,7.5vw,7rem);
+  line-height:.78;
+  font-weight:400;
+  letter-spacing:0;
+}
+h1 strong{
+  display:block;
+  font-family:"Manrope","Noto Sans SC",sans-serif;
+  font-size:.55em;
+  line-height:.9;
+  letter-spacing:-.05em;
+}
+.lead{
+  max-width:570px;
+  margin:28px 0 0;
+  color:var(--muted);
+  line-height:1.72;
+}
+.example-card{
+  margin-top:26px;
+  display:grid;
+  gap:10px;
+  max-width:540px;
+}
+.example-row{
+  display:flex;
+  justify-content:space-between;
+  gap:18px;
+  border:1px solid #e4e4e4;
+  border-radius:14px;
+  padding:12px 14px;
+  background:#fbfbfb;
+  color:#35353b;
+  font-size:.9rem;
+}
+.example-row b{font-family:"Roboto Mono",monospace}
+.diagram{
+  min-height:390px;
+  display:grid;
+  align-content:center;
+  gap:22px;
+}
+.array{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+.cell{
+  min-height:72px;
+  display:grid;
+  place-items:center;
+  position:relative;
+  border-radius:16px;
+  border:1px solid #dedede;
+  background:#fff;
+  font-family:"Roboto Mono",monospace;
+  font-size:1.25rem;
+  font-weight:700;
+}
+.cell::after{
+  content:attr(data-i);
+  position:absolute;
+  bottom:-20px;
+  color:#8d8d92;
+  font-size:.62rem;
+}
+.cell.hit{
+  background:var(--yellow);
+  border-color:#d9dc20;
+  box-shadow:0 8px 0 rgba(0,0,0,.08);
+}
+.hash-box{
+  margin-top:16px;
+  border-radius:18px;
+  overflow:visible;
+  background:#101010;
+  color:#f7f7f7;
+}
+.hash-head{
+  display:flex;
+  justify-content:space-between;
+  padding:12px 16px;
+  border-bottom:1px solid #303030;
+  color:#aaa;
+  font-family:"Roboto Mono",monospace;
+  font-size:.7rem;
+}
+.hash-body{
+  padding:18px;
+  font-family:"Roboto Mono",monospace;
+  line-height:1.8;
+  font-size:.86rem;
+}
+.hash-body .ok{color:var(--yellow)}
+.summary{
+  min-height:82px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:16px;
+  padding:16px 24px;
+  background:#f1f4f6;
+  border-top:1px solid #e9ecef;
+  text-align:center;
+}
+.summary b{font-size:1.02rem}
+.summary span{
+  font-family:"Instrument Serif",serif;
+  color:#3f3f43;
+  font-size:1.06rem;
+}
+.section-shell{
+  margin-top:22px;
+  background:
+    linear-gradient(90deg,var(--yellow) 0 13%,transparent 13%),
+    linear-gradient(135deg,var(--blue) 0 42%,var(--sky) 42% 62%,var(--purple) 62%);
+}
+.section-shell.dark{
+  background:
+    repeating-linear-gradient(90deg,#fff 0 34px,var(--yellow) 34px 68px,var(--black) 68px 102px,var(--purple) 102px 136px,var(--blue) 136px 170px);
+}
+.white-card{padding:28px}
+.section-title{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:24px;
+  margin-bottom:22px;
+}
+.section-title h2{
+  margin:0;
+  font-size:2rem;
+  letter-spacing:-.05em;
+}
+.section-title .num{
+  font-family:"Instrument Serif",serif;
+  font-size:4.2rem;
+  line-height:.8;
+  color:rgba(0,0,0,.12);
+}
+.grid-2,.grid-3{display:grid;gap:14px}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.info-card,.approach,.pitfall,.extend,.related{
+  border:1px solid #e5e5e5;
+  border-radius:16px;
+  padding:18px;
+  background:#fbfbfb;
+}
+.info-card small,.approach small,.pitfall small,.extend small{
+  display:block;
+  margin-bottom:8px;
+  color:#929298;
+  font-size:.68rem;
+  font-weight:900;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.info-card p,.approach p,.pitfall p,.extend p{
+  margin:0;
+  color:var(--muted);
+  line-height:1.65;
+}
+.info-card b,.approach b,.pitfall b,.extend b{color:var(--ink)}
+.approach.featured{background:#fff;border-color:rgba(131,87,232,.35);box-shadow:0 12px 30px rgba(131,87,232,.08)}
+.metrics{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:14px;
+}
+.metric{
+  border-radius:999px;
+  background:#fff;
+  border:1px solid #e2e2e2;
+  padding:8px 12px;
+  font-family:"Roboto Mono",monospace;
+  font-size:.78rem;
+}
+.metric strong{color:var(--purple)}
+.code-layout{
+  display:grid;
+  grid-template-columns:1.05fr .95fr;
+  gap:16px;
+}
+.code-block{
+  overflow:hidden;
+  border-radius:18px;
+  background:#101010;
+  color:#f7f7f7;
+}
+.code-top{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  padding:12px 16px;
+  border-bottom:1px solid #303030;
+  color:#aaa;
+  font-family:"Roboto Mono",monospace;
+  font-size:.7rem;
+}
+pre{
+  margin:0;
+  padding:18px;
+  overflow:auto;
+  font-family:"Roboto Mono",monospace;
+  font-size:.78rem;
+  line-height:1.74;
+}
+.kw{color:#b99cff}.fn{color:#61d6ff}.str{color:#fff85a}.cm{color:#777}.num-lit{color:#91e6a7}
+.demo{
+  border:1px solid #e5e5e5;
+  border-radius:18px;
+  padding:18px;
+  background:#fbfbfb;
+}
+.demo-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.demo-tab,.demo-btn{
+  border:1px solid #dedede;
+  border-radius:999px;
+  background:#fff;
+  color:#3c3c40;
+  padding:8px 13px;
+  font-weight:800;
+  cursor:pointer;
+}
+.demo-tab.active,.demo-btn:hover{background:var(--purple);color:#fff;border-color:var(--purple)}
+.demo-array{display:flex;gap:8px;margin:14px 0 22px;flex-wrap:wrap}
+.demo-cell{
+  width:58px;height:58px;
+  display:grid;
+  place-items:center;
+  border:1px solid #ddd;
+  border-radius:14px;
+  background:#fff;
+  font-family:"Roboto Mono",monospace;
+  font-weight:700;
+  position:relative;
+}
+.demo-cell::after{
+  content:attr(data-idx);
+  position:absolute;
+  bottom:-18px;
+  color:#999;
+  font-size:.58rem;
+}
+.demo-cell.current{background:var(--sky)}
+.demo-cell.found{background:var(--yellow)}
+.demo-map{
+  min-height:72px;
+  border-radius:14px;
+  padding:12px;
+  background:#fff;
+  border:1px dashed #d8d8d8;
+}
+.map-pill{
+  display:inline-flex;
+  gap:6px;
+  align-items:center;
+  margin:4px;
+  border-radius:999px;
+  border:1px solid #e1e1e1;
+  padding:7px 10px;
+  font-family:"Roboto Mono",monospace;
+  font-size:.78rem;
+}
+.map-pill.new{background:var(--yellow)}
+.demo-info{
+  margin-top:14px;
+  color:var(--muted);
+  line-height:1.65;
+}
+.demo-info b{color:var(--ink)}
+.demo-controls{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:16px;
+}
+.counter{
+  margin-left:auto;
+  color:#999;
+  font-family:"Roboto Mono",monospace;
+  font-size:.78rem;
+}
+.pitfall{border-left:7px solid var(--pink)}
+.extend{border-left:7px solid var(--blue)}
+.related{
+  text-align:center;
+  background:#fff;
+}
+.related b{
+  display:block;
+  font-family:"Roboto Mono",monospace;
+  color:var(--purple);
+  font-size:1.05rem;
+  margin-bottom:6px;
+}
+.footer{
+  margin-top:22px;
+  text-align:center;
+  color:#777;
+  font-size:.78rem;
+}
+@media (max-width:900px){
+  .hero,.grid-2,.grid-3,.code-layout{grid-template-columns:1fr}
+  .hero{padding:34px 24px}
+  .hero::before{left:24px;right:24px}
+  .summary{display:block}
+  .summary span{display:block;margin-top:6px}
+}
+@media (max-width:620px){
+  .page{width:min(100% - 20px,1180px);padding-top:18px}
+  .hero-shell,.section-shell{padding:14px;border-radius:18px}
+  .topbar{align-items:flex-start;padding:14px;flex-direction:column}
+  h1{font-size:4rem}
+  .array{grid-template-columns:repeat(2,1fr)}
+  .white-card{padding:20px}
+  .section-title h2{font-size:1.55rem}
+}
+/* ===== SITE NAV ===== */
+.site-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 18px;padding:12px 14px;border:1px solid var(--line);border-radius:18px;background:#fff;box-shadow:var(--shadow);position:sticky;top:12px;z-index:90}
+.site-nav .nav-brand{display:flex;align-items:center;gap:8px;color:var(--purple);text-decoration:none;font-weight:900}
+.site-nav .nav-dot{width:14px;height:14px;border-radius:50%;background:var(--yellow);box-shadow:0 0 0 3px var(--ink)}
+.site-nav .nav-links{display:flex;gap:8px;flex-wrap:wrap}
+.site-nav .nav-links a{display:inline-flex;align-items:center;justify-content:center;min-height:32px;padding:4px 12px;border:1px solid #dedede;border-radius:999px;background:#fff;color:#303035;text-decoration:none;font-size:.72rem;font-weight:900}
+.site-nav .nav-links a.primary{background:var(--yellow);border-color:var(--ink);color:var(--ink)}
+@media(max-width:760px){.site-nav{position:sticky;top:10px}}
+/* ===== PROBLEM STATEMENT ===== */
+.hero-desc{font-size:1.08rem!important;color:var(--ink)!important;font-weight:900!important;line-height:1.72!important;max-width:760px!important}
+.hero-desc code,.hero-desc .highlight{background:var(--yellow-soft,#fff8db);color:var(--ink);border-radius:7px;padding:1px 7px;font-weight:900}
+.hero-desc strong{color:var(--pink);font-weight:900}
+</style>
+</head>
+<body>
+<main class="page">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+<section class="hero-shell">
+    <article class="hero-card">
+      <header class="topbar">
+        <div class="logo">LeetCode Card</div>
+        <div class="tags">
+          <span class="tag easy">EASY</span>
+          <span class="tag">数组</span>
+          <span class="tag">哈希表</span>
+          <span class="tag">#0001</span>
+        </div>
+      </header>
+      <section class="hero">
+        <div class="hero-copy">
+          <span class="micro">Pattern / Complement Lookup</span>
+          <h1><strong>Two Sum</strong>两数之和</h1>
+          <p class="lead">给定整数数组 <code>nums</code> 和目标值 <code>target</code>，找出和为目标值的两个整数，并返回它们的数组下标。每种输入只对应一个答案，且不能使用同一个元素两次。</p>
+          <div class="example-card">
+            <div class="example-row"><span>输入</span><b>nums=[2,7,11,15], target=9</b></div>
+            <div class="example-row"><span>输出</span><b>[0,1]</b></div>
+            <div class="example-row"><span>解释</span><b>nums[0] + nums[1] = 9</b></div>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="diagram">
+            <div class="array">
+              <div class="cell hit" data-i="[0]">2</div>
+              <div class="cell hit" data-i="[1]">7</div>
+              <div class="cell" data-i="[2]">11</div>
+              <div class="cell" data-i="[3]">15</div>
+            </div>
+            <div class="hash-box">
+              <div class="hash-head"><span>hash_map</span><span>lookup before insert</span></div>
+              <div class="hash-body">
+                target = 9<br>
+                i = 1, num = 7<br>
+                complement = 9 - 7 = 2<br>
+                map[2] = 0 → <span class="ok">return [0, 1]</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <footer class="summary">
+        <b>核心模式：查找补数。</b>
+        <span>Find the missing half from what you have already seen.</span>
+      </footer>
+    </article>
+  </section>
+
+  <section class="section-shell">
+    <article class="white-card">
+      <div class="section-title">
+        <h2>题目拆解</h2>
+        <div class="num">01</div>
+      </div>
+      <div class="grid-2">
+        <div class="info-card"><small>Input</small><p><b>nums</b> 是整数数组，<b>target</b> 是目标和。</p></div>
+        <div class="info-card"><small>Output</small><p>返回两个元素的<b>下标</b>，不是元素值本身。</p></div>
+        <div class="info-card"><small>Constraint</small><p>只存在一个有效答案，且同一个元素不能使用两次。</p></div>
+        <div class="info-card"><small>Function</small><p><code>twoSum(nums: List[int], target: int) -> List[int]</code></p></div>
+      </div>
+    </article>
+  </section>
+
+  <section class="section-shell dark">
+    <article class="white-card">
+      <div class="section-title">
+        <h2>解题思路</h2>
+        <div class="num">02</div>
+      </div>
+      <div class="grid-2">
+        <div class="approach">
+          <small>Method 01</small>
+          <h3>暴力枚举</h3>
+          <p>对每个元素，遍历它后面的所有元素，检查两者之和是否等于 <b>target</b>。直观但慢，面试中通常只是铺垫。</p>
+          <div class="metrics"><span class="metric">Time <strong>O(n²)</strong></span><span class="metric">Space <strong>O(1)</strong></span></div>
+        </div>
+        <div class="approach featured">
+          <small>Method 02 / Recommended</small>
+          <h3>哈希表：用空间换时间</h3>
+          <p>遍历数组时，当前元素 <b>num</b> 需要寻找的是 <b>target - num</b>。如果补数已经在哈希表中，就能 O(1) 得到答案。</p>
+          <div class="metrics"><span class="metric">Time <strong>O(n)</strong></span><span class="metric">Space <strong>O(n)</strong></span></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="section-shell">
+    <article class="white-card">
+      <div class="section-title">
+        <h2>代码与交互演示</h2>
+        <div class="num">03</div>
+      </div>
+      <div class="code-layout">
+        <div class="code-block">
+          <div class="code-top"><span>solution.py</span><span>Python</span></div>
+<pre><code><span class="kw">class</span> <span class="fn">Solution</span>:
+    <span class="kw">def</span> <span class="fn">twoSum</span>(self, nums, target):
+        hash_map = {}
+
+        <span class="kw">for</span> i, num <span class="kw">in</span> enumerate(nums):
+            complement = target - num
+            <span class="kw">if</span> complement <span class="kw">in</span> hash_map:
+                <span class="kw">return</span> [hash_map[complement], i]
+            hash_map[num] = i
+
+        <span class="kw">return</span> []</code></pre>
+        </div>
+        <div class="demo">
+          <div class="demo-tabs">
+            <button class="demo-tab active" onclick="switchExample(0)">[2,7,11,15]</button>
+            <button class="demo-tab" onclick="switchExample(1)">[3,2,4]</button>
+          </div>
+          <div class="demo-array" id="demoArray"></div>
+          <div class="demo-map" id="demoMap"></div>
+          <div class="demo-info" id="demoInfo"></div>
+          <div class="demo-controls">
+            <button class="demo-btn" id="btnPrev" onclick="stepPrev()">上一步</button>
+            <button class="demo-btn" id="btnNext" onclick="stepNext()">下一步</button>
+            <span class="counter" id="counter">0 / 0</span>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="section-shell dark">
+    <article class="white-card">
+      <div class="section-title">
+        <h2>易错点与扩展</h2>
+        <div class="num">04</div>
+      </div>
+      <div class="grid-3">
+        <div class="pitfall"><small>Pitfall</small><p><b>先查询再插入。</b> 如果先插入，当 <code>nums[i] * 2 == target</code> 时会匹配到自身。</p></div>
+        <div class="pitfall"><small>Pitfall</small><p><b>返回顺序。</b> 推荐返回 <code>[hash_map[complement], i]</code>，补数下标在前，当前下标在后。</p></div>
+        <div class="pitfall"><small>Pitfall</small><p><b>重复元素。</b> 如 <code>[3,3]</code>，先查后插能自然命中第一个 3，不会冲突。</p></div>
+        <div class="extend"><small>Extension</small><p>如果数组已排序，可以使用双指针，时间 O(n)，空间 O(1)。</p></div>
+        <div class="extend"><small>Extension</small><p>如果要求所有数对，哈希表需要存下标列表，并记录所有匹配。</p></div>
+        <div class="extend"><small>Pattern</small><p>“查找补数”可推广到三数之和、四数相加等题型。</p></div>
+      </div>
+    </article>
+  </section>
+
+  <section class="section-shell">
+    <article class="white-card">
+      <div class="section-title">
+        <h2>相关题目</h2>
+        <div class="num">05</div>
+      </div>
+      <div class="grid-3">
+        <div class="related"><b>#15</b>三数之和</div>
+        <div class="related"><b>#167</b>两数之和 II</div>
+        <div class="related"><b>#454</b>四数相加 II</div>
+      </div>
+    </article>
+  </section>
+
+  <div class="footer">LEETCODE CARDS · COLOR GEOMETRY · 01 TWO SUM</div>
+</main>
+
+<script>
+const examples = [
+  {
+    nums:[2,7,11,15], target:9,
+    steps:[
+      {i:0,num:2,need:7,found:false,map:{2:0},text:"补数 7 不在哈希表中，插入 {2:0}。"},
+      {i:1,num:7,need:2,found:true,foundIdx:0,map:{2:0,7:1},text:"补数 2 已存在，下标为 0，返回 [0,1]。"}
+    ]
+  },
+  {
+    nums:[3,2,4], target:6,
+    steps:[
+      {i:0,num:3,need:3,found:false,map:{3:0},text:"补数 3 不在哈希表中，插入 {3:0}。"},
+      {i:1,num:2,need:4,found:false,map:{3:0,2:1},text:"补数 4 不在哈希表中，插入 {2:1}。"},
+      {i:2,num:4,need:2,found:true,foundIdx:1,map:{3:0,2:1,4:2},text:"补数 2 已存在，下标为 1，返回 [1,2]。"}
+    ]
+  }
+];
+let currentExample = 0;
+let currentStep = -1;
+
+function switchExample(idx){
+  currentExample = idx;
+  currentStep = -1;
+  document.querySelectorAll(".demo-tab").forEach((tab,i)=>tab.classList.toggle("active",i===idx));
+  render();
+}
+function render(){
+  const ex = examples[currentExample];
+  const step = currentStep >= 0 ? ex.steps[currentStep] : null;
+  const arr = document.getElementById("demoArray");
+  arr.innerHTML = "";
+  ex.nums.forEach((value,index)=>{
+    const cell = document.createElement("div");
+    cell.className = "demo-cell";
+    if(step && step.i === index) cell.classList.add("current");
+    if(step && step.found && (step.i === index || step.foundIdx === index)) cell.classList.add("found");
+    cell.dataset.idx = `[${index}]`;
+    cell.textContent = value;
+    arr.appendChild(cell);
+  });
+
+  const map = document.getElementById("demoMap");
+  map.innerHTML = "";
+  const data = step ? step.map : {};
+  const entries = Object.entries(data);
+  if(entries.length === 0){
+    map.textContent = "hash_map = empty";
+  }else{
+    entries.forEach(([key,value],idx)=>{
+      const item = document.createElement("span");
+      item.className = "map-pill";
+      if(step && Number(key) === step.num && !step.found) item.classList.add("new");
+      item.textContent = `${key} -> ${value}`;
+      map.appendChild(item);
+    });
+  }
+
+  const info = document.getElementById("demoInfo");
+  if(!step){
+    info.innerHTML = `nums = <b>[${ex.nums.join(", ")}]</b>, target = <b>${ex.target}</b><br>点击“下一步”开始执行。`;
+  }else{
+    info.innerHTML = `i = <b>${step.i}</b>, num = <b>${step.num}</b>, complement = <b>${step.need}</b><br>${step.text}`;
+  }
+  document.getElementById("counter").textContent = `${currentStep + 1} / ${ex.steps.length}`;
+  document.getElementById("btnPrev").disabled = currentStep < 0;
+  document.getElementById("btnNext").disabled = currentStep >= ex.steps.length - 1;
+}
+function stepNext(){
+  const ex = examples[currentExample];
+  if(currentStep < ex.steps.length - 1){
+    currentStep++;
+    render();
+  }
+}
+function stepPrev(){
+  if(currentStep >= 0){
+    currentStep--;
+    render();
+  }
+}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>01 两数之和 — Two Sum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --canvas:#09090B;--surface:#131316;--surface-el:#1C1C21;
+  --ink:#EDEDEF;--muted:#71717A;--muted-dim:#3F3F46;
+  --border:rgba(255,255,255,0.06);--border-hover:rgba(255,255,255,0.12);
+  --accent:#E8553D;--accent-muted:rgba(232,85,61,0.15);--accent-glow:rgba(232,85,61,0.25);
+  --success:#34D399;--success-muted:rgba(52,211,153,0.12);
+  --font-display:'Outfit',sans-serif;--font-body:'DM Sans',sans-serif;--font-mono:'JetBrains Mono',monospace;
+  --radius:10px;--radius-sm:6px;--radius-pill:9999px;
+}
+html{font-size:17px;scroll-behavior:smooth}
+body{
+  background:var(--canvas);color:var(--ink);font-family:var(--font-body);
+  line-height:1.65;min-height:100vh;overflow-x:hidden;
+}
+/* ── Study Nav ── */
+.site-nav{
+  max-width:860px;margin:1rem auto 0;padding:.7rem .9rem;
+  display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap;
+  border:1px solid var(--border-hover);border-radius:var(--radius);
+  background:rgba(19,19,22,.86);backdrop-filter:blur(18px);
+  position:sticky;top:12px;z-index:90;
+}
+.site-nav .nav-brand{
+  display:flex;align-items:center;gap:.5rem;color:var(--ink);text-decoration:none;
+  font-family:var(--font-display);font-weight:800;
+}
+.site-nav .nav-dot{width:.7rem;height:.7rem;border-radius:50%;background:var(--accent);box-shadow:0 0 20px var(--accent-glow)}
+.site-nav .nav-links{display:flex;gap:.45rem;flex-wrap:wrap}
+.site-nav .nav-links a{
+  min-height:2rem;display:inline-flex;align-items:center;padding:.2rem .7rem;
+  border:1px solid var(--border-hover);border-radius:var(--radius-pill);
+  color:var(--muted);background:rgba(255,255,255,.03);text-decoration:none;
+  font-size:.72rem;font-weight:800;
+}
+.site-nav .nav-links a.primary{color:var(--ink);background:var(--accent-muted);border-color:var(--accent)}
+/* ── Scroll Progress ── */
+#scroll-progress{
+  position:fixed;top:0;left:0;height:2px;width:0%;
+  background:linear-gradient(90deg,var(--accent),rgba(232,85,61,0.3));
+  z-index:1000;transition:width .1s linear;
+}
+/* ── Dot Grid Texture ── */
+.card{
+  max-width:860px;margin:0 auto;position:relative;
+  background-image:radial-gradient(circle,rgba(255,255,255,0.03) 1px,transparent 1px);
+  background-size:24px 24px;
+}
+/* ── Floating Accent Orb ── */
+.orb{
+  position:absolute;top:-60px;left:50%;transform:translateX(-50%);
+  width:340px;height:340px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,var(--accent-muted) 0%,transparent 70%);
+  filter:blur(40px);z-index:0;
+  animation:orb-breathe 8s ease-in-out infinite;
+}
+@keyframes orb-breathe{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.05)}}
+/* ── Load Animations ── */
+.fade-in{opacity:0;transform:translateY(16px);animation:fadeUp .6s ease forwards}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){
+  .fade-in{opacity:1;transform:none;animation:none}
+  .orb{animation:none}
+  *{animation-duration:0s!important;transition-duration:0s!important}
+}
+/* ── Hero ── */
+.hero{position:relative;padding:4rem 2.5rem 3rem;z-index:1;overflow:hidden}
+.hero-watermark{
+  position:absolute;top:-1.2rem;right:1rem;
+  font-family:var(--font-display);font-weight:900;font-size:10rem;
+  line-height:1;color:rgba(232,85,61,0.06);pointer-events:none;user-select:none;
+}
+.hero-title{
+  font-family:var(--font-display);font-weight:700;font-size:2.5rem;
+  color:var(--ink);position:relative;display:inline-block;
+}
+.hero-title::after{
+  content:'';position:absolute;bottom:-4px;left:0;height:3px;width:0;
+  background:var(--accent);border-radius:2px;
+  animation:underline-grow .8s .4s ease forwards;
+}
+@keyframes underline-grow{to{width:100%}}
+.hero-subtitle{
+  font-family:var(--font-display);font-weight:400;font-size:1.1rem;
+  color:var(--muted);margin-top:.6rem;letter-spacing:.02em;
+}
+.hero-line{
+  height:2px;margin-top:1.5rem;border-radius:1px;
+  background:linear-gradient(90deg,var(--accent),transparent);
+  animation:pulse-line 4s ease-in-out infinite;
+}
+@keyframes pulse-line{0%,100%{opacity:.6}50%{opacity:1}}
+.hero-tags{display:flex;gap:.5rem;margin-top:1.2rem;flex-wrap:wrap}
+.tag{
+  font-family:var(--font-mono);font-size:.72rem;font-weight:500;
+  padding:.25rem .7rem;border-radius:var(--radius-pill);
+  border:1px solid var(--border);color:var(--muted);
+  transition:all .2s ease;cursor:default;
+}
+.tag:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px)}
+/* ── Sections ── */
+.section{padding:0 2.5rem;position:relative;z-index:1}
+.section-gap{height:2.5rem}
+.section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.2rem}
+.section-badge{
+  font-family:var(--font-mono);font-size:.65rem;font-weight:500;
+  padding:.15rem .55rem;border-radius:var(--radius-pill);
+  background:var(--accent-muted);color:var(--accent);
+  letter-spacing:.04em;
+}
+.section-title{
+  font-family:var(--font-display);font-weight:600;font-size:1.2rem;
+  color:var(--ink);transition:text-shadow .3s ease;
+}
+.section-title:hover{text-shadow:0 0 20px var(--accent-glow)}
+.section-line{
+  flex:1;height:1px;
+  background:linear-gradient(90deg,var(--accent),transparent);
+}
+/* ── Problem Description ── */
+.problem-desc{color:var(--ink);font-size:.95rem;line-height:1.75}
+.problem-desc strong{color:var(--accent);font-weight:600}
+.examples{display:flex;flex-direction:column;gap:.75rem;margin-top:1rem}
+.example-box{
+  background:var(--surface);border:1px solid var(--border);
+  border-left:3px solid var(--accent);border-radius:var(--radius-sm);
+  padding:.85rem 1.1rem;transition:border-color .2s ease;
+}
+.example-box:hover{border-color:var(--border-hover)}
+.example-label{
+  font-family:var(--font-mono);font-size:.72rem;font-weight:500;
+  color:var(--accent);margin-bottom:.4rem;
+}
+.example-content{font-family:var(--font-mono);font-size:.82rem;color:var(--ink);line-height:1.6}
+.example-content .hl-num{color:#60A5FA}
+.example-content .hl-out{color:var(--success)}
+.constraints{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:1rem}
+.constraint-pill{
+  font-family:var(--font-mono);font-size:.7rem;font-weight:400;
+  padding:.2rem .6rem;border-radius:var(--radius-pill);
+  background:var(--surface);border:1px solid var(--border);color:var(--muted);
+}
+.fn-sig{
+  margin-top:1rem;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:.7rem 1rem;
+  font-family:var(--font-mono);font-size:.8rem;color:var(--muted);
+}
+.fn-sig .fn-name{color:var(--accent)}
+.fn-sig .fn-type{color:#F59E0B}
+/* ── Breakdown Grid ── */
+.breakdown-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:.75rem;
+}
+.breakdown-cell{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:.85rem 1rem;
+  transition:all .2s ease;
+}
+.breakdown-cell:hover{border-color:var(--border-hover);transform:translateY(-1px)}
+.breakdown-cell.full{grid-column:1/-1;border-left:3px solid var(--accent)}
+.breakdown-label{
+  font-family:var(--font-mono);font-size:.65rem;font-weight:500;
+  color:var(--muted);text-transform:uppercase;letter-spacing:.08em;
+  margin-bottom:.35rem;
+}
+.breakdown-value{font-size:.9rem;color:var(--ink)}
+.breakdown-value .accent{color:var(--accent);font-weight:600}
+/* ── Approach Cards ── */
+.approach-cards{display:flex;flex-direction:column;gap:.75rem}
+.approach-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:1.1rem 1.3rem;
+  transition:all .25s ease;position:relative;
+}
+.approach-card:hover{
+  border-color:var(--border-hover);
+  box-shadow:inset 0 0 30px rgba(255,255,255,0.02);
+  transform:translateY(-1px);
+}
+.approach-card.recommended{border-left:3px solid var(--accent)}
+.approach-card.recommended::before{
+  content:'✓';position:absolute;top:1.1rem;right:1.1rem;
+  color:var(--success);font-size:.9rem;font-weight:700;
+  animation:check-pop .4s ease;
+}
+@keyframes check-pop{0%{transform:scale(0)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
+.approach-name{
+  font-family:var(--font-display);font-weight:600;font-size:1rem;
+  color:var(--ink);margin-bottom:.35rem;
+}
+.approach-desc{font-size:.85rem;color:var(--muted);line-height:1.6}
+.complexity-badges{display:flex;gap:.5rem;margin-top:.7rem;flex-wrap:wrap}
+.complexity-pill{
+  font-family:var(--font-mono);font-size:.68rem;font-weight:500;
+  padding:.18rem .55rem;border-radius:var(--radius-pill);
+  background:var(--surface-el);color:var(--muted);
+}
+.insight-callout{
+  margin-top:1rem;background:var(--surface);border:1px solid var(--border);
+  border-left:3px solid var(--accent);border-radius:var(--radius-sm);
+  padding:.85rem 1.1rem;position:relative;overflow:hidden;
+}
+.insight-callout::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--accent);
+  animation:accent-pulse 3s ease-in-out infinite;
+}
+@keyframes accent-pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.insight-label{
+  font-family:var(--font-display);font-weight:600;font-size:.8rem;
+  color:var(--accent);margin-bottom:.3rem;
+}
+.insight-text{font-size:.85rem;color:var(--muted);line-height:1.6}
+/* ── Code Block ── */
+.code-container{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;
+  border-image:linear-gradient(180deg,var(--border) 0%,var(--accent-muted) 100%) 1;
+  border-bottom:1px solid transparent;
+  border-image:linear-gradient(180deg,rgba(255,255,255,0.06) 0%,rgba(232,85,61,0.15) 100%) 1;
+}
+.code-tabs{display:flex;border-bottom:1px solid var(--border);position:relative}
+.code-tab{
+  font-family:var(--font-mono);font-size:.75rem;font-weight:500;
+  padding:.55rem 1.2rem;color:var(--muted);cursor:pointer;
+  border:none;background:none;transition:all .2s ease;
+  border-bottom:2px solid transparent;
+}
+.code-tab:hover{color:var(--ink)}
+.code-tab.active{
+  color:var(--accent);border-bottom-color:var(--accent);
+  background:var(--accent-muted);
+}
+.code-tab:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.code-body{position:relative;padding:1rem 0;overflow-x:auto}
+.code-body pre{margin:0;padding:0 1rem 0 0}
+.code-line{
+  display:flex;align-items:flex-start;padding:.1rem 1rem .1rem 0;
+  min-height:1.6rem;transition:background .15s ease;
+}
+.code-line.highlight{background:var(--accent-muted)}
+.line-num{
+  display:inline-block;width:2.8rem;min-width:2.8rem;
+  text-align:right;padding-right:1rem;
+  font-family:var(--font-mono);font-size:.75rem;font-weight:400;
+  color:var(--muted-dim);user-select:none;
+}
+.line-content{
+  font-family:var(--font-mono);font-size:.82rem;font-weight:400;
+  color:var(--ink);white-space:pre;
+}
+/* Syntax colors */
+.kw{color:var(--accent)}.tp{color:#F59E0B}.fn{color:#A78BFA}
+.st{color:var(--success)}.cm{color:var(--muted-dim)}.nm{color:#60A5FA}
+.op{color:var(--muted)}
+.copy-btn{
+  position:absolute;top:.6rem;right:.8rem;
+  font-family:var(--font-mono);font-size:.68rem;font-weight:500;
+  padding:.3rem .7rem;border-radius:var(--radius-sm);
+  background:var(--surface-el);border:1px solid var(--border);
+  color:var(--muted);cursor:pointer;opacity:0;
+  transition:all .2s ease;z-index:2;
+}
+.code-container:hover .copy-btn{opacity:1}
+.copy-btn:hover{border-color:var(--accent);color:var(--accent)}
+.copy-btn:active{transform:scale(.95)}
+.copy-btn.copied{color:var(--success);border-color:var(--success)}
+/* ── Interactive Demo ── */
+.demo-area{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;
+}
+.demo-progress{
+  height:2px;background:var(--surface-el);
+}
+.demo-progress-bar{
+  height:100%;background:linear-gradient(90deg,var(--accent),var(--success));
+  transition:width .4s ease;border-radius:1px;
+}
+.demo-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.7rem 1.2rem;border-bottom:1px solid var(--border);
+}
+.demo-step-pill{
+  font-family:var(--font-mono);font-size:.7rem;font-weight:500;
+  padding:.2rem .6rem;border-radius:var(--radius-pill);
+  background:var(--accent-muted);color:var(--accent);
+}
+.demo-controls{display:flex;gap:.4rem;align-items:center}
+.demo-btn{
+  font-family:var(--font-mono);font-size:.75rem;font-weight:500;
+  padding:.3rem .7rem;border-radius:var(--radius-pill);
+  background:var(--surface-el);border:1px solid var(--border);
+  color:var(--muted);cursor:pointer;transition:all .2s ease;
+}
+.demo-btn:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px)}
+.demo-btn:active{transform:translateY(0) scale(.98)}
+.demo-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.demo-btn.auto-active{
+  background:var(--accent-muted);border-color:var(--accent);color:var(--accent);
+  animation:auto-pulse 1.5s ease-in-out infinite;
+}
+@keyframes auto-pulse{0%,100%{box-shadow:0 0 0 0 var(--accent-glow)}50%{box-shadow:0 0 0 6px transparent}}
+.demo-body{padding:1.2rem}
+.demo-ex-tabs{display:flex;gap:.4rem;margin-bottom:1rem}
+.demo-ex-tab{
+  font-family:var(--font-mono);font-size:.72rem;font-weight:500;
+  padding:.25rem .7rem;border-radius:var(--radius-pill);
+  background:var(--surface-el);border:1px solid var(--border);
+  color:var(--muted);cursor:pointer;transition:all .2s ease;
+}
+.demo-ex-tab.active{background:var(--accent-muted);border-color:var(--accent);color:var(--accent)}
+.demo-ex-tab:hover{border-color:var(--accent)}
+.demo-arrays{display:flex;flex-direction:column;gap:1.2rem}
+.demo-row-label{
+  font-family:var(--font-mono);font-size:.7rem;font-weight:500;
+  color:var(--muted);text-transform:uppercase;letter-spacing:.06em;
+  margin-bottom:.4rem;
+}
+.demo-cells{display:flex;gap:.4rem;flex-wrap:wrap}
+.demo-cell{
+  width:3rem;height:2.6rem;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  border-radius:var(--radius-sm);
+  border:1px solid var(--border);
+  background:var(--surface-el);
+  transition:all .35s ease;position:relative;
+}
+.demo-cell .cell-idx{
+  font-family:var(--font-mono);font-size:.55rem;color:var(--muted-dim);
+  position:absolute;top:2px;
+}
+.demo-cell .cell-val{
+  font-family:var(--font-mono);font-size:.85rem;font-weight:500;
+  color:var(--ink);margin-top:.25rem;
+}
+.demo-cell.current{
+  border-color:var(--accent);
+  animation:cell-pulse 1.2s ease-in-out infinite;
+}
+@keyframes cell-pulse{0%,100%{box-shadow:0 0 0 0 var(--accent-glow)}50%{box-shadow:0 0 0 4px transparent}}
+.demo-cell.found{
+  background:var(--success-muted);border-color:var(--success);
+  animation:cell-flash .5s ease;
+}
+@keyframes cell-flash{0%{background:rgba(52,211,153,0.35)}100%{background:var(--success-muted)}}
+.demo-cell.checked{border-color:var(--border-hover)}
+.demo-hashmap{margin-top:1rem}
+.hashmap-entries{display:flex;flex-wrap:wrap;gap:.4rem;min-height:2.2rem}
+.hashmap-entry{
+  font-family:var(--font-mono);font-size:.72rem;font-weight:400;
+  padding:.25rem .6rem;border-radius:var(--radius-sm);
+  background:var(--surface-el);border:1px solid var(--border);
+  color:var(--ink);opacity:0;transform:translateX(10px);
+  animation:slide-in .3s ease forwards;
+}
+@keyframes slide-in{to{opacity:1;transform:translateX(0)}}
+.hashmap-entry .hm-key{color:var(--accent)}
+.hashmap-entry .hm-val{color:#60A5FA}
+.demo-info{
+  margin-top:1rem;padding:.7rem 1rem;border-radius:var(--radius-sm);
+  background:var(--surface-el);border:1px solid var(--border);
+  font-size:.82rem;color:var(--muted);line-height:1.6;
+  min-height:2.4rem;
+}
+.demo-info .info-accent{color:var(--accent);font-weight:600}
+.demo-info .info-success{color:var(--success);font-weight:600}
+.demo-result{
+  margin-top:.8rem;padding:.7rem 1rem;border-radius:var(--radius-sm);
+  background:var(--success-muted);border:1px solid rgba(52,211,153,0.25);
+  font-family:var(--font-mono);font-size:.85rem;color:var(--success);
+  display:none;animation:result-glow 2s ease-in-out infinite;
+}
+@keyframes result-glow{0%,100%{box-shadow:0 0 0 0 rgba(52,211,153,0.15)}50%{box-shadow:0 0 12px 2px rgba(52,211,153,0.1)}}
+.demo-result.visible{display:block}
+/* ── Pitfall Items ── */
+.pitfalls{display:flex;flex-direction:column;gap:.6rem}
+.pitfall-item{
+  display:flex;align-items:flex-start;gap:.7rem;
+  padding:.7rem .9rem;border-radius:var(--radius-sm);
+  transition:background .2s ease;cursor:default;
+}
+.pitfall-item:hover{background:var(--accent-muted)}
+.pitfall-dot{
+  width:6px;height:6px;min-width:6px;border-radius:50%;
+  background:var(--accent);margin-top:.5rem;
+}
+.pitfall-text{font-size:.88rem;color:var(--ink);line-height:1.6}
+.pitfall-text .accent{color:var(--accent);font-weight:600}
+/* ── Extension ── */
+.extensions{display:flex;flex-direction:column}
+.extension-item{
+  padding-top:1rem;border-top:1px solid var(--border);
+  margin-top:1rem;
+}
+.extension-item:first-child{padding-top:0;margin-top:0;border-top:none}
+.extension-title{
+  font-family:var(--font-display);font-weight:600;font-size:.95rem;
+  color:var(--ink);margin-bottom:.4rem;
+}
+.extension-text{font-size:.88rem;color:var(--muted);line-height:1.7}
+/* ── Related Problems ── */
+.related-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem}
+.related-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:.75rem .9rem;
+  transition:all .2s ease;cursor:pointer;text-decoration:none;
+}
+.related-card:hover{
+  border-color:var(--accent);transform:translateY(-1px);
+  box-shadow:0 2px 8px rgba(0,0,0,0.2);
+}
+.related-card:active{transform:translateY(0) scale(.98)}
+.related-num{
+  font-family:var(--font-mono);font-size:.7rem;font-weight:500;
+  color:var(--accent);margin-bottom:.2rem;
+}
+.related-title{
+  font-family:var(--font-body);font-size:.82rem;font-weight:500;
+  color:var(--ink);line-height:1.4;
+}
+/* ── Footer ── */
+.card-footer{
+  padding:2rem 2.5rem 3rem;text-align:center;
+  border-top:1px solid var(--border);margin-top:2.5rem;
+}
+.footer-text{font-size:.75rem;color:var(--muted-dim);font-family:var(--font-mono)}
+/* ── Responsive ── */
+@media(max-width:640px){
+  html{font-size:15px}
+  .hero{padding:3rem 1.5rem 2rem}
+  .section{padding:0 1.5rem}
+  .hero-watermark{font-size:6rem}
+  .hero-title{font-size:1.8rem}
+  .breakdown-grid{grid-template-columns:1fr}
+  .related-grid{grid-template-columns:1fr}
+  .demo-cell{width:2.6rem;height:2.2rem}
+  .demo-cell .cell-val{font-size:.75rem}
+}
+</style>
+</head>
+<body>
+<div id="scroll-progress"></div>
+<nav class="site-nav" aria-label="学习导航">
+  <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+  <div class="nav-links">
+    <a href="../../index.html">主页</a>
+    <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    <a href="../index.html#hash">哈希</a>
+  </div>
+</nav>
+<div class="card">
+  <div class="orb"></div>
+
+  <!-- ═══ HERO ═══ -->
+  <header class="hero fade-in" style="animation-delay:0ms">
+    <div class="hero-watermark">01</div>
+    <h1 class="hero-title">两数之和</h1>
+    <p class="hero-subtitle">Two Sum &nbsp;·&nbsp; LeetCode #1 &nbsp;·&nbsp; Easy</p>
+    <div class="hero-line"></div>
+    <div class="hero-tags">
+      <span class="tag">数组</span>
+      <span class="tag">哈希表</span>
+      <span class="tag">一次遍历</span>
+    </div>
+  </header>
+
+  <div class="section-gap"></div>
+
+  <!-- ═══ 1. 题目 ═══ -->
+  <section class="section fade-in" style="animation-delay:80ms">
+    <div class="section-header">
+      <span class="section-badge">01</span>
+      <h2 class="section-title">题目</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="problem-desc">
+      给定一个整数数组 <strong>nums</strong> 和一个整数目标值 <strong>target</strong>，请你在该数组中找出和为目标值 target 的那两个整数，并返回它们的数组下标。<br><br>
+      你可以假设每种输入只会对应一个答案，并且不能使用同一个元素两次。
+    </div>
+    <div class="examples">
+      <div class="example-box">
+        <div class="example-label">示例 1</div>
+        <div class="example-content">
+          输入：nums = [<span class="hl-num">2</span>,<span class="hl-num">7</span>,<span class="hl-num">11</span>,<span class="hl-num">15</span>], target = <span class="hl-num">9</span><br>
+          输出：[<span class="hl-out">0</span>,<span class="hl-out">1</span>]<br>
+          解释：因为 nums[0] + nums[1] == 9，返回 [0, 1]
+        </div>
+      </div>
+      <div class="example-box">
+        <div class="example-label">示例 2</div>
+        <div class="example-content">
+          输入：nums = [<span class="hl-num">3</span>,<span class="hl-num">2</span>,<span class="hl-num">4</span>], target = <span class="hl-num">6</span><br>
+          输出：[<span class="hl-out">1</span>,<span class="hl-out">2</span>]
+        </div>
+      </div>
+      <div class="example-box">
+        <div class="example-label">示例 3</div>
+        <div class="example-content">
+          输入：nums = [<span class="hl-num">3</span>,<span class="hl-num">3</span>], target = <span class="hl-num">6</span><br>
+          输出：[<span class="hl-out">0</span>,<span class="hl-out">1</span>]
+        </div>
+      </div>
+    </div>
+    <div class="constraints">
+      <span class="constraint-pill">2 ≤ nums.length ≤ 10⁴</span>
+      <span class="constraint-pill">-10⁹ ≤ nums[i] ≤ 10⁹</span>
+      <span class="constraint-pill">-10⁹ ≤ target ≤ 10⁹</span>
+      <span class="constraint-pill">仅存在一个有效答案</span>
+    </div>
+    <div class="fn-sig">
+      <span class="fn-type">List[int]</span> <span class="fn-name">twoSum</span>(self, nums: <span class="fn-type">List[int]</span>, target: <span class="fn-type">int</span>) → <span class="fn-type">List[int]</span>
+    </div>
+  </section>
+
+  <div class="section-gap"></div>
+
+  <!-- ═══ 2. 题目拆解 ═══ -->
+  <section class="section fade-in" style="animation-delay:160ms">
+    <div class="section-header">
+      <span class="section-badge">02</span>
+      <h2 class="section-title">题目拆解</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="breakdown-grid">
+      <div class="breakdown-cell">
+        <div class="breakdown-label">输入</div>
+        <div class="breakdown-value">整数数组 <span class="accent">nums</span>，目标值 <span class="accent">target</span></div>
+      </div>
+      <div class="breakdown-cell">
+        <div class="breakdown-label">输出</div>
+        <div class="breakdown-value">两个下标 <span class="accent">[i, j]</span>，使 nums[i]+nums[j]=target</div>
+      </div>
+      <div class="breakdown-cell">
+        <div class="breakdown-label">约束</div>
+        <div class="breakdown-value">i ≠ j，每个元素最多用一次</div>
+      </div>
+      <div class="breakdown-cell">
+        <div class="breakdown-label">保证</div>
+        <div class="breakdown-value">恰好存在一组有效答案</div>
+      </div>
+      <div class="breakdown-cell full">
+        <div class="breakdown-label">本质归类</div>
+        <div class="breakdown-value"><span class="accent">查找问题</span> — 对于每个元素 x，快速查找 target−x 是否存在</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-gap"></div>
+
+  <!-- ═══ 3. 解题思路 ═══ -->
+  <section class="section fade-in" style="animation-delay:240ms">
+    <div class="section-header">
+      <span class="section-badge">03</span>
+      <h2 class="section-title">解题思路</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="approach-cards">
+      <div class="approach-card">
+        <div class="approach-name">暴力枚举</div>
+        <div class="approach-desc">双重循环遍历所有数对 (i, j)，检查 nums[i] + nums[j] == target。思路简单，但时间复杂度高。</div>
+        <div class="complexity-badges">
+          <span class="complexity-pill">时间 O(n²)</span>
+          <span class="complexity-pill">空间 O(1)</span>
+        </div>
+      </div>
+      <div class="approach-card recommended">
+        <div class="approach-name">哈希表一次遍历</div>
+        <div class="approach-desc">遍历数组时，用哈希表记录已见过的 {数值→下标}。对每个元素，先查 complement = target − nums[i] 是否在表中，若在则直接返回，否则将当前元素加入表。</div>
+        <div class="complexity-badges">
+          <span class="complexity-pill">时间 O(n)</span>
+          <span class="complexity-pill">空间 O(n)</span>
+        </div>
+      </div>
+    </div>
+    <div class="insight-callout">
+      <div class="insight-label">💡 核心洞察</div>
+      <div class="insight-text">将「查找补数」从 O(n) 降到 O(1)，是优化的关键。哈希表的本质是用空间换时间——牺牲 O(n) 额外空间，将每次查找从线性扫描变为常数查询。</div>
+    </div>
+  </section>
+
+  <div class="section-gap"></div>
+
+  <!-- ═══ 4. 代码演示 ═══ -->
+  <section class="section fade-in" style="animation-delay:320ms">
+    <div class="section-header">
+      <span class="section-badge">04</span>
+      <h2 class="section-title">代码演示</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-container" id="code-container">
+      <div class="code-tabs">
+        <button class="code-tab active" data-lang="python" onclick="switchTab('python')">Python</button>
+        <button class="code-tab" data-lang="java" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" data-lang="cpp" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">Copy</button>
+      <div class="code-body">
+        <pre id="code-python"></pre>
+        <pre id="code-java" style="display:none"></pre>
+        <pre id="code-cpp" style="display:none"></pre>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-gap"></div>
+
+  <!-- ═══ 5. 题解过程 ═══ -->
+  <section class="section fade-in" style="animation-delay:400ms">
+    <div class="section-header">
+      <span class="section-badge">05</span>
+      <h2 class="section-title">题解过程</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo-area">
+      <div class="demo-progress"><div class="demo-progress-bar" id="demo-progress-bar"></div></div>
+      <div class="demo-header">
+        <span class="demo-step-pill" id="demo-step-pill">Step 0/0</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="demoPrev()" aria-label="上一步">◀</button>
+          <button class="demo-btn" onclick="demoNext()" aria-label="下一步">▶</button>
+          <button class="demo-btn" id="auto-btn" onclick="toggleAuto()">AUTO</button>
+          <button class="demo-btn" onclick="demoReset()">↺</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="demo-ex-tabs">
+          <button class="demo-ex-tab active" data-ex="0" onclick="switchExample(0)">EX1: [2,7,11,15] t=9</button>
+          <button class="demo-ex-tab" data-ex="1" onclick="switchExample(1)">EX2: [3,2,4] t=6</button>
+        </div>
+        <div class="demo-arrays">
+          <div>
+            <div class="demo-row-label">数组 nums</div>
+            <div class="demo-cells" id="demo-cells"></div>
+          </div>
+          <div class="demo-hashmap">
+            <div class="demo-row-label">哈希表 hashmap</div>
+            <div class="hashmap-entries" id="hashmap-entries"></div>
+          </div>
+        </div>
+        <div class="demo-info" id="demo-info">点击 ▶ 开始演示</div>
+        <div class="demo-result" id="demo-result"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-gap"></div>
+
+  <!-- ═══ 6. 易错要点 ═══ -->
+  <section class="section fade-in" style="animation-delay:480ms">
+    <div class="section-header">
+      <span class="section-badge">06</span>
+      <h2 class="section-title">易错要点</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="pitfalls">
+      <div class="pitfall-item">
+        <div class="pitfall-dot"></div>
+        <div class="pitfall-text"><span class="accent">先查询再插入</span>——必须先检查 complement 是否已在哈希表中，再插入当前元素。若先插入再查询，当 nums[i] × 2 == target 时会错误地匹配到自己。</div>
+      </div>
+      <div class="pitfall-item">
+        <div class="pitfall-dot"></div>
+        <div class="pitfall-text"><span class="accent">返回顺序</span>——题目要求返回 [较小下标, 较大下标]。由于我们先遍历到的是较小下标，存入哈希表后，后续找到时直接 [hash_map[complement], i] 即可保证顺序。</div>
+      </div>
+      <div class="pitfall-item">
+        <div class="pitfall-dot"></div>
+        <div class="pitfall-text"><span class="accent">重复元素</span>——当数组中有重复值时（如 [3,3]），哈希表只保存最新下标即可，因为先查后插保证了不会匹配自身，而题目保证恰好一个答案。</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-gap"></div>
+
+  <!-- ═══ 7. 扩展思考 ═══ -->
+  <section class="section fade-in" style="animation-delay:560ms">
+    <div class="section-header">
+      <span class="section-badge">07</span>
+      <h2 class="section-title">扩展思考</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="extensions">
+      <div class="extension-item">
+        <div class="extension-title">如果数组已排序？</div>
+        <div class="extension-text">可以使用双指针法（左右指针向中间逼近），空间复杂度降为 O(1)。但排序本身需要 O(n log n) 时间，且会丢失原始下标信息，需要额外处理。</div>
+      </div>
+      <div class="extension-item">
+        <div class="extension-title">如果需要返回所有满足条件的数对？</div>
+        <div class="extension-text">哈希表需要存储每个值的所有下标列表，并在查询时过滤掉自身。时间复杂度取决于答案数量，最坏情况 O(n²)（如全部元素相同且都满足条件）。</div>
+      </div>
+      <div class="extension-item">
+        <div class="extension-title">三数之和怎么解？</div>
+        <div class="extension-text">排序后固定一个数，对剩余部分使用双指针。时间 O(n²)，空间 O(1)（不计排序）。这就是 LeetCode #15 三数之和的经典解法，是两数之和的自然延伸。</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-gap"></div>
+
+  <!-- ═══ 8. 相关题目 ═══ -->
+  <section class="section fade-in" style="animation-delay:640ms">
+    <div class="section-header">
+      <span class="section-badge">08</span>
+      <h2 class="section-title">相关题目</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="related-grid">
+      <a class="related-card" href="#">
+        <div class="related-num">#167</div>
+        <div class="related-title">两数之和 II - 输入有序数组</div>
+      </a>
+      <a class="related-card" href="#">
+        <div class="related-num">#15</div>
+        <div class="related-title">三数之和</div>
+      </a>
+      <a class="related-card" href="#">
+        <div class="related-num">#454</div>
+        <div class="related-title">四数相加 II</div>
+      </a>
+    </div>
+  </section>
+
+  <footer class="card-footer fade-in" style="animation-delay:720ms">
+    <div class="footer-text">LeetCode #1 · Two Sum · Gallery Dark Ultra</div>
+  </footer>
+</div>
+
+<script>
+// ── Scroll Progress ──
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement.scrollHeight-window.innerHeight;
+  const p=h>0?window.scrollY/h:0;
+  document.getElementById('scroll-progress').style.width=(p*100)+'%';
+},{passive:true});
+
+// ── Code Data ──
+const codeData={
+python:[
+  {hl:false,t:'<span class="kw">class</span> <span class="tp">Solution</span>:'},
+  {hl:false,t:'    <span class="kw">def</span> <span class="fn">twoSum</span>(self, nums: <span class="tp">List</span>[<span class="tp">int</span>], target: <span class="tp">int</span>) → <span class="tp">List</span>[<span class="tp">int</span>]:'},
+  {hl:false,t:'        <span class="cm"># 哈希表：存储 {数值: 下标}</span>'},
+  {hl:false,t:'        hash_map = {}'},
+  {hl:false,t:''},
+  {hl:false,t:'        <span class="kw">for</span> i, num <span class="kw">in</span> <span class="fn">enumerate</span>(nums):'},
+  {hl:false,t:'            <span class="cm"># 计算当前元素需要的补数</span>'},
+  {hl:false,t:'            complement = target - num'},
+  {hl:false,t:''},
+  {hl:true,t:'            <span class="cm"># 关键：先查询补数是否已在表中</span>'},
+  {hl:true,t:'            <span class="kw">if</span> complement <span class="kw">in</span> hash_map:'},
+  {hl:true,t:'                <span class="kw">return</span> [hash_map[complement], i]'},
+  {hl:false,t:''},
+  {hl:false,t:'            <span class="cm"># 查询完毕后再插入，避免匹配到自己</span>'},
+  {hl:false,t:'            hash_map[num] = i'},
+  {hl:false,t:''},
+  {hl:false,t:'        <span class="kw">return</span> []  <span class="cm"># 题目保证有解，这行不会执行</span>'},
+],
+java:[
+  {hl:false,t:'<span class="kw">class</span> <span class="tp">Solution</span> {'},
+  {hl:false,t:'    <span class="kw">public</span> <span class="tp">int</span>[] <span class="fn">twoSum</span>(<span class="tp">int</span>[] nums, <span class="tp">int</span> target) {'},
+  {hl:false,t:'        <span class="cm">// 哈希表：存储 {数值 → 下标}</span>'},
+  {hl:false,t:'        <span class="tp">Map</span>&lt;<span class="tp">Integer</span>, <span class="tp">Integer</span>&gt; map = <span class="kw">new</span> <span class="tp">HashMap</span>&lt;&gt;();'},
+  {hl:false,t:''},
+  {hl:false,t:'        <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">0</span>; i &lt; nums.length; i++) {'},
+  {hl:false,t:'            <span class="tp">int</span> complement = target - nums[i];'},
+  {hl:false,t:''},
+  {hl:true,t:'            <span class="cm">// 先查询补数是否已在表中</span>'},
+  {hl:true,t:'            <span class="kw">if</span> (map.<span class="fn">containsKey</span>(complement)) {'},
+  {hl:true,t:'                <span class="kw">return new</span> <span class="tp">int</span>[]{map.<span class="fn">get</span>(complement), i};'},
+  {hl:true,t:'            }'},
+  {hl:false,t:''},
+  {hl:false,t:'            <span class="cm">// 查询后再插入，避免匹配自身</span>'},
+  {hl:false,t:'            map.<span class="fn">put</span>(nums[i], i);'},
+  {hl:false,t:'        }'},
+  {hl:false,t:'        <span class="kw">return new</span> <span class="tp">int</span>[]{}; <span class="cm">// 不会执行</span>'},
+  {hl:false,t:'    }'},
+  {hl:false,t:'}'},
+],
+cpp:[
+  {hl:false,t:'<span class="kw">class</span> <span class="tp">Solution</span> {'},
+  {hl:false,t:'<span class="kw">public</span>:'},
+  {hl:false,t:'    <span class="tp">vector</span>&lt;<span class="tp">int</span>&gt; <span class="fn">twoSum</span>(<span class="tp">vector</span>&lt;<span class="tp">int</span>&gt;&amp; nums, <span class="tp">int</span> target) {'},
+  {hl:false,t:'        <span class="cm">// 哈希表：存储 {数值 → 下标}</span>'},
+  {hl:false,t:'        <span class="tp">unordered_map</span>&lt;<span class="tp">int</span>, <span class="tp">int</span>&gt; map;'},
+  {hl:false,t:''},
+  {hl:false,t:'        <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">0</span>; i &lt; nums.<span class="fn">size</span>(); i++) {'},
+  {hl:false,t:'            <span class="tp">int</span> complement = target - nums[i];'},
+  {hl:false,t:''},
+  {hl:true,t:'            <span class="cm">// 先查询补数是否已在表中</span>'},
+  {hl:true,t:'            <span class="kw">if</span> (map.<span class="fn">count</span>(complement)) {'},
+  {hl:true,t:'                <span class="kw">return</span> {map[complement], i};'},
+  {hl:true,t:'            }'},
+  {hl:false,t:''},
+  {hl:false,t:'            <span class="cm">// 查询后再插入，避免匹配自身</span>'},
+  {hl:false,t:'            map[nums[i]] = i;'},
+  {hl:false,t:'        }'},
+  {hl:false,t:'        <span class="kw">return</span> {}; <span class="cm">// 不会执行</span>'},
+  {hl:false,t:'    }'},
+  {hl:false,t:'};'},
+]
+};
+
+function renderCode(lang){
+  const pre=document.getElementById('code-'+lang);
+  pre.innerHTML=codeData[lang].map((line,i)=>
+    `<div class="code-line${line.hl?' highlight':''}"><span class="line-num">${i+1}</span><span class="line-content">${line.t}</span></div>`
+  ).join('');
+}
+renderCode('python');renderCode('java');renderCode('cpp');
+
+let currentLang='python';
+function switchTab(lang){
+  currentLang=lang;
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.toggle('active',t.dataset.lang===lang));
+  ['python','java','cpp'].forEach(l=>{
+    document.getElementById('code-'+l).style.display=l===lang?'block':'none';
+  });
+}
+function copyCode(){
+  const btn=document.querySelector('.copy-btn');
+  const lines=codeData[currentLang].map(l=>l.t.replace(/<[^>]+>/g,''));
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>{
+    btn.textContent='Copied!';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied')},1500);
+  });
+}
+
+// ── Interactive Demo ──
+const examples=[
+  {nums:[2,7,11,15],target:9},
+  {nums:[3,2,4],target:6}
+];
+
+let currentEx=0, stepIdx=-1, autoTimer=null, steps=[];
+
+function buildSteps(ex){
+  const steps=[];
+  const hm={};
+  const nums=ex.nums, target=ex.target;
+  for(let i=0;i<nums.length;i++){
+    const comp=target-nums[i];
+    steps.push({i,comp,hm:{...hm},found:false,foundPair:null,
+      msg:`i=<span class="info-accent">${i}</span>, nums[${i}]=<span class="info-accent">${nums[i]}</span>, complement=<span class="info-accent">${comp}</span>, 查找 ${comp} ∈ hashmap...`});
+    if(comp in hm){
+      steps.push({i,comp,hm:{...hm},found:true,foundPair:[hm[comp],i],
+        msg:`找到! hashmap[${comp}]=<span class="info-success">${hm[comp]}</span>, 返回 [<span class="info-success">${hm[comp]}</span>, <span class="info-success">${i}</span>]`});
+      break;
+    }
+    hm[nums[i]]=i;
+    steps.push({i,comp,hm:{...hm},found:false,foundPair:null,inserted:{key:nums[i],val:i},
+      msg:`${comp} 不在 hashmap 中，插入 {<span class="info-accent">${nums[i]}</span>: <span class="info-accent">${i}</span>}}`});
+  }
+  return steps;
+}
+
+function renderDemo(){
+  const ex=examples[currentEx];
+  const cellsDiv=document.getElementById('demo-cells');
+  cellsDiv.innerHTML=ex.nums.map((v,i)=>
+    `<div class="demo-cell" data-idx="${i}"><span class="cell-idx">${i}</span><span class="cell-val">${v}</span></div>`
+  ).join('');
+  document.getElementById('hashmap-entries').innerHTML='';
+  document.getElementById('demo-info').innerHTML='点击 ▶ 开始演示';
+  document.getElementById('demo-result').classList.remove('visible');
+  document.getElementById('demo-result').textContent='';
+  updateProgress();
+  document.getElementById('demo-step-pill').textContent='Step 0/'+steps.length;
+}
+
+function updateProgress(){
+  const total=steps.length;
+  const pct=total>0?((stepIdx+1)/total)*100:0;
+  document.getElementById('demo-progress-bar').style.width=pct+'%';
+}
+
+function applyStep(){
+  if(stepIdx<0||stepIdx>=steps.length)return;
+  const s=steps[stepIdx];
+  const ex=examples[currentEx];
+  const cells=document.querySelectorAll('#demo-cells .demo-cell');
+  cells.forEach(c=>{
+    c.classList.remove('current','found','checked');
+  });
+  // Mark current
+  cells[s.i].classList.add('current');
+  // Mark checked (previous indices)
+  for(let j=0;j<s.i;j++) cells[j].classList.add('checked');
+  // Mark found pair
+  if(s.foundPair){
+    s.foundPair.forEach(idx=>cells[idx].classList.add('found'));
+  }
+  // Render hashmap
+  const hmDiv=document.getElementById('hashmap-entries');
+  const entries=Object.entries(s.hm);
+  hmDiv.innerHTML=entries.map(([k,v],idx)=>
+    `<span class="hashmap-entry" style="animation-delay:${idx*60}ms">{<span class="hm-key">${k}</span>: <span class="hm-val">${v}</span>}</span>`
+  ).join('');
+  // Info
+  document.getElementById('demo-info').innerHTML=s.msg;
+  // Result
+  const resultDiv=document.getElementById('demo-result');
+  if(s.foundPair){
+    resultDiv.textContent=`✓ 结果: [${s.foundPair[0]}, ${s.foundPair[1]}]`;
+    resultDiv.classList.add('visible');
+  }else{
+    resultDiv.classList.remove('visible');
+  }
+  // Step pill
+  document.getElementById('demo-step-pill').textContent=`Step ${stepIdx+1}/${steps.length}`;
+  updateProgress();
+}
+
+function demoNext(){
+  if(stepIdx<steps.length-1){stepIdx++;applyStep();}
+  else if(autoTimer) toggleAuto();
+}
+function demoPrev(){
+  if(stepIdx>0){stepIdx--;applyStep();}
+}
+function demoReset(){
+  stepIdx=-1;
+  if(autoTimer) toggleAuto();
+  renderDemo();
+}
+function toggleAuto(){
+  const btn=document.getElementById('auto-btn');
+  if(autoTimer){clearInterval(autoTimer);autoTimer=null;btn.classList.remove('auto-active');return;}
+  btn.classList.add('auto-active');
+  if(stepIdx===-1) stepIdx++;
+  applyStep();
+  autoTimer=setInterval(()=>{
+    if(stepIdx<steps.length-1){stepIdx++;applyStep();}
+    else{clearInterval(autoTimer);autoTimer=null;btn.classList.remove('auto-active');}
+  },1200);
+}
+function switchExample(idx){
+  currentEx=idx;stepIdx=-1;
+  if(autoTimer) toggleAuto();
+  document.querySelectorAll('.demo-ex-tab').forEach(t=>t.classList.toggle('active',+t.dataset.ex===idx));
+  steps=buildSteps(examples[currentEx]);
+  renderDemo();
+}
+
+// Init
+steps=buildSteps(examples[currentEx]);
+renderDemo();
+</script>
+</body>
+</html>

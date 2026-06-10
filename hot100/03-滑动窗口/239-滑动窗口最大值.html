@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>239. 滑动窗口最大值 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --paper:#fffdf8;--ink:#151822;--muted:#5f6470;
+  --purple:#7a4fe3;--purple-soft:#ede7fc;
+  --green:#24c2a0;--green-soft:#e0f9f3;
+  --pink:#e9578f;--pink-soft:#ffe2ec;
+  --yellow:#ffd42a;--yellow-soft:#fff8db;
+  --blue:#47c7f4;--blue-soft:#e3f6fd;
+  --terminal:#111722;--line:rgba(21,24,34,.1);
+  --shadow:6px 7px 0 var(--ink);--shadow-sm:3px 4px 0 var(--ink);--radius:14px;
+}
+html{font-size:17px;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;color:var(--ink);font-family:"Nunito","Noto Sans SC",sans-serif;background:#d7d3c6;line-height:1.6}
+.scroll-bar{position:fixed;top:0;left:0;height:5px;z-index:999;background:var(--purple);border-radius:0 3px 3px 0;transition:width .15s}
+.frame{width:min(880px,100vw);margin:0 auto;position:relative;overflow:visible;background:radial-gradient(circle,rgba(21,24,34,.1) 1.4px,transparent 1.6px) 0 0/20px 20px,linear-gradient(var(--line) 1px,transparent 1px) 0 33%/100% 190px,linear-gradient(90deg,var(--line) 1px,transparent 1px) 50% 0/330px 100%,var(--paper);padding:28px 38px 40px}
+/* ===== SITE NAV ===== */
+.site-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 1.2rem;padding:.72rem .9rem;border:4px solid var(--ink);border-radius:18px;background:#fff;box-shadow:var(--shadow-sm);position:sticky;top:10px;z-index:80}
+.site-nav .nav-brand{display:flex;align-items:center;gap:.5rem;text-decoration:none;font-family:"Baloo 2",sans-serif;font-size:1.02rem;font-weight:800;color:var(--purple)}
+.site-nav .nav-dot{width:14px;height:14px;border:3px solid var(--ink);border-radius:50%;background:var(--yellow);flex:0 0 auto}
+.site-nav .nav-links{display:flex;gap:8px;flex-wrap:wrap}
+.site-nav .nav-links a{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:2px 12px;border:3px solid var(--ink);border-radius:999px;background:#fff;color:var(--ink);text-decoration:none;font-size:.72rem;font-weight:900;line-height:1.1;box-shadow:2px 3px 0 var(--ink)}
+.site-nav .nav-links a.primary{background:var(--yellow)}
+@media(max-width:640px){.site-nav{position:sticky;top:10px}.site-nav .nav-links a{font-size:.68rem;padding:2px 10px}}
+.hero{position:relative;padding:1rem 0 1.5rem;margin-bottom:1.5rem;border-bottom:4px solid var(--ink)}
+.hero-top{display:flex;align-items:center;gap:12px;margin-bottom:.8rem;flex-wrap:wrap}
+.hero-badge{display:inline-grid;place-items:center;min-width:52px;min-height:36px;padding:2px 14px;border:4px solid var(--ink);border-radius:999px;background:var(--yellow);box-shadow:var(--shadow-sm);font-family:"Baloo 2",sans-serif;font-size:.85rem;font-weight:800}
+.hero-badge.easy{background:var(--green-soft);color:var(--green)}
+.hero-badge.medium{background:var(--yellow-soft);color:#b8860b}
+.hero-badge.hard{background:var(--pink-soft);color:var(--pink)}
+.hero-tag{display:inline-grid;place-items:center;min-height:32px;padding:2px 12px;border:3px solid rgba(21,24,34,.3);border-radius:999px;background:rgba(255,255,255,.7);font-size:.7rem;font-weight:800;letter-spacing:.02em}
+.hero-title{font-family:"Baloo 2",sans-serif;font-size:2.4rem;font-weight:800;line-height:1.15;letter-spacing:-.01em}
+.hero-title .accent{color:var(--purple)}
+.hero-desc{margin-top:.6rem;font-size:.88rem;color:var(--muted);line-height:1.65;max-width:600px}
+.section{margin-bottom:2rem;animation:fadeUp .5s ease both}
+.section:nth-child(2){animation-delay:.05s}
+.section:nth-child(3){animation-delay:.1s}
+.section:nth-child(4){animation-delay:.15s}
+.section:nth-child(5){animation-delay:.2s}
+.section:nth-child(6){animation-delay:.25s}
+.section:nth-child(7){animation-delay:.3s}
+.section:nth-child(8){animation-delay:.35s}
+.section-head{display:flex;align-items:center;gap:10px;margin-bottom:.8rem}
+.section-num{display:inline-grid;place-items:center;min-width:38px;min-height:38px;border:4px solid var(--ink);border-radius:10px;background:var(--purple);color:#fff;box-shadow:var(--shadow-sm);font-family:"Baloo 2",sans-serif;font-size:1rem;font-weight:800}
+.section-num.c2{background:var(--green)}
+.section-num.c3{background:var(--pink)}
+.section-num.c4{background:var(--yellow);color:var(--ink)}
+.section-num.c5{background:var(--blue)}
+.section-num.c6{background:var(--pink)}
+.section-num.c7{background:var(--green)}
+.section-num.c8{background:var(--purple)}
+.section-title{font-family:"Baloo 2",sans-serif;font-size:1.2rem;font-weight:800}
+.section-line{flex:1;height:3px;background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px);border-radius:2px;opacity:.25}
+.card{padding:1.1rem 1.3rem;border:4px solid var(--ink);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow);margin-bottom:.8rem}
+.card p{margin:.4rem 0;font-size:.88rem;line-height:1.65}
+.card strong{color:var(--purple)}
+.card .highlight{display:inline;padding:1px 6px;border-radius:5px;background:var(--yellow-soft);font-weight:800}
+.card code{font-family:"Roboto Mono",monospace;font-size:.82rem;background:#f1f1f1;border-radius:5px;padding:1px 5px}
+.card ul{padding-left:1.2rem;margin:.4rem 0}
+.card li{margin:.25rem 0;font-size:.85rem;line-height:1.55}
+.step-flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:.8rem 0}
+.step-pill{display:inline-grid;place-items:center;min-height:42px;padding:4px 16px;border:4px solid var(--ink);border-radius:999px;background:#fff;box-shadow:var(--shadow-sm);font-size:.82rem;font-weight:800;text-align:center}
+.step-pill.active{background:var(--purple);color:#fff}
+.step-pill.done{background:var(--green);color:#fff}
+.step-arrow{font-size:1.5rem;font-weight:900;color:var(--pink);line-height:1}
+.code-block{position:relative;border:4px solid var(--ink);border-radius:var(--radius);background:var(--terminal);box-shadow:var(--shadow);overflow:hidden;margin:.8rem 0}
+.code-tabs{display:flex;border-bottom:3px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04)}
+.code-tab{padding:.5rem 1.1rem;font-family:"Roboto Mono",monospace;font-size:.72rem;font-weight:700;color:rgba(255,255,255,.4);cursor:pointer;border:none;background:none;transition:all .15s}
+.code-tab:hover{color:rgba(255,255,255,.7)}
+.code-tab.active{color:#fff;background:rgba(255,255,255,.08);box-shadow:inset 0 -3px 0 var(--purple)}
+.code-content{padding:.9rem 1.1rem;font-family:"Roboto Mono",monospace;font-size:.78rem;line-height:1.75;color:#c9d1d9;overflow-x:auto}
+.code-content .kw{color:#ff7b72}
+.code-content .fn{color:#d2a8ff}
+.code-content .str{color:#a5d6ff}
+.code-content .num{color:#79c0ff}
+.code-content .cmt{color:#6e7681;font-style:italic}
+.code-content .line{display:block;padding:0 .4rem;border-radius:4px;transition:background .15s}
+.code-content .line:hover{background:rgba(255,255,255,.04)}
+.code-content .line.hl{background:rgba(122,79,227,.15);border-left:3px solid var(--purple);padding-left:calc(.4rem - 3px)}
+.code-panel{display:none}
+.code-panel.active{display:block}
+.copy-btn{position:absolute;top:.5rem;right:.6rem;padding:.25rem .6rem;border:2px solid rgba(255,255,255,.2);border-radius:6px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);font-size:.62rem;font-weight:700;cursor:pointer;transition:all .15s;font-family:"Roboto Mono",monospace}
+.copy-btn:hover{background:rgba(255,255,255,.12);color:#fff}
+.demo{border:4px solid var(--ink);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow);overflow:hidden;margin:.8rem 0}
+.demo-header{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;border-bottom:3px solid var(--ink);background:var(--yellow-soft,#fff8db)}
+.demo-header-title{font-family:"Baloo 2",sans-serif;font-size:.9rem;font-weight:800}
+.demo-controls{display:flex;align-items:center;gap:6px}
+.demo-btn{width:34px;height:34px;display:grid;place-items:center;border:3px solid var(--ink);border-radius:8px;background:#fff;box-shadow:2px 3px 0 var(--ink);font-size:.9rem;cursor:pointer;transition:all .1s;font-weight:900}
+.demo-btn:hover{transform:translate(-1px,-1px);box-shadow:3px 4px 0 var(--ink)}
+.demo-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+.demo-btn.auto-btn{width:auto;padding:0 10px;font-family:"Roboto Mono",monospace;font-size:.6rem;font-weight:700}
+.demo-btn.auto-btn.running{background:var(--pink);color:#fff}
+.demo-step-label{font-family:"Roboto Mono",monospace;font-size:.65rem;font-weight:700;color:var(--muted);min-width:60px;text-align:center}
+.demo-body{padding:1rem 1.2rem;min-height:180px}
+.demo-arr{display:flex;gap:4px;margin-bottom:.8rem;flex-wrap:wrap;align-items:flex-end}
+.demo-cell{width:48px;height:48px;display:grid;place-items:center;border:3px solid var(--ink);border-radius:8px;font-family:"Roboto Mono",monospace;font-size:1.05rem;font-weight:700;background:#fff;box-shadow:2px 3px 0 var(--ink);transition:all .25s}
+.demo-cell.current{background:var(--purple);color:#fff;box-shadow:4px 5px 0 var(--ink);transform:translateY(-3px)}
+.demo-cell.found{background:var(--green);color:#fff;box-shadow:4px 5px 0 var(--ink);transform:translateY(-3px)}
+.demo-cell.idx{height:22px;border:none;background:none;box-shadow:none;font-size:.6rem;color:var(--muted);transform:none}
+.demo-cell.in-window{background:var(--blue-soft,#e3f6fd)}
+.demo-cell.deque-max{background:var(--green);color:#fff;box-shadow:4px 5px 0 var(--ink);transform:translateY(-3px)}
+.demo-hash{margin-top:.6rem;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.demo-hash-label{font-family:"Baloo 2",sans-serif;font-size:.8rem;font-weight:800;color:var(--pink);margin-right:4px}
+.demo-hash-entry{padding:3px 10px;border:3px solid var(--ink);border-radius:8px;background:var(--pink-soft);font-family:"Roboto Mono",monospace;font-size:.72rem;font-weight:700;box-shadow:2px 3px 0 var(--ink);animation:popIn .3s ease}
+.demo-info{margin-top:.8rem;padding:.6rem .8rem;border:3px solid var(--ink);border-radius:10px;background:var(--blue-soft);font-size:.78rem;font-weight:700;line-height:1.5}
+.demo-info code{font-family:"Roboto Mono",monospace;background:#fff;border-radius:4px;padding:1px 4px;font-size:.72rem}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:.8rem 0}
+.note{padding:1rem;border:4px solid var(--ink);border-radius:var(--radius);background:#fff;box-shadow:3px 4px 0 var(--ink)}
+.note strong{display:block;margin-bottom:.4rem;font-family:"Baloo 2",sans-serif;font-size:.95rem;font-weight:800}
+.note:nth-child(1) strong{color:var(--purple)}
+.note:nth-child(2) strong{color:var(--green)}
+.note:nth-child(3) strong{color:var(--pink)}
+.note p{margin:0;font-size:.78rem;color:var(--muted);line-height:1.5;font-weight:700}
+.note code{font-family:"Roboto Mono",monospace;background:#f1f1f1;border-radius:4px;padding:1px 4px;font-size:.72rem}
+.related{display:flex;gap:8px;flex-wrap:wrap}
+.related-chip{display:inline-grid;place-items:center;min-height:34px;padding:2px 14px;border:3px solid var(--ink);border-radius:999px;background:#fff;box-shadow:var(--shadow-sm);font-size:.72rem;font-weight:800;cursor:pointer;transition:all .15s;text-decoration:none;color:var(--ink)}
+.related-chip:hover{transform:translateY(-2px);box-shadow:4px 5px 0 var(--ink)}
+.related-chip .num{color:var(--purple);margin-right:4px}
+.footer{margin-top:2rem;padding-top:1rem;border-top:4px dashed rgba(21,24,34,.15);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
+.footer-text{font-size:.68rem;color:var(--muted);font-weight:700;letter-spacing:.02em}
+.footer-text span{color:var(--purple)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{0%{transform:scale(0);opacity:0}60%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+@media(prefers-reduced-motion){*,*::before,*::after{animation:none!important;transition:none!important}}
+.bar-chart{display:flex;align-items:flex-end;gap:4px;height:180px;padding:0 8px;margin-bottom:.5rem;position:relative}
+.bar-col{display:flex;flex-direction:column;align-items:center;width:36px;position:relative}
+.bar{width:100%;border-radius:4px 4px 0 0;background:var(--pink);border:3px solid var(--ink);transition:all .3s;min-height:2px}
+.bar.in-window{background:var(--purple-soft);border-color:var(--purple)}
+.bar.is-max{background:var(--green);border-color:var(--green)}
+.window-line{position:absolute;bottom:-8px;height:4px;background:var(--blue);border-radius:2px;transition:all .3s}
+.bar-label{font-family:"Roboto Mono",monospace;font-size:.55rem;font-weight:700;margin-top:8px;color:var(--muted);text-align:center}
+.bar-value{font-family:"Roboto Mono",monospace;font-size:.6rem;font-weight:700;color:var(--ink);text-align:center;margin-bottom:2px}
+.deque-display{display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem;align-items:center}
+.deque-label{font-family:"Baloo 2",sans-serif;font-size:.8rem;font-weight:800;color:var(--pink)}
+.deque-item{padding:3px 10px;border:3px solid var(--ink);border-radius:8px;background:var(--purple-soft);font-family:"Roboto Mono",monospace;font-size:.72rem;font-weight:700;box-shadow:2px 3px 0 var(--ink)}
+.output-display{margin-top:.4rem;font-family:"Roboto Mono",monospace;font-size:.72rem;font-weight:700;color:var(--green)}
+@media(max-width:640px){.frame{padding:18px 16px 28px}.hero-title{font-size:1.8rem}.step-flow{gap:6px}.step-pill{min-height:36px;padding:2px 10px;font-size:.72rem}.bar-chart{height:140px}.bar-col{width:28px}.notes{grid-template-columns:1fr}.code-content{font-size:.7rem}}
+/* ===== PROBLEM STATEMENT ===== */
+.hero-desc{font-size:1.08rem!important;color:var(--ink)!important;font-weight:900!important;line-height:1.72!important;max-width:760px!important}
+.hero-desc code,.hero-desc .highlight{background:var(--yellow-soft,#fff8db);color:var(--ink);border-radius:7px;padding:1px 7px;font-weight:900}
+.hero-desc strong{color:var(--pink);font-weight:900}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge hard">Hard</span>
+      <span class="hero-tag">队列</span>
+      <span class="hero-tag">单调队列</span>
+      <span class="hero-tag">滑动窗口</span>
+    </div>
+    <h1 class="hero-title">#239 <span class="accent">滑动窗口最大值</span></h1>
+    <p class="hero-desc">给定整数数组 <code>nums</code> 和窗口大小 <code>k</code>，滑动窗口从左到右移动，返回每个窗口中的<strong>最大值</strong>组成的数组。</p>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">输入数组 + k</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill done">窗口滑动</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">每步求最大值</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">返回结果数组</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>窗口大小固定为 <code>k</code>，每次右移一位</li>
+        <li>共产生 <code>n - k + 1</code> 个窗口</li>
+        <li>需要<strong>高效</strong>获取每个窗口最大值 → 暴力 O(nk) 太慢</li>
+        <li>1 ≤ k ≤ nums.length，k 可能为 1 或 n</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>暴力法 O(nk)</strong>：每个窗口遍历找最大 → 太慢，淘汰</p>
+      <p><strong>单调队列 O(n)</strong>：维护一个<strong>单调递减的双端队列</strong>，队首始终是当前窗口最大值。新元素入队时，从队尾弹出所有比它小的元素（它们永远不可能成为最大值）：</p>
+      <div class="step-flow">
+        <span class="step-pill">新元素入队</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">弹出队尾更小元素</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">队首过期？弹出</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">队首即最大值</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">from</span> collections <span class="kw">import</span> deque</span>
+<span class="line"></span>
+<span class="line"><span class="kw">def</span> <span class="fn">maxSlidingWindow</span>(nums: List[<span class="kw">int</span>], k: <span class="kw">int</span>) -> List[<span class="kw">int</span>]:</span>
+<span class="line">    dq = deque()  <span class="cmt"># 存下标，单调递减</span></span>
+<span class="line">    res = []</span>
+<span class="line">    <span class="kw">for</span> i, num <span class="kw">in</span> <span class="fn">enumerate</span>(nums):</span>
+<span class="line hl">        <span class="kw">while</span> dq <span class="kw">and</span> nums[dq[-<span class="num">1</span>]] &lt; num:</span>
+<span class="line hl">            dq.pop()  <span class="cmt"># 弹出队尾更小元素</span></span>
+<span class="line hl">        dq.append(i)</span>
+<span class="line hl">        <span class="kw">if</span> dq[<span class="num">0</span>] &lt;= i - k:</span>
+<span class="line hl">            dq.popleft()  <span class="cmt"># 队首过期，弹出</span></span>
+<span class="line hl">        <span class="kw">if</span> i >= k - <span class="num">1</span>:</span>
+<span class="line hl">            res.append(nums[dq[<span class="num">0</span>]])  <span class="cmt"># 队首即最大值</span></span>
+<span class="line">    <span class="kw">return</span> res</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public</span> <span class="kw">int</span>[] <span class="fn">maxSlidingWindow</span>(<span class="kw">int</span>[] nums, <span class="kw">int</span> k) {</span>
+<span class="line">    Deque&lt;Integer&gt; dq = <span class="kw">new</span> ArrayDeque&lt;&gt;();</span>
+<span class="line">    <span class="kw">int</span>[] res = <span class="kw">new int</span>[nums.length - k + <span class="num">1</span>];</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; nums.length; i++) {</span>
+<span class="line hl">        <span class="kw">while</span> (!dq.isEmpty() && nums[dq.peekLast()] &lt; nums[i]) {</span>
+<span class="line hl">            dq.pollLast();</span>
+<span class="line hl">        }</span>
+<span class="line hl">        dq.offerLast(i);</span>
+<span class="line hl">        <span class="kw">if</span> (dq.peekFirst() &lt;= i - k) dq.pollFirst();</span>
+<span class="line hl">        <span class="kw">if</span> (i >= k - <span class="num">1</span>) res[i - k + <span class="num">1</span>] = nums[dq.peekFirst()];</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> res;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">vector</span>&lt;<span class="kw">int</span>&gt; <span class="fn">maxSlidingWindow</span>(<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&amp; nums, <span class="kw">int</span> k) {</span>
+<span class="line">    deque&lt;<span class="kw">int</span>&gt; dq;  <span class="cmt">// 存下标</span></span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">int</span>&gt; res;</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; nums.size(); i++) {</span>
+<span class="line hl">        <span class="kw">while</span> (!dq.empty() && nums[dq.back()] &lt; nums[i]) {</span>
+<span class="line hl">            dq.pop_back();</span>
+<span class="line hl">        }</span>
+<span class="line hl">        dq.push_back(i);</span>
+<span class="line hl">        <span class="kw">if</span> (dq.front() &lt;= i - k) dq.pop_front();</span>
+<span class="line hl">        <span class="kw">if</span> (i >= k - <span class="num">1</span>) res.push_back(nums[dq.front()]);</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> res;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">逐步演示 nums=[1,3,-1,-3,5,3,6,7], k=3</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 8</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="bar-chart" id="barChart"></div>
+        <div class="deque-display">
+          <span class="deque-label">deque(下标) =</span>
+          <div id="demoDeque" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+        </div>
+        <div class="deque-display">
+          <span class="deque-label" style="color:var(--green)">result =</span>
+          <div id="demoResult" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+        </div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>队列存下标而非值</strong>
+        <p>单调队列中存储的是<strong>下标</strong>，不是值。存下标才能判断队首是否过期（<code>dq[0] <= i - k</code>），存值无法判断。</p>
+      </article>
+      <article class="note">
+        <strong>弹出条件是 &lt; 而非 &lt;=</strong>
+        <p>队尾弹出条件是 <code>nums[dq[-1]] < num</code>，不是 <code><=</code>。相等时不弹出，保证相同值的元素按顺序留在队列中，不会遗漏。</p>
+      </article>
+      <article class="note">
+        <strong>先弹出再入队</strong>
+        <p>必须先从队尾弹出更小元素，再把当前下标入队。顺序反了会导致刚入队的元素被自己弹出。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>滑动窗口最小值</strong>：将单调递减队列改为单调递增队列，队首即最小值</li>
+        <li><strong>滑动窗口中位数</strong>：用两个堆（大顶堆+小顶堆）或有序集合维护，比单调队列复杂</li>
+        <li><strong>双端队列的其他应用</strong>：求柱状图最大矩形面积（#84），也是单调栈/队列的经典应用</li>
+        <li><strong>与优先队列的对比</strong>：堆也能 O(n log n) 解决，但删除过期元素需要懒删除；单调队列 O(n) 更优</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="03-无重复字符的最长子串.html"><span class="num">#03</span>无重复字符的最长子串</a>
+      <a class="related-chip" href="76-最小覆盖子串.html"><span class="num">#76</span>最小覆盖子串</a>
+      <a class="related-chip" href="438-找到字符串中所有字母异位词.html"><span class="num">#438</span>找到字符串中所有字母异位词</a>
+      <a class="related-chip" href="../05-普通数组/84-柱状图中最大的矩形.html"><span class="num">#84</span>柱状图中最大的矩形</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#239 滑动窗口最大值</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const NUMS=[1,3,-1,-3,5,3,6,7];
+const K=3;
+const STEPS=[
+  {i:-1,deque:[],result:[],msg:'初始状态：准备开始遍历'},
+  {i:0,deque:[0],result:[],msg:'i=0, num=1 → 队列空，入队 [0] → 窗口未满(i<2)，不输出'},
+  {i:1,deque:[1],result:[],msg:'i=1, num=3 → nums[0]=1 < 3，弹出队尾0 → 入队 [1] → 窗口未满'},
+  {i:2,deque:[1,2],result:[3],msg:'i=2, num=-1 → nums[1]=3 > -1，不弹出 → 入队 [1,2] → 窗口满！队首=1, max=nums[1]=3'},
+  {i:3,deque:[1,2,3],result:[3,3],msg:'i=3, num=-3 → nums[2]=-1 > -3，不弹出 → 入队 [1,2,3] → 队首1未过期 → max=nums[1]=3'},
+  {i:4,deque:[4],result:[3,3,5],msg:'i=4, num=5 → 依次弹出: 3(-3)<5, 2(-1)<5, 1(3)<5 → 入队 [4] → 队首=4, max=nums[4]=5'},
+  {i:5,deque:[4,5],result:[3,3,5,5],msg:'i=5, num=3 → nums[4]=5 > 3，不弹出 → 入队 [4,5] → 队首4未过期 → max=nums[4]=5'},
+  {i:6,deque:[6],result:[3,3,5,5,6],msg:'i=6, num=6 → 依次弹出: 5(3)<6, 4(5)<6 → 入队 [6] → 队首=6, max=nums[6]=6'},
+  {i:7,deque:[7],result:[3,3,5,5,6,7],msg:'i=7, num=7 → 弹出6(6)<7 → 入队 [7] → 队首=7, max=nums[7]=7 → 完成！'},
+];
+let step=-1,autoId=null;
+
+function chartMetrics(chartEl){
+  const pad=8;
+  const chartWidth=Math.max(260, chartEl.clientWidth || 720);
+  const usable=chartWidth-pad*2;
+  const gap=Math.max(3, Math.min(4, usable/(NUMS.length*18)));
+  const barW=Math.max(24, Math.min(36, (usable-(NUMS.length-1)*gap)/NUMS.length));
+  const chartH=Math.max(110, chartEl.clientHeight-24);
+  return {pad,gap,barW,chartH};
+}
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  const chartEl=document.getElementById('barChart');
+  chartEl.innerHTML='';
+  const metrics=chartMetrics(chartEl);
+  chartEl.style.gap=metrics.gap+'px';
+  const maxVal=Math.max(...NUMS);
+  const minVal=Math.min(...NUMS);
+  const range=maxVal-minVal||1;
+
+  // determine window range
+  let winStart=-1,winEnd=-1;
+  if(s&&s.i>=0){
+    if(s.i>=K-1){winStart=s.i-K+1;winEnd=s.i;}
+    else{winStart=0;winEnd=s.i;}
+  }
+
+  for(let i=0;i<NUMS.length;i++){
+    const col=document.createElement('div');
+    col.className='bar-col';
+    col.style.width=metrics.barW+'px';
+
+    // value label on top
+    const valLabel=document.createElement('div');
+    valLabel.className='bar-value';
+    valLabel.textContent=NUMS[i];
+    col.appendChild(valLabel);
+
+    // bar
+    const bar=document.createElement('div');
+    bar.className='bar';
+    const h=Math.max(4,((NUMS[i]-minVal)/range)*metrics.chartH);
+    bar.style.height=h+'px';
+
+    if(s&&s.i>=0){
+      // in window
+      if(i>=winStart&&i<=winEnd){
+        bar.classList.add('in-window');
+      }
+      // is max (front of deque)
+      if(s.deque.length>0&&i===s.deque[0]&&s.i>=K-1){
+        bar.classList.remove('in-window');
+        bar.classList.add('is-max');
+      }
+    }
+    col.appendChild(bar);
+
+    // index label
+    const idxLabel=document.createElement('div');
+    idxLabel.className='bar-label';
+    idxLabel.textContent=i;
+    col.appendChild(idxLabel);
+
+    chartEl.appendChild(col);
+  }
+
+  // window line
+  if(s&&s.i>=0&&winStart>=0){
+    const line=document.createElement('div');
+    line.className='window-line';
+    const colW=metrics.barW+metrics.gap;
+    line.style.left=(metrics.pad+winStart*colW)+'px';
+    line.style.width=((winEnd-winStart+1)*colW-metrics.gap)+'px';
+    chartEl.appendChild(line);
+  }
+
+  // deque
+  const dequeEl=document.getElementById('demoDeque');
+  dequeEl.innerHTML='';
+  if(s){
+    s.deque.forEach((idx,pi)=>{
+      const e=document.createElement('span');
+      e.className='deque-item';
+      e.textContent=idx+'('+NUMS[idx]+')';
+      if(pi===0&&s.i>=K-1) e.style.background='var(--green-soft)';
+      dequeEl.appendChild(e);
+    });
+  }
+
+  // result
+  const resEl=document.getElementById('demoResult');
+  resEl.innerHTML='';
+  if(s){
+    s.result.forEach(v=>{
+      const e=document.createElement('span');
+      e.className='deque-item';
+      e.style.background='var(--green-soft)';
+      e.style.borderColor='var(--green)';
+      e.textContent=v;
+      resEl.appendChild(e);
+    });
+  }
+
+  // info
+  const info=document.getElementById('demoInfo');
+  info.innerHTML=s?s.msg:'点击 ▶ 开始逐步演示';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1500);
+}
+render();
+</script>
+</body>
+</html>
