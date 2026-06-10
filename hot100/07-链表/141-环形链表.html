@@ -37,6 +37,13 @@ body{min-height:100vh;color:var(--ink);font-family:"Nunito","Noto Sans SC",sans-
 .section-num.c2{background:var(--green)}.section-num.c3{background:var(--pink)}.section-num.c4{background:var(--yellow);color:var(--ink)}.section-num.c5{background:var(--blue)}.section-num.c6{background:var(--pink)}.section-num.c7{background:var(--green)}.section-num.c8{background:var(--purple)}
 .section-title{font-family:"Baloo 2",sans-serif;font-size:1.2rem;font-weight:800}
 .section-line{flex:1;height:3px;background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px);border-radius:2px;opacity:.25}
+.examples{margin-bottom:2rem;animation:fadeUp .5s ease both}
+.example-card{padding:1rem 1.3rem;border:4px solid var(--ink);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow-sm);margin-bottom:.6rem}
+.example-label{font-family:"Baloo 2",sans-serif;font-size:.78rem;font-weight:800;color:var(--purple);margin-bottom:.5rem}
+.example-row{display:flex;gap:.5rem;margin:.3rem 0;font-family:"Roboto Mono",monospace;font-size:.78rem;line-height:1.6}
+.example-key{font-weight:700;color:var(--ink);min-width:60px;flex-shrink:0}
+.example-val{color:var(--muted);word-break:break-all}
+.example-explain{margin-top:.4rem;font-size:.76rem;color:var(--muted);line-height:1.5;font-weight:600}
 .card{padding:1.1rem 1.3rem;border:4px solid var(--ink);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow);margin-bottom:.8rem}
 .card p{margin:.4rem 0;font-size:.88rem;line-height:1.65}.card strong{color:var(--purple)}
 .card .highlight{display:inline;padding:1px 6px;border-radius:5px;background:var(--yellow-soft);font-weight:800}
@@ -123,6 +130,20 @@ body{min-height:100vh;color:var(--ink);font-family:"Nunito","Noto Sans SC",sans-
     </div>
     <h1 class="hero-title">#141 <span class="accent">环形链表</span></h1>
     <p class="hero-desc">给你一个链表的头节点 <code>head</code>，判断链表中是否有环。如果链表中有某个节点，可以通过连续跟踪 <code>next</code> 指针再次到达，则链表中存在环。</p>
+  </div>
+
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">head = [3,2,0,-4], pos = 1</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">true</span></div>
+      <div class="example-explain">链表中有一个环，尾部连接到第二个节点</div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">head = [1], pos = -1</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">false</span></div>
+    </div>
   </div>
 
   <div class="section">

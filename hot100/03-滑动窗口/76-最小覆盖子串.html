@@ -148,6 +148,13 @@ body{
   background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px);
   border-radius:2px;opacity:.25;
 }
+.examples{margin-bottom:2rem;animation:fadeUp .5s ease both}
+.example-card{padding:1rem 1.3rem;border:4px solid var(--ink);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow-sm);margin-bottom:.6rem}
+.example-label{font-family:"Baloo 2",sans-serif;font-size:.78rem;font-weight:800;color:var(--purple);margin-bottom:.5rem}
+.example-row{display:flex;gap:.5rem;margin:.3rem 0;font-family:"Roboto Mono",monospace;font-size:.78rem;line-height:1.6}
+.example-key{font-weight:700;color:var(--ink);min-width:60px;flex-shrink:0}
+.example-val{color:var(--muted);word-break:break-all}
+.example-explain{margin-top:.4rem;font-size:.76rem;color:var(--muted);line-height:1.5;font-weight:600}
 
 .card{
   padding:1.1rem 1.3rem;
@@ -461,6 +468,21 @@ body{
     </div>
     <h1 class="hero-title">#76 <span class="accent">最小覆盖子串</span></h1>
     <p class="hero-desc">给定字符串 <code>s</code> 和 <code>t</code>，返回 <code>s</code> 中涵盖 <code>t</code> 所有字符（含频率）的<strong>最小子串</strong>。如果不存在返回空串。</p>
+  </div>
+
+  <!-- ===== 输入输出示例 ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">s = "ADOBECODEBANC", t = "ABC"</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">"BANC"</span></div>
+      <div class="example-explain">最小覆盖子串 "BANC" 包含 t 中所有字符</div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">s = "a", t = "a"</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">"a"</span></div>
+    </div>
   </div>
 
   <!-- ===== 2. 题目拆解 ===== -->

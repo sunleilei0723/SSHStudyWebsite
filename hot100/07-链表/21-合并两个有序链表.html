@@ -37,6 +37,13 @@ body{min-height:100vh;color:var(--ink);font-family:"Nunito","Noto Sans SC",sans-
 .section-num.c2{background:var(--green)}.section-num.c3{background:var(--pink)}.section-num.c4{background:var(--yellow);color:var(--ink)}.section-num.c5{background:var(--blue)}.section-num.c6{background:var(--pink)}.section-num.c7{background:var(--green)}.section-num.c8{background:var(--purple)}
 .section-title{font-family:"Baloo 2",sans-serif;font-size:1.2rem;font-weight:800}
 .section-line{flex:1;height:3px;background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px);border-radius:2px;opacity:.25}
+.examples{margin-bottom:2rem;animation:fadeUp .5s ease both}
+.example-card{padding:1rem 1.3rem;border:4px solid var(--ink);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow-sm);margin-bottom:.6rem}
+.example-label{font-family:"Baloo 2",sans-serif;font-size:.78rem;font-weight:800;color:var(--purple);margin-bottom:.5rem}
+.example-row{display:flex;gap:.5rem;margin:.3rem 0;font-family:"Roboto Mono",monospace;font-size:.78rem;line-height:1.6}
+.example-key{font-weight:700;color:var(--ink);min-width:60px;flex-shrink:0}
+.example-val{color:var(--muted);word-break:break-all}
+.example-explain{margin-top:.4rem;font-size:.76rem;color:var(--muted);line-height:1.5;font-weight:600}
 .card{padding:1.1rem 1.3rem;border:4px solid var(--ink);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow);margin-bottom:.8rem}
 .card p{margin:.4rem 0;font-size:.88rem;line-height:1.65}.card strong{color:var(--purple)}
 .card .highlight{display:inline;padding:1px 6px;border-radius:5px;background:var(--yellow-soft);font-weight:800}
@@ -122,6 +129,14 @@ body{min-height:100vh;color:var(--ink);font-family:"Nunito","Noto Sans SC",sans-
     </div>
     <h1 class="hero-title">#21 <span class="accent">合并两个有序链表</span></h1>
     <p class="hero-desc">将两个升序链表合并为一个新的<strong>升序</strong>链表并返回。新链表是通过拼接给定的两个链表的所有节点组成的。</p>
+  </div>
+
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">l1 = [1,2,4], l2 = [1,3,4]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">[1,1,2,3,4,4]</span></div>
+    </div>
   </div>
 
   <div class="section">
