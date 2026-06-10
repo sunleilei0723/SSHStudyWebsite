@@ -171,6 +171,21 @@ body{min-height:100vh;color:var(--ink);font-family:"Nunito","Noto Sans SC",sans-
     <p class="hero-desc">给定一个整数数组 <code>nums</code>，将数组中的元素向右轮转 <code>k</code> 个位置，其中 <code>k</code> 是非负数。要求原地修改数组，O(1) 额外空间。</p>
   </div>
 
+  <!-- ===== 输入输出示例 ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [1,2,3,4,5,6,7], k = 3</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">[5,6,7,1,2,3,4]</span></div>
+      <div class="example-explain">向右轮转 1 步: [7,1,2,3,4,5,6] → 向右轮转 2 步: [6,7,1,2,3,4,5] → 向右轮转 3 步: [5,6,7,1,2,3,4]</div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [-1,-100,3,99], k = 2</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">[3,99,-1,-100]</span></div>
+    </div>
+  </div>
+
   <!-- ===== 2. 题目拆解 ===== -->
   <div class="section">
     <div class="section-head">
