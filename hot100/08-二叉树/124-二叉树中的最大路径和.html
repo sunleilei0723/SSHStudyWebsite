@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>124. 二叉树中的最大路径和 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--paper:#fffdf8;--ink:#151822;--muted:#5f6470;--purple:#7a4fe3;--purple-soft:#ede7fc;--green:#24c2a0;--green-soft:#e0f9f3;--pink:#e9578f;--pink-soft:#ffe2ec;--yellow:#ffd42a;--yellow-soft:#fff8db;--blue:#47c7f4;--blue-soft:#e3f6fd;--terminal:#111722;--line:rgba(21,24,34,.1);--shadow:6px 7px 0 var(--ink);--shadow-sm:3px 4px 0 var(--ink);--radius:14px}
+html{font-size:17px;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;color:var(--ink);font-family:"Nunito","Noto Sans SC",sans-serif;background:#d7d3c6;line-height:1.6}
+.scroll-bar{position:fixed;top:0;left:0;height:5px;z-index:999;background:var(--purple);border-radius:0 3px 3px 0;transition:width .15s}
+.frame{width:min(880px,100vw);margin:0 auto;position:relative;overflow:visible;background:radial-gradient(circle,rgba(21,24,34,.1) 1.4px,transparent 1.6px) 0 0/20px 20px,linear-gradient(var(--line) 1px,transparent 1px) 0 33%/100% 190px,linear-gradient(90deg,var(--line) 1px,transparent 1px) 50% 0/330px 100%,var(--paper);padding:28px 38px 40px}
+.site-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 1.2rem;padding:.72rem .9rem;border:4px solid var(--ink);border-radius:18px;background:#fff;box-shadow:var(--shadow-sm);position:sticky;top:10px;z-index:80}
+.site-nav .nav-brand{display:flex;align-items:center;gap:.5rem;text-decoration:none;font-family:"Baloo 2",sans-serif;font-size:1.02rem;font-weight:800;color:var(--purple)}
+.site-nav .nav-dot{width:14px;height:14px;border:3px solid var(--ink);border-radius:50%;background:var(--yellow);flex:0 0 auto}
+.site-nav .nav-links{display:flex;gap:8px;flex-wrap:wrap}
+.site-nav .nav-links a{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:2px 12px;border:3px solid var(--ink);border-radius:999px;background:#fff;color:var(--ink);text-decoration:none;font-size:.72rem;font-weight:900;line-height:1.1;box-shadow:2px 3px 0 var(--ink)}
+.site-nav .nav-links a.primary{background:var(--yellow)}
+.hero-desc{font-size:1.08rem!important;color:var(--ink)!important;font-weight:900!important;line-height:1.72!important;max-width:760px!important}
+.hero-desc code{background:var(--yellow-soft,#fff8db);color:var(--ink);border-radius:7px;padding:1px 7px;font-weight:900}
+.hero-desc strong{color:var(--pink);font-weight:900}
+.hero{position:relative;padding:1rem 0 1.5rem;margin-bottom:1.5rem;border-bottom:4px solid var(--ink)}
+.hero-top{display:flex;align-items:center;gap:12px;margin-bottom:.8rem;flex-wrap:wrap}
+.hero-badge{display:inline-grid;place-items:center;min-width:52px;min-height:36px;padding:2px 14px;border:4px solid var(--ink);border-radius:999px;background:var(--yellow);box-shadow:var(--shadow-sm);font-family:"Baloo 2",sans-serif;font-size:.85rem;font-weight:800}
+.hero-badge.easy{background:var(--green-soft);color:var(--green)}.hero-badge.medium{background:var(--yellow-soft);color:#b8860b}.hero-badge.hard{background:var(--pink-soft);color:var(--pink)}
+.hero-tag{display:inline-grid;place-items:center;min-height:32px;padding:2px 12px;border:3px solid rgba(21,24,34,.3);border-radius:999px;background:rgba(255,255,255,.7);font-size:.7rem;font-weight:800;letter-spacing:.02em}
+.hero-title{font-family:"Baloo 2",sans-serif;font-size:2.4rem;font-weight:800;line-height:1.15;letter-spacing:-.01em}
+.hero-title .accent{color:var(--purple)}
+.hero-desc{margin-top:.6rem;font-size:.88rem;color:var(--muted);line-height:1.65;max-width:600px}
+.section{margin-bottom:2rem;animation:fadeUp .5s ease both}
+.section:nth-child(2){animation-delay:.05s}.section:nth-child(3){animation-delay:.1s}.section:nth-child(4){animation-delay:.15s}.section:nth-child(5){animation-delay:.2s}.section:nth-child(6){animation-delay:.25s}.section:nth-child(7){animation-delay:.3s}.section:nth-child(8){animation-delay:.35s}
+.section-head{display:flex;align-items:center;gap:10px;margin-bottom:.8rem}
+.section-num{display:inline-grid;place-items:center;min-width:38px;min-height:38px;border:4px solid var(--ink);border-radius:10px;background:var(--purple);color:#fff;box-shadow:var(--shadow-sm);font-family:"Baloo 2",sans-serif;font-size:1rem;font-weight:800}
+.section-num.c2{background:var(--green)}.section-num.c3{background:var(--pink)}.section-num.c4{background:var(--yellow);color:var(--ink)}.section-num.c5{background:var(--blue)}.section-num.c6{background:var(--pink)}.section-num.c7{background:var(--green)}.section-num.c8{background:var(--purple)}
+.section-title{font-family:"Baloo 2",sans-serif;font-size:1.2rem;font-weight:800}
+.section-line{flex:1;height:3px;background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px);border-radius:2px;opacity:.25}
+.card{padding:1.1rem 1.3rem;border:4px solid var(--ink);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow);margin-bottom:.8rem}
+.card p{margin:.4rem 0;font-size:.88rem;line-height:1.65}.card strong{color:var(--purple)}
+.card code{font-family:"Roboto Mono",monospace;font-size:.82rem;background:#f1f1f1;border-radius:5px;padding:1px 5px}
+.card ul{padding-left:1.2rem;margin:.4rem 0}.card li{margin:.25rem 0;font-size:.85rem;line-height:1.55}
+.step-flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:.8rem 0}
+.step-pill{display:inline-grid;place-items:center;min-height:42px;padding:4px 16px;border:4px solid var(--ink);border-radius:999px;background:#fff;box-shadow:var(--shadow-sm);font-size:.82rem;font-weight:800;text-align:center}
+.step-pill.active{background:var(--purple);color:#fff}.step-pill.done{background:var(--green);color:#fff}
+.step-arrow{font-size:1.5rem;font-weight:900;color:var(--pink);line-height:1}
+.code-block{position:relative;border:4px solid var(--ink);border-radius:var(--radius);background:var(--terminal);box-shadow:var(--shadow);overflow:hidden;margin:.8rem 0}
+.code-tabs{display:flex;border-bottom:3px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04)}
+.code-tab{padding:.5rem 1.1rem;font-family:"Roboto Mono",monospace;font-size:.72rem;font-weight:700;color:rgba(255,255,255,.4);cursor:pointer;border:none;background:none;transition:all .15s}
+.code-tab:hover{color:rgba(255,255,255,.7)}
+.code-tab.active{color:#fff;background:rgba(255,255,255,.08);box-shadow:inset 0 -3px 0 var(--purple)}
+.code-content{padding:.9rem 1.1rem;font-family:"Roboto Mono",monospace;font-size:.78rem;line-height:1.75;color:#c9d1d9;overflow-x:auto}
+.code-content .kw{color:#ff7b72}.code-content .fn{color:#d2a8ff}.code-content .str{color:#a5d6ff}.code-content .num{color:#79c0ff}.code-content .cmt{color:#6e7681;font-style:italic}
+.code-content .line{display:block;padding:0 .4rem;border-radius:4px;transition:background .15s}
+.code-content .line:hover{background:rgba(255,255,255,.04)}
+.code-content .line.hl{background:rgba(122,79,227,.15);border-left:3px solid var(--purple);padding-left:calc(.4rem - 3px)}
+.code-panel{display:none}.code-panel.active{display:block}
+.copy-btn{position:absolute;top:.5rem;right:.6rem;padding:.25rem .6rem;border:2px solid rgba(255,255,255,.2);border-radius:6px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);font-size:.62rem;font-weight:700;cursor:pointer;transition:all .15s;font-family:"Roboto Mono",monospace}
+.copy-btn:hover{background:rgba(255,255,255,.12);color:#fff}
+.demo{border:4px solid var(--ink);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow);overflow:hidden;margin:.8rem 0}
+.demo-header{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;border-bottom:3px solid var(--ink);background:var(--yellow-soft)}
+.demo-header-title{font-family:"Baloo 2",sans-serif;font-size:.9rem;font-weight:800}
+.demo-controls{display:flex;align-items:center;gap:6px}
+.demo-btn{width:34px;height:34px;display:grid;place-items:center;border:3px solid var(--ink);border-radius:8px;background:#fff;box-shadow:2px 3px 0 var(--ink);font-size:.9rem;cursor:pointer;transition:all .1s;font-weight:900}
+.demo-btn:hover{transform:translate(-1px,-1px);box-shadow:3px 4px 0 var(--ink)}
+.demo-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+.demo-btn.auto-btn{width:auto;padding:0 10px;font-family:"Roboto Mono",monospace;font-size:.6rem;font-weight:700}
+.demo-btn.auto-btn.running{background:var(--pink);color:#fff}
+.demo-step-label{font-family:"Roboto Mono",monospace;font-size:.65rem;font-weight:700;color:var(--muted);min-width:60px;text-align:center}
+.demo-body{padding:1rem 1.2rem;min-height:180px}
+.demo-info{margin-top:.8rem;padding:.6rem .8rem;border:3px solid var(--ink);border-radius:10px;background:var(--blue-soft);font-size:.78rem;font-weight:700;line-height:1.5}
+.demo-info code{font-family:"Roboto Mono",monospace;background:#fff;border-radius:4px;padding:1px 4px;font-size:.72rem}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:.8rem 0}
+.note{padding:1rem;border:4px solid var(--ink);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow-sm)}
+.note strong{display:block;margin-bottom:.4rem;font-family:"Baloo 2",sans-serif;font-size:.95rem;font-weight:800}
+.note:nth-child(1) strong{color:var(--purple)}.note:nth-child(2) strong{color:var(--green)}.note:nth-child(3) strong{color:var(--pink)}
+.note p{margin:0;font-size:.78rem;color:var(--muted);line-height:1.5;font-weight:700}
+.note code{font-family:"Roboto Mono",monospace;background:#f1f1f1;border-radius:4px;padding:1px 4px;font-size:.72rem}
+.related{display:flex;gap:8px;flex-wrap:wrap}
+.related-chip{display:inline-grid;place-items:center;min-height:34px;padding:2px 14px;border:3px solid var(--ink);border-radius:999px;background:#fff;box-shadow:var(--shadow-sm);font-size:.72rem;font-weight:800;cursor:pointer;transition:all .15s;text-decoration:none;color:var(--ink)}
+.related-chip:hover{transform:translateY(-2px);box-shadow:4px 5px 0 var(--ink)}
+.related-chip .num{color:var(--purple);margin-right:4px}
+.footer{margin-top:2rem;padding-top:1rem;border-top:4px dashed rgba(21,24,34,.15);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
+.footer-text{font-size:.68rem;color:var(--muted);font-weight:700;letter-spacing:.02em}
+.footer-text span{color:var(--purple)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion){*,*::before,*::after{animation:none!important;transition:none!important}}
+@media(max-width:640px){.frame{padding:18px 16px 28px}.hero-title{font-size:1.8rem}.step-flow{gap:6px}.step-pill{min-height:36px;padding:2px 10px;font-size:.72rem}.notes{grid-template-columns:1fr}.code-content{font-size:.7rem}}
+</style>
+</head>
+<body>
+<div class="scroll-bar" id="scrollBar"></div>
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge hard">Hard</span>
+      <span class="hero-tag">树</span>
+      <span class="hero-tag">DFS</span>
+      <span class="hero-tag">动态规划</span>
+    </div>
+    <h1 class="hero-title">#124 <span class="accent">二叉树中的最大路径和</span></h1>
+    <p class="hero-desc">给定一个二叉树，返回其<strong>最大路径和</strong>。路径被定义为从任意节点出发，沿父→子连接到达任意节点的序列。同一个节点在路径中<strong>最多出现一次</strong>。</p>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">输入二叉树</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">DFS求单侧最大贡献</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">更新全局最大路径</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">返回max(left,right)+val</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>路径<strong>任意起点和终点</strong>，不一定经过根</li>
+        <li>路径只能走<strong>父→子方向</strong>，不能回头</li>
+        <li>节点值可能为<strong>负数</strong>，负贡献要舍弃</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>DFS后序遍历</strong>：对每个节点，计算"单侧最大贡献"（只能选左或右一侧），同时用"左+根+右"更新全局最大</p>
+      <div class="step-flow">
+        <span class="step-pill">递归求左贡献</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">递归求右贡献</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">ans=max(ans, left+right+val)</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">return max(left,right)+val</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">maxPathSum</span>(root):</span>
+<span class="line">    ans = <span class="fn">float</span>(<span class="str">'-inf'</span>)</span>
+<span class="line">    <span class="kw">def</span> <span class="fn">dfs</span>(node):</span>
+<span class="line">        <span class="kw">nonlocal</span> ans</span>
+<span class="line">        <span class="kw">if not</span> node: <span class="kw">return</span> <span class="num">0</span></span>
+<span class="line hl">        left = <span class="fn">max</span>(<span class="fn">dfs</span>(node.left), <span class="num">0</span>)   <span class="cmt"># 负贡献舍弃</span></span>
+<span class="line hl">        right = <span class="fn">max</span>(<span class="fn">dfs</span>(node.right), <span class="num">0</span>)  <span class="cmt"># 负贡献舍弃</span></span>
+<span class="line hl">        ans = <span class="fn">max</span>(ans, left + right + node.val)  <span class="cmt"># 更新全局</span></span>
+<span class="line hl">        <span class="kw">return</span> <span class="fn">max</span>(left, right) + node.val  <span class="cmt"># 单侧贡献</span></span>
+<span class="line">    <span class="fn">dfs</span>(root)</span>
+<span class="line">    <span class="kw">return</span> ans</span>
+        </div>
+      </div>
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">private int</span> ans = Integer.MIN_VALUE;</span>
+<span class="line"><span class="kw">public int</span> <span class="fn">maxPathSum</span>(TreeNode root) {</span>
+<span class="line">    <span class="fn">dfs</span>(root);</span>
+<span class="line">    <span class="kw">return</span> ans;</span>
+<span class="line">}</span>
+<span class="line"><span class="kw">private int</span> <span class="fn">dfs</span>(TreeNode node) {</span>
+<span class="line">    <span class="kw">if</span> (node == <span class="kw">null</span>) <span class="kw">return</span> <span class="num">0</span>;</span>
+<span class="line hl">    <span class="kw">int</span> left = Math.<span class="fn">max</span>(<span class="fn">dfs</span>(node.left), <span class="num">0</span>);</span>
+<span class="line hl">    <span class="kw">int</span> right = Math.<span class="fn">max</span>(<span class="fn">dfs</span>(node.right), <span class="num">0</span>);</span>
+<span class="line hl">    ans = Math.<span class="fn">max</span>(ans, left + right + node.val);</span>
+<span class="line hl">    <span class="kw">return</span> Math.<span class="fn">max</span>(left, right) + node.val;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">int</span> ans = INT_MIN;</span>
+<span class="line"><span class="kw">int</span> <span class="fn">maxPathSum</span>(TreeNode* root) {</span>
+<span class="line">    <span class="fn">dfs</span>(root);</span>
+<span class="line">    <span class="kw">return</span> ans;</span>
+<span class="line">}</span>
+<span class="line"><span class="kw">int</span> <span class="fn">dfs</span>(TreeNode* node) {</span>
+<span class="line">    <span class="kw">if</span> (!node) <span class="kw">return</span> <span class="num">0</span>;</span>
+<span class="line hl">    <span class="kw">int</span> left = <span class="fn">max</span>(<span class="fn">dfs</span>(node-&gt;left), <span class="num">0</span>);</span>
+<span class="line hl">    <span class="kw">int</span> right = <span class="fn">max</span>(<span class="fn">dfs</span>(node-&gt;right), <span class="num">0</span>);</span>
+<span class="line hl">    ans = <span class="fn">max</span>(ans, left + right + node-&gt;val);</span>
+<span class="line hl">    <span class="kw">return</span> <span class="fn">max</span>(left, right) + node-&gt;val;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">最大路径和逐步演示</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 5</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>负贡献舍弃</strong>
+        <p><code>max(dfs(left), 0)</code>：如果子树贡献为负，不如不走，取0。这是本题的关键！</p>
+      </article>
+      <article class="note">
+        <strong>返回值 vs 全局最大</strong>
+        <p>返回给父节点的是<strong>单侧贡献</strong>（只能选左或右），全局最大可能是<strong>双侧</strong>（左+根+右）。两者不同！</p>
+      </article>
+      <article class="note">
+        <strong>初始值</strong>
+        <p>ans 初始化为 <code>INT_MIN</code> 或 <code>-inf</code>，不能是0，因为所有节点可能都是负数。</p>
+      </article>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>与#543直径对比</strong>：思路完全一致！543求的是边数（深度之和），本题求的是节点值之和</li>
+        <li><strong>路径必须连续</strong>：路径中不能跳过节点，必须沿父子连接连续走</li>
+        <li><strong>输出路径</strong>：如果要输出具体路径，需要额外记录路径信息</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="543-二叉树的直径.html"><span class="num">#543</span>二叉树的直径</a>
+      <a class="related-chip" href="437-路径总和III.html"><span class="num">#437</span>路径总和III</a>
+      <a class="related-chip" href="104-二叉树的最大深度.html"><span class="num">#104</span>二叉树的最大深度</a>
+      <a class="related-chip" href="112-路径总和.html"><span class="num">#112</span>路径总和</a>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#124 二叉树中的最大路径和</span>
+  </div>
+</main>
+
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;document.getElementById('scrollBar').style.width=pct+'%'});
+function switchTab(lang){document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));event.target.classList.add('active');document.getElementById('panel-'+lang).classList.add('active')}
+function copyCode(){const active=document.querySelector('.code-panel.active .code-content');const text=active.innerText;navigator.clipboard.writeText(text).then(()=>{const btn=document.querySelector('.copy-btn');btn.textContent='COPIED!';setTimeout(()=>btn.textContent='COPY',1500)})}
+
+// Tree: [-10,9,20,null,null,15,7]
+const STEPS=[
+  {step:0,msg:'初始状态：树 [-10,9,20,null,null,15,7]，ans=-∞'},
+  {step:1,msg:'DFS到9（叶子）：left=0, right=0, 路径候选=9, 返回max(0,0)+9=9'},
+  {step:2,msg:'DFS到15（叶子）：left=0, right=0, 路径候选=15, 返回15'},
+  {step:3,msg:'DFS到7（叶子）：left=0, right=0, 路径候选=7, 返回7'},
+  {step:4,msg:'DFS到20：left=max(15,0)=15, right=max(7,0)=7, 路径候选=15+20+7=42, ans=max(-∞,42)=42, 返回max(15,7)+20=35'},
+  {step:5,msg:'DFS到-10：left=max(9,0)=9, right=max(35,0)=35, 路径候选=9+(-10)+35=34, ans=max(42,34)=42, 返回max(9,35)+(-10)=25 ✅ 最大路径和=42'},
+];
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  document.getElementById('demoInfo').innerHTML=s?s.msg:'点击 ▶ 开始逐步演示';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){const btn=document.getElementById('autoBtn');if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}btn.classList.add('running');btn.textContent='STOP';step=-1;render();autoId=setInterval(()=>{if(step<STEPS.length-1){step++;render()}else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}},1500)}
+render();
+</script>
+</body>
+</html>
