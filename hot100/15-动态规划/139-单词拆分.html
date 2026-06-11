@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>139. 单词拆分 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.str-vis{display:flex;gap:0;margin:1rem 0;flex-wrap:wrap}
+.str-col{display:flex;flex-direction:column;align-items:center}
+.str-cell{width:36px;height:40px;display:grid;place-items:center;border:3px solid var(--ink);border-radius:6px;font-family:"Roboto Mono",monospace;font-size:1rem;font-weight:700;background:#fff;box-shadow:2px 2px 0 var(--ink);transition:all .3s}
+.str-cell.matched{background:var(--green);color:#fff;box-shadow:3px 4px 0 var(--ink)}
+.str-cell.current{background:var(--purple);color:#fff;box-shadow:3px 4px 0 var(--ink)}
+.str-cell.unmatched{background:#f0f0f0;color:#ccc}
+.str-dp{font-family:"Roboto Mono",monospace;font-size:.55rem;font-weight:700;min-height:14px;margin-top:2px}
+.str-dp.true{color:var(--green)}
+.str-dp.false{color:var(--pink)}
+.str-idx{font-family:"Roboto Mono",monospace;font-size:.5rem;font-weight:700;color:var(--muted);margin-top:2px}
+.split-marker{font-family:"Baloo 2",sans-serif;font-size:.7rem;font-weight:800;color:var(--pink);min-height:16px;margin-top:2px}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">动态规划</span>
+      <span class="hero-tag">字符串</span>
+    </div>
+    <h1 class="hero-title">#139 <span class="accent">单词拆分</span></h1>
+    <p class="hero-desc">给你一个字符串 <code>s</code> 和一个字符串列表 <code>wordDict</code> 作为字典。请你判断是否可以利用字典中出现的单词拼接出 <code>s</code>。<strong>不要求字典中出现的单词全部都使用</strong>，并且字典中的单词可以<strong>重复使用</strong>。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">s = "leetcode", wordDict = ["leet","code"]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">true</span></div>
+      <div class="example-explain">"leetcode" 可以拆分为 "leet" + "code"</div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">s = "applepenapple", wordDict = ["apple","pen"]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">true</span></div>
+      <div class="example-explain">"applepenapple" = "apple" + "pen" + "apple"</div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 3</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">s = "catsandog", wordDict = ["cats","dog","sand","and","cat"]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">false</span></div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">字符串 s</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill done">字典 wordDict</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">能否拆分成字典词</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">返回 true/false</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>字典中的单词可以<strong>重复使用</strong></li>
+        <li>拆分后的单词必须<strong>完全覆盖</strong> s，不能有剩余字符</li>
+        <li>单词的<strong>顺序</strong>必须与 s 中的出现顺序一致</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>DP O(n²)</strong>：定义 <code>dp[i]</code> = s[0:i] 能否被字典拆分：</p>
+      <div class="step-flow">
+        <span class="step-pill">dp[0] = true</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">dp[i] = dp[j] && s[j:i]∈dict</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">遍历 j ∈ [0, i)</span>
+      </div>
+      <p>对每个位置 i，检查是否存在 j 使得 dp[j]=true 且 s[j:i] 在字典中。</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">wordBreak</span>(s, wordDict):</span>
+<span class="line">    word_set = <span class="fn">set</span>(wordDict)</span>
+<span class="line">    n = <span class="fn">len</span>(s)</span>
+<span class="line">    dp = [<span class="kw">False</span>] * (n + <span class="num">1</span>)</span>
+<span class="line">    dp[<span class="num">0</span>] = <span class="kw">True</span></span>
+<span class="line hl">    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, n + <span class="num">1</span>):</span>
+<span class="line hl">        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(i):</span>
+<span class="line hl">            <span class="kw">if</span> dp[j] <span class="kw">and</span> s[j:i] <span class="kw">in</span> word_set:</span>
+<span class="line hl">                dp[i] = <span class="kw">True</span></span>
+<span class="line hl">                <span class="kw">break</span></span>
+<span class="line">    <span class="kw">return</span> dp[n]</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public</span> <span class="kw">boolean</span> <span class="fn">wordBreak</span>(String s, List&lt;String&gt; wordDict) {</span>
+<span class="line">    Set&lt;String&gt; wordSet = <span class="kw">new</span> HashSet&lt;&gt;(wordDict);</span>
+<span class="line">    <span class="kw">boolean</span>[] dp = <span class="kw">new</span> <span class="kw">boolean</span>[s.length() + <span class="num">1</span>];</span>
+<span class="line">    dp[<span class="num">0</span>] = <span class="kw">true</span>;</span>
+<span class="line hl">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">1</span>; i &lt;= s.length(); i++) {</span>
+<span class="line hl">        <span class="kw">for</span> (<span class="kw">int</span> j = <span class="num">0</span>; j &lt; i; j++) {</span>
+<span class="line hl">            <span class="kw">if</span> (dp[j] && wordSet.contains(s.substring(j, i))) {</span>
+<span class="line hl">                dp[i] = <span class="kw">true</span>; <span class="kw">break</span>;</span>
+<span class="line">            }</span>
+<span class="line">        }</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> dp[s.length()];</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">bool</span> <span class="fn">wordBreak</span>(<span class="kw">string</span> s, <span class="kw">vector</span>&lt;<span class="kw">string</span>&gt;&amp; wordDict) {</span>
+<span class="line">    <span class="kw">unordered_set</span>&lt;<span class="kw">string</span>&gt; wordSet(wordDict.begin(), wordDict.end());</span>
+<span class="line">    <span class="kw">int</span> n = s.size();</span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">bool</span>&gt; dp(n + <span class="num">1</span>, <span class="kw">false</span>);</span>
+<span class="line">    dp[<span class="num">0</span>] = <span class="kw">true</span>;</span>
+<span class="line hl">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">1</span>; i &lt;= n; i++) {</span>
+<span class="line hl">        <span class="kw">for</span> (<span class="kw">int</span> j = <span class="num">0</span>; j &lt; i; j++) {</span>
+<span class="line hl">            <span class="kw">if</span> (dp[j] && wordSet.count(s.substr(j, i - j))) {</span>
+<span class="line hl">                dp[i] = <span class="kw">true</span>; <span class="kw">break</span>;</span>
+<span class="line">            }</span>
+<span class="line">        }</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> dp[n];</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">逐步演示</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 5</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="str-vis" id="strVis"></div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>dp[0] = true</strong>
+        <p>空字符串视为可拆分，这是递推的起点。不要忘记初始化。</p>
+      </article>
+      <article class="note">
+        <strong>用 set 加速查找</strong>
+        <p>将 wordDict 转为 HashSet，使 <code>s[j:i] in dict</code> 的查找为 O(1)。</p>
+      </article>
+      <article class="note">
+        <strong>找到就 break</strong>
+        <p>内层循环只要找到一个 j 使 dp[j]=true 且 s[j:i]∈dict，dp[i] 就为 true，可以立即 break。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>返回所有拆分方案</strong>：LeetCode 140，在 DP 基础上回溯构造所有方案</li>
+        <li><strong>Trie 优化</strong>：用前缀树代替 set，可以提前终止无效匹配</li>
+        <li><strong>BFS 解法</strong>：将位置作为节点，可达位置连边，BFS 判断终点可达性</li>
+        <li><strong>如果字典很大</strong>：可以只检查以 s[j] 开头的字典词，而非枚举所有 j</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="322-零钱兑换.html"><span class="num">#322</span>零钱兑换</a>
+      <a class="related-chip" href="279-完全平方数.html"><span class="num">#279</span>完全平方数</a>
+      <a class="related-chip" href="300-最长递增子序列.html"><span class="num">#300</span>最长递增子序列</a>
+      <a class="related-chip" href="416-分割等和子集.html"><span class="num">#416</span>分割等和子集</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#139 单词拆分</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const S='leetcode';
+const CHARS=[...'leetcode'];
+// dp: [T, F, F, F, T, F, F, F, T]
+// split points: 0, 4("leet"), 8("code")
+const STEPS=[
+  {dp:[true,false,false,false,false,false,false,false,false],splits:[],msg:'dp[0] = true（空串可拆分）'},
+  {dp:[true,false,false,false,true,false,false,false,false],splits:[{from:0,to:4,word:'leet'}],msg:'i=4: dp[0]=true 且 s[0:4]="leet"∈dict → dp[4] = <code>true</code>'},
+  {dp:[true,false,false,false,true,false,false,false,true],splits:[{from:0,to:4,word:'leet'},{from:4,to:8,word:'code'}],msg:'i=8: dp[4]=true 且 s[4:8]="code"∈dict → dp[8] = <code>true</code> ✓',done:true},
+];
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  const vis=document.getElementById('strVis');
+  vis.innerHTML='';
+  CHARS.forEach((ch,i)=>{
+    const col=document.createElement('div');
+    col.className='str-col';
+    const cell=document.createElement('div');
+    cell.className='str-cell';
+    cell.textContent=ch;
+    if(s){
+      const isMatched=s.splits.some(sp=>i>=sp.from&&i<sp.to);
+      if(isMatched) cell.classList.add('matched');
+    }
+    const dpEl=document.createElement('div');
+    dpEl.className='str-dp';
+    if(s&&s.dp[i+1]!==undefined){
+      dpEl.classList.add(s.dp[i+1]?'true':'false');
+      dpEl.textContent='dp['+(i+1)+']='+String(s.dp[i+1]);
+    }
+    const idx=document.createElement('div');
+    idx.className='str-idx';
+    idx.textContent=i;
+    const marker=document.createElement('div');
+    marker.className='split-marker';
+    if(s){
+      const sp=s.splits.find(sp=>sp.to===i+1);
+      if(sp) marker.textContent='✂'+sp.word;
+    }
+    col.appendChild(marker);
+    col.appendChild(cell);
+    col.appendChild(dpEl);
+    col.appendChild(idx);
+    vis.appendChild(col);
+  });
+  const info=document.getElementById('demoInfo');
+  info.innerHTML=s?s.msg:'点击 ▶ 开始逐步演示';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1500);
+}
+render();
+</script>
+</body>
+</html>

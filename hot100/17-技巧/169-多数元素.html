@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>169. 多数元素 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.demo-cell.vote-current{background:var(--purple);color:#fff;box-shadow:4px 5px 0 var(--ink);transform:translateY(-3px)}
+.demo-cell.vote-same{background:var(--green-soft);border-color:var(--green);color:var(--green)}
+.demo-cell.vote-diff{background:var(--pink-soft);border-color:var(--pink);color:var(--pink)}
+.vote-state{display:flex;gap:12px;margin-top:.6rem;flex-wrap:wrap;align-items:center}
+.vote-box{padding:4px 14px;border:3px solid var(--ink);border-radius:8px;font-family:"Roboto Mono",monospace;font-size:.78rem;font-weight:700;box-shadow:2px 3px 0 var(--ink)}
+.vote-box.candidate{background:var(--purple-soft);color:var(--purple)}
+.vote-box.count{background:var(--yellow-soft);color:#b8860b}
+.demo-body{min-height:180px}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge easy">Easy</span>
+      <span class="hero-tag">摩尔投票</span>
+      <span class="hero-tag">数组</span>
+    </div>
+    <h1 class="hero-title">#169 <span class="accent">多数元素</span></h1>
+    <p class="hero-desc">给定一个大小为 <code>n</code> 的数组 <code>nums</code>，找到其中的多数元素。多数元素是指在数组中出现次数<strong>大于</strong> <code>⌊n/2⌋</code> 的元素。你可以假设数组是非空的，且给定的数组总是存在多数元素。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [3,2,3]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">3</span></div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [2,2,1,1,1,2,2]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">2</span></div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">数组 nums</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill done">出现 > n/2 次</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">找多数元素</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">O(n) O(1)</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>多数元素出现次数<strong>严格大于</strong> <code>⌊n/2⌋</code></li>
+        <li><strong>保证存在</strong>多数元素</li>
+        <li>要求 O(n) 时间和 O(1) 空间</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>摩尔投票法：</strong>想象一个"投票"场景，多数元素票数过半：</p>
+      <div class="step-flow">
+        <span class="step-pill">候选者 = nums[0]</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">相同 → count++</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">不同 → count--</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">count=0 换人</span>
+      </div>
+      <p><strong>核心思想：</strong>多数元素的数量比其他所有元素加起来还多，所以"抵消"后剩下的一定是多数元素。</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">majorityElement</span>(nums):</span>
+<span class="line">    candidate = count = <span class="num">0</span></span>
+<span class="line">    <span class="kw">for</span> num <span class="kw">in</span> nums:</span>
+<span class="line hl">        <span class="kw">if</span> count == <span class="num">0</span>: candidate = num  <span class="cmt"># 换候选人</span></span>
+<span class="line hl">        count += (<span class="num">1</span> <span class="kw">if</span> num == candidate <span class="kw">else</span> -<span class="num">1</span>)</span>
+<span class="line">    <span class="kw">return</span> candidate</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public</span> <span class="kw">int</span> <span class="fn">majorityElement</span>(<span class="kw">int</span>[] nums) {</span>
+<span class="line">    <span class="kw">int</span> candidate = <span class="num">0</span>, count = <span class="num">0</span>;</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> num : nums) {</span>
+<span class="line hl">        <span class="kw">if</span> (count == <span class="num">0</span>) candidate = num;</span>
+<span class="line hl">        count += (num == candidate) ? <span class="num">1</span> : -<span class="num">1</span>;</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> candidate;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">int</span> <span class="fn">majorityElement</span>(<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&amp; nums) {</span>
+<span class="line">    <span class="kw">int</span> candidate = <span class="num">0</span>, count = <span class="num">0</span>;</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> num : nums) {</span>
+<span class="line hl">        <span class="kw">if</span> (count == <span class="num">0</span>) candidate = num;</span>
+<span class="line hl">        count += (num == candidate) ? <span class="num">1</span> : -<span class="num">1</span>;</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> candidate;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">摩尔投票过程</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 0</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="demo-arr" id="demoArr"></div>
+        <div class="vote-state">
+          <span class="demo-hash-label">状态：</span>
+          <span class="vote-box candidate" id="demoCand">candidate = ?</span>
+          <span class="vote-box count" id="demoCount">count = 0</span>
+        </div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始摩尔投票</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>count=0 时换人</strong>
+        <p>当 <code>count</code> 减到 0 时，当前候选人被"淘汰"，下一个元素成为新候选人。顺序不能反。</p>
+      </article>
+      <article class="note">
+        <strong>先判断 count==0</strong>
+        <p>必须先检查 <code>count==0</code> 再决定是否换人，然后再更新 count。如果先更新 count 再换人就错了。</p>
+      </article>
+      <article class="note">
+        <strong>保证存在多数元素</strong>
+        <p>题目保证多数元素存在，所以不需要二次验证。如果不保证，需要再遍历一次统计频次。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>出现 > n/3 的元素</strong>：用两个候选人，扩展摩尔投票法</li>
+        <li><strong>不保证存在</strong>：投票结束后再遍历一次验证频次是否真的过半</li>
+        <li><strong>排序法</strong>：排序后 <code>nums[n/2]</code> 一定是多数元素，但 O(n log n)</li>
+        <li><strong>哈希法</strong>：统计频次，O(n) 时间但 O(n) 空间</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="136-只出现一次的数字.html"><span class="num">#136</span>只出现一次的数字</a>
+      <a class="related-chip" href="75-颜色分类.html"><span class="num">#75</span>颜色分类</a>
+      <a class="related-chip" href="31-下一个排列.html"><span class="num">#31</span>下一个排列</a>
+      <a class="related-chip" href="287-寻找重复数.html"><span class="num">#287</span>寻找重复数</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#169 多数元素</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const NUMS=[3,2,3];
+const steps=[];
+let cand=0,cnt=0;
+steps.push({idx:-1,cand:0,cnt:0,msg:'初始 candidate=0, count=0'});
+for(let i=0;i<NUMS.length;i++){
+  if(cnt===0){cand=NUMS[i];cnt=1;steps.push({idx:i,cand,cnt,same:true,msg:`count=0 → 换候选人！candidate = ${cand}, count = 1`});}
+  else if(NUMS[i]===cand){cnt++;steps.push({idx:i,cand,cnt,same:true,msg:`nums[${i}]=${NUMS[i]} == candidate → count++ → count = ${cnt}`});}
+  else{cnt--;steps.push({idx:i,cand,cnt,same:false,msg:`nums[${i}]=${NUMS[i]} ≠ candidate → count-- → count = ${cnt}`});}
+}
+steps.push({idx:-2,cand,cnt,msg:`投票结束！多数元素 = <strong>${cand}</strong>`});
+
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:steps[step];
+  const arrEl=document.getElementById('demoArr');
+  arrEl.innerHTML='';
+  NUMS.forEach((_,idx)=>{
+    const d=document.createElement('div');d.className='demo-cell idx';d.textContent=idx;arrEl.appendChild(d);
+  });
+  arrEl.appendChild(document.createElement('br'));
+  NUMS.forEach((v,idx)=>{
+    const d=document.createElement('div');d.className='demo-cell';
+    if(s&&s.idx>=0){
+      if(idx===s.idx){
+        d.classList.add('vote-current');
+        if(s.same) d.classList.remove('vote-current'),d.classList.add('vote-same');
+        else d.classList.remove('vote-current'),d.classList.add('vote-diff');
+      }
+    }
+    d.textContent=v;arrEl.appendChild(d);
+  });
+  document.getElementById('demoCand').textContent='candidate = '+((s&&s.idx>=-1)?s.cand:'?');
+  document.getElementById('demoCount').textContent='count = '+(s?s.cnt:0);
+  document.getElementById('demoInfo').innerHTML=s?s.msg:'点击 ▶ 开始摩尔投票';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+steps.length;
+}
+
+function nextStep(){if(step<steps.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<steps.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1000);
+}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>45. 跳跃游戏II — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.jump-grid{display:flex;gap:6px;flex-wrap:wrap;margin:.5rem 0;align-items:flex-end}
+.jump-cell{width:56px;height:56px;display:grid;place-items:center;border:4px solid var(--ink);border-radius:10px;font-family:"Roboto Mono",monospace;font-size:1.1rem;font-weight:700;background:#fff;box-shadow:3px 4px 0 var(--ink);transition:all .3s;position:relative}
+.jump-cell .idx{position:absolute;top:-20px;font-size:.55rem;font-weight:700;color:var(--muted)}
+.jump-cell.in-range{background:var(--blue-soft);color:var(--blue);border-color:var(--blue)}
+.jump-cell.current{background:var(--purple);color:#fff;transform:translateY(-4px);box-shadow:5px 6px 0 var(--ink)}
+.jump-cell.landed{background:var(--green);color:#fff;border-color:var(--green)}
+.jump-cell.goal{background:var(--yellow);color:var(--ink);border-color:var(--yellow)}
+.jump-cell.best-next{background:var(--pink-soft);color:var(--pink);border-color:var(--pink);transform:translateY(-2px)}
+.jump-arrow{position:absolute;bottom:-30px;left:50%;transform:translateX(-50%);font-size:1.2rem;font-weight:900;color:var(--green);z-index:5}
+.step-counter{margin-top:.5rem;padding:.5rem .8rem;border:3px solid var(--ink);border-radius:10px;background:var(--yellow-soft);font-family:"Baloo 2",sans-serif;font-size:.95rem;font-weight:800;display:inline-block;box-shadow:2px 3px 0 var(--ink)}
+.range-info{margin-top:.4rem;font-family:"Roboto Mono",monospace;font-size:.72rem;font-weight:700;color:var(--muted)}
+.demo-body{min-height:240px}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">贪心</span>
+      <span class="hero-tag">数组</span>
+    </div>
+    <h1 class="hero-title">#45 <span class="accent">跳跃游戏II</span></h1>
+    <p class="hero-desc">给定一个长度为 <code>n</code> 的 0 索引整数数组 <code>nums</code>，初始位置在 <code>nums[0]</code>。每个元素表示从该位置可以跳跃的最大长度。你的目标是使用<strong>最少的跳跃次数</strong>到达数组的最后一个位置。假设总是可以到达最后一个位置。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [2,3,1,1,4]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">2</span></div>
+      <div class="example-explain">从下标 0 跳到下标 1（跳 1 步），再从下标 1 跳到下标 4（跳 3 步），共 2 步</div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [2,3,0,1,4]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">2</span></div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">起点 index=0</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill done">每格可跳 nums[i] 步</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">最少跳跃次数</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>题目保证<strong>一定可以到达终点</strong></li>
+        <li>求的是<strong>最少步数</strong>，不是能否到达</li>
+        <li>每个位置可以跳 <code>1</code> 到 <code>nums[i]</code> 步</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>贪心 + BFS 思想 O(n)</strong>：把跳跃过程看作逐层扩展，每一步选择能到达最远的位置：</p>
+      <div class="step-flow">
+        <span class="step-pill">当前层边界 end</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">遍历层内找最远</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">到达边界→步数+1</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">更新边界 end</span>
+      </div>
+      <p>维护 <code>end</code>（当前步数能到的最远边界）和 <code>maxReach</code>（下一步能到的最远位置）。当 <code>i == end</code> 时，步数 +1，<code>end = maxReach</code>。</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">jump</span>(nums):</span>
+<span class="line">    steps = end = max_reach = <span class="num">0</span></span>
+<span class="line">    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(nums) - <span class="num">1</span>):</span>
+<span class="line hl">        max_reach = <span class="fn">max</span>(max_reach, i + nums[i])  <span class="cmt"># 更新最远可达</span></span>
+<span class="line hl">        <span class="kw">if</span> i == end:  <span class="cmt"># 到达当前步的边界</span></span>
+<span class="line hl">            steps += <span class="num">1</span>  <span class="cmt"># 必须再跳一步</span></span>
+<span class="line hl">            end = max_reach  <span class="cmt"># 新边界</span></span>
+<span class="line">    <span class="kw">return</span> steps</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public int</span> <span class="fn">jump</span>(<span class="kw">int</span>[] nums) {</span>
+<span class="line">    <span class="kw">int</span> steps = <span class="num">0</span>, end = <span class="num">0</span>, maxReach = <span class="num">0</span>;</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; nums.length - <span class="num">1</span>; i++) {</span>
+<span class="line hl">        maxReach = Math.max(maxReach, i + nums[i]);</span>
+<span class="line hl">        <span class="kw">if</span> (i == end) {</span>
+<span class="line hl">            steps++;</span>
+<span class="line hl">            end = maxReach;</span>
+<span class="line">        }</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> steps;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">int</span> <span class="fn">jump</span>(<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&amp; nums) {</span>
+<span class="line">    <span class="kw">int</span> steps = <span class="num">0</span>, end = <span class="num">0</span>, maxReach = <span class="num">0</span>;</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; nums.size() - <span class="num">1</span>; i++) {</span>
+<span class="line hl">        maxReach = <span class="fn">max</span>(maxReach, i + nums[i]);</span>
+<span class="line hl">        <span class="kw">if</span> (i == end) {</span>
+<span class="line hl">            steps++;</span>
+<span class="line hl">            end = maxReach;</span>
+<span class="line">        }</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> steps;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">贪心跳跃路径</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 6</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="jump-grid" id="jumpGrid"></div>
+        <div class="step-counter" id="stepCounter">步数：0</div>
+        <div class="range-info" id="rangeInfo">当前边界 end=0，最远可达 maxReach=0</div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>遍历到 n-2</strong>
+        <p>循环只需到 <code>len(nums)-2</code>，因为到达最后一个位置时不需要再跳了。遍历到 n-1 会多算一步。</p>
+      </article>
+      <article class="note">
+        <strong>先更新 maxReach 再判断</strong>
+        <p>必须先 <code>maxReach = max(maxReach, i+nums[i])</code>，再判断 <code>i==end</code>。确保在边界处已收集完所有可达信息。</p>
+      </article>
+      <article class="note">
+        <strong>不是选最大 nums[i]</strong>
+        <p>贪心选的是 <code>i + nums[i]</code> 最大的位置，不是 <code>nums[i]</code> 最大的。位置靠后 + 跳跃力强 = 最远可达。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>BFS 视角</strong>：本题本质是 BFS 层序遍历，每一步是一层，步数就是层数</li>
+        <li><strong>DP 解法 O(n²)</strong>：dp[i] = 到达 i 的最少步数，但不如贪心高效</li>
+        <li><strong>跳跃游戏 I (#55)</strong>：只需判断能否到达，维护 maxReach 即可</li>
+        <li><strong>如果要求路径</strong>：在贪心基础上记录每步的起跳位置即可还原路径</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="55-跳跃游戏.html"><span class="num">#55</span>跳跃游戏</a>
+      <a class="related-chip" href="121-买卖股票的最佳时机.html"><span class="num">#121</span>买卖股票的最佳时机</a>
+      <a class="related-chip" href="763-划分字母区间.html"><span class="num">#763</span>划分字母区间</a>
+      <a class="related-chip" href="../02-双指针/11-盛最多水的容器.html"><span class="num">#11</span>盛最多水的容器</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#45 跳跃游戏II</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const NUMS=[2,3,1,1,4];
+const STEPS=[
+  {i:-1,end:0,maxR:0,steps:0,msg:'初始：end=0, maxReach=0, steps=0',landed:[],bestNext:-1},
+  {i:0,end:0,maxR:2,steps:1,landed:[0],bestNext:1,msg:'i=0: maxReach=max(0,0+2)=2, i==end → steps=1, end=2。下一步跳到1最优(1+3=4)'},
+  {i:1,end:2,maxR:4,steps:1,landed:[0],bestNext:1,msg:'i=1: maxReach=max(2,1+3)=4, i≠end → 继续扫描'},
+  {i:2,end:2,maxR:4,steps:2,landed:[0,1],bestNext:-1,msg:'i=2: maxReach=max(4,2+1)=4, i==end → steps=2, end=4。已覆盖终点！'},
+  {i:3,end:4,maxR:4,steps:2,landed:[0,1],bestNext:-1,msg:'i=3: maxReach=max(4,3+1)=4, i≠end → 继续扫描'},
+  {i:4,end:4,maxR:4,steps:2,landed:[0,1,4],bestNext:-1,msg:'到达终点！最少跳跃次数 = 2 ✅ 路径：0→1→4'},
+];
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  const grid=document.getElementById('jumpGrid');
+  grid.innerHTML='';
+  NUMS.forEach((v,idx)=>{
+    const d=document.createElement('div');
+    d.className='jump-cell';
+    const idxLabel=document.createElement('span');
+    idxLabel.className='idx';idxLabel.textContent=idx;d.appendChild(idxLabel);
+    d.appendChild(document.createTextNode(v));
+    if(s){
+      if(s.landed.includes(idx)) d.classList.add('landed');
+      else if(idx===s.i) d.classList.add('current');
+      else if(idx<=s.end&&idx<=s.i) d.classList.add('in-range');
+      if(idx===NUMS.length-1&&s.landed.includes(idx)) d.classList.add('goal');
+      if(s.bestNext===idx) d.classList.add('best-next');
+    }
+    grid.appendChild(d);
+  });
+  const counter=document.getElementById('stepCounter');
+  const rangeInfo=document.getElementById('rangeInfo');
+  if(s){
+    counter.textContent='步数：'+s.steps;
+    rangeInfo.textContent='当前边界 end='+s.end+'，最远可达 maxReach='+s.maxR;
+  }else{
+    counter.textContent='步数：0';
+    rangeInfo.textContent='当前边界 end=0，最远可达 maxReach=0';
+  }
+  const info=document.getElementById('demoInfo');
+  info.innerHTML=s?s.msg:'点击 ▶ 开始逐步演示';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1400);
+}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>198. 打家劫舍 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.house-vis{display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap;margin:1rem 0}
+.house-col{display:flex;flex-direction:column;align-items:center;gap:4px}
+.house-cell{width:56px;height:56px;display:grid;place-items:center;border:3px solid var(--ink);border-radius:8px;font-family:"Roboto Mono",monospace;font-size:1.1rem;font-weight:700;background:#fff;box-shadow:2px 3px 0 var(--ink);transition:all .3s}
+.house-cell.robbed{background:var(--green);color:#fff;box-shadow:4px 5px 0 var(--ink);transform:translateY(-3px)}
+.house-cell.skipped{background:#f0f0f0;color:#ccc;text-decoration:line-through}
+.house-cell.current{background:var(--purple);color:#fff;box-shadow:4px 5px 0 var(--ink);transform:translateY(-3px)}
+.house-dp{font-family:"Roboto Mono",monospace;font-size:.65rem;font-weight:700;color:var(--pink);min-height:16px}
+.house-idx{font-family:"Roboto Mono",monospace;font-size:.55rem;font-weight:700;color:var(--muted)}
+.house-label{font-family:"Roboto Mono",monospace;font-size:.55rem;font-weight:700;color:var(--green);min-height:14px}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">动态规划</span>
+      <span class="hero-tag">滚动变量</span>
+    </div>
+    <h1 class="hero-title">#198 <span class="accent">打家劫舍</span></h1>
+    <p class="hero-desc">你是一个专业的小偷，计划偷窃沿街的房屋。每间房内藏有一定的现金，影响你偷窃的唯一制约因素就是<strong>相邻的房屋装有相互连通的防盗系统</strong>，如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警。给定一个代表每间房屋存放金额的非负整数数组，计算你<strong>不触动警报装置</strong>的情况下，一夜之内能够偷窃到的最高金额。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [1,2,3,1]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">4</span></div>
+      <div class="example-explain">偷窃 1 号房屋（金额=1），然后偷窃 3 号房屋（金额=3），偷窃最高金额 = 1+3 = 4</div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [2,7,9,3,1]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">12</span></div>
+      <div class="example-explain">偷窃 1 号（2）+ 3 号（9）+ 5 号（1）= 12</div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">房屋金额数组</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill done">不能偷相邻</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">选/不选决策</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">最大金额</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>相邻房屋<strong>不能同时偷</strong> → 选 i 就不能选 i-1</li>
+        <li>每个房屋只有<strong>偷/不偷</strong>两种选择</li>
+        <li>求全局最大金额，不是方案数</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>DP O(n)</strong>：定义 <code>dp[i]</code> = 考虑前 i 个房屋能偷到的最大金额：</p>
+      <div class="step-flow">
+        <span class="step-pill">偷 i：dp[i] = dp[i-2] + nums[i]</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">不偷 i：dp[i] = dp[i-1]</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">取最大值</span>
+      </div>
+      <p>转移方程：<code>dp[i] = max(dp[i-1], dp[i-2] + nums[i])</code></p>
+      <p>空间优化：只需两个变量 <code>prev2</code> 和 <code>prev1</code> 滚动，空间 O(1)</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">rob</span>(nums):</span>
+<span class="line">    <span class="kw">if</span> <span class="kw">not</span> nums: <span class="kw">return</span> <span class="num">0</span></span>
+<span class="line">    <span class="kw">if</span> <span class="fn">len</span>(nums) == <span class="num">1</span>: <span class="kw">return</span> nums[<span class="num">0</span>]</span>
+<span class="line">    prev2, prev1 = <span class="num">0</span>, nums[<span class="num">0</span>]</span>
+<span class="line hl">    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="fn">len</span>(nums)):</span>
+<span class="line hl">        cur = <span class="fn">max</span>(prev1, prev2 + nums[i])</span>
+<span class="line hl">        prev2, prev1 = prev1, cur</span>
+<span class="line">    <span class="kw">return</span> prev1</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public</span> <span class="kw">int</span> <span class="fn">rob</span>(<span class="kw">int</span>[] nums) {</span>
+<span class="line">    <span class="kw">if</span> (nums.length == <span class="num">0</span>) <span class="kw">return</span> <span class="num">0</span>;</span>
+<span class="line">    <span class="kw">if</span> (nums.length == <span class="num">1</span>) <span class="kw">return</span> nums[<span class="num">0</span>];</span>
+<span class="line">    <span class="kw">int</span> prev2 = <span class="num">0</span>, prev1 = nums[<span class="num">0</span>];</span>
+<span class="line hl">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">1</span>; i &lt; nums.length; i++) {</span>
+<span class="line hl">        <span class="kw">int</span> cur = Math.max(prev1, prev2 + nums[i]);</span>
+<span class="line hl">        prev2 = prev1; prev1 = cur;</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> prev1;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">int</span> <span class="fn">rob</span>(<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&amp; nums) {</span>
+<span class="line">    <span class="kw">if</span> (nums.empty()) <span class="kw">return</span> <span class="num">0</span>;</span>
+<span class="line">    <span class="kw">if</span> (nums.size() == <span class="num">1</span>) <span class="kw">return</span> nums[<span class="num">0</span>];</span>
+<span class="line">    <span class="kw">int</span> prev2 = <span class="num">0</span>, prev1 = nums[<span class="num">0</span>];</span>
+<span class="line hl">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">1</span>; i &lt; nums.size(); i++) {</span>
+<span class="line hl">        <span class="kw">int</span> cur = <span class="fn">max</span>(prev1, prev2 + nums[i]);</span>
+<span class="line hl">        prev2 = prev1; prev1 = cur;</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> prev1;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">逐步演示</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 5</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="house-vis" id="houseVis"></div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>初始条件</strong>
+        <p><code>dp[0] = nums[0]</code>，<code>dp[1] = max(nums[0], nums[1])</code>。滚动变量时 <code>prev2=0, prev1=nums[0]</code>。</p>
+      </article>
+      <article class="note">
+        <strong>不是贪心</strong>
+        <p>不能每次选最大的，因为选了当前就不能选相邻的，需要 DP 全局考虑。</p>
+      </article>
+      <article class="note">
+        <strong>空数组</strong>
+        <p>nums 可能为空，需要特判 <code>if not nums: return 0</code>。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>环形房屋</strong>：LeetCode 213，首尾相连，分两种情况讨论（偷第一间/不偷第一间）</li>
+        <li><strong>树形房屋</strong>：LeetCode 337，房屋排列成树，需要树形 DP</li>
+        <li><strong>打印偷窃方案</strong>：用额外数组记录选择，回溯还原路径</li>
+        <li><strong>限制偷窃次数</strong>：最多偷 k 次，转化为 0-1 背包问题</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="70-爬楼梯.html"><span class="num">#70</span>爬楼梯</a>
+      <a class="related-chip" href="322-零钱兑换.html"><span class="num">#322</span>零钱兑换</a>
+      <a class="related-chip" href="416-分割等和子集.html"><span class="num">#416</span>分割等和子集</a>
+      <a class="related-chip" href="152-乘积最大子数组.html"><span class="num">#152</span>乘积最大子数组</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#198 打家劫舍</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const NUMS=[1,2,3,1];
+// dp: [1, 2, 4, 4], choice: [rob, skip, rob, skip]
+const STEPS=[
+  {dp:{},choice:{},msg:'初始状态：房屋金额 [1,2,3,1]'},
+  {dp:{0:1},choice:{0:'rob'},msg:'i=0：偷第0家，dp[0] = <code>1</code>'},
+  {dp:{0:1,1:2},choice:{0:'rob',1:'skip'},msg:'i=1：max(dp[0]=1, 0+2=2) = <code>2</code>，不偷第0家直接偷第1家更优'},
+  {dp:{0:1,1:2,2:4},choice:{0:'rob',1:'skip',2:'rob'},msg:'i=2：max(dp[1]=2, dp[0]+3=4) = <code>4</code>，偷第0家+第2家'},
+  {dp:{0:1,1:2,2:4,3:4},choice:{0:'rob',1:'skip',2:'rob',3:'skip'},msg:'i=3：max(dp[2]=4, dp[1]+1=3) = <code>4</code>，不偷第3家 ✓ 答案为4',done:true},
+];
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  const vis=document.getElementById('houseVis');
+  vis.innerHTML='';
+  NUMS.forEach((v,i)=>{
+    const col=document.createElement('div');
+    col.className='house-col';
+    const cell=document.createElement('div');
+    cell.className='house-cell';
+    cell.textContent=v;
+    if(s&&s.dp[i]!==undefined){
+      if(s.choice[i]==='rob') cell.classList.add('robbed');
+      else cell.classList.add('skipped');
+    }else if(s&&s.cur===i){
+      cell.classList.add('current');
+    }
+    const dpEl=document.createElement('div');
+    dpEl.className='house-dp';
+    if(s&&s.dp[i]!==undefined) dpEl.textContent='dp='+s.dp[i];
+    const label=document.createElement('div');
+    label.className='house-label';
+    if(s&&s.choice[i]) label.textContent=s.choice[i]==='rob'?'✓偷':'✗不偷';
+    const idx=document.createElement('div');
+    idx.className='house-idx';
+    idx.textContent='#'+i;
+    col.appendChild(label);
+    col.appendChild(cell);
+    col.appendChild(dpEl);
+    col.appendChild(idx);
+    vis.appendChild(col);
+  });
+  const info=document.getElementById('demoInfo');
+  info.innerHTML=s?s.msg:'点击 ▶ 开始逐步演示';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1500);
+}
+render();
+</script>
+</body>
+</html>

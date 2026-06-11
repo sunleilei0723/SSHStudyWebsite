@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>763. 划分字母区间 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.str-row{display:flex;gap:3px;flex-wrap:wrap;margin:.4rem 0;align-items:center}
+.str-cell{width:30px;height:34px;display:grid;place-items:center;border:3px solid var(--ink);border-radius:6px;font-family:"Roboto Mono",monospace;font-size:.82rem;font-weight:700;background:#fff;box-shadow:2px 2px 0 var(--ink);transition:all .3s;position:relative}
+.str-cell .sidx{position:absolute;top:-16px;font-size:.45rem;font-weight:700;color:var(--muted)}
+.str-cell.zone-a{background:var(--purple-soft);color:var(--purple);border-color:var(--purple)}
+.str-cell.zone-b{background:var(--green-soft);color:var(--green);border-color:var(--green)}
+.str-cell.zone-c{background:var(--yellow-soft);color:#b8860b;border-color:var(--yellow)}
+.str-cell.current{background:var(--pink);color:#fff;transform:translateY(-3px);box-shadow:3px 4px 0 var(--ink)}
+.str-cell.extend{border-color:var(--blue);box-shadow:2px 2px 0 var(--blue)}
+.last-map{margin:.5rem 0;display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.last-map-label{font-family:"Baloo 2",sans-serif;font-size:.78rem;font-weight:800;color:var(--pink);margin-right:4px}
+.last-map-entry{padding:2px 8px;border:3px solid var(--ink);border-radius:6px;font-family:"Roboto Mono",monospace;font-size:.65rem;font-weight:700;box-shadow:1px 2px 0 var(--ink);animation:popIn .3s ease}
+.last-map-entry.za{background:var(--purple-soft);color:var(--purple)}
+.last-map-entry.zb{background:var(--green-soft);color:var(--green)}
+.last-map-entry.zc{background:var(--yellow-soft);color:#b8860b}
+.partition-result{margin-top:.5rem;padding:.5rem .8rem;border:3px solid var(--ink);border-radius:10px;background:var(--green-soft);font-family:"Roboto Mono",monospace;font-size:.82rem;font-weight:700;display:inline-block;box-shadow:2px 3px 0 var(--ink)}
+.demo-body{min-height:260px}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">贪心</span>
+      <span class="hero-tag">字符串</span>
+      <span class="hero-tag">哈希</span>
+    </div>
+    <h1 class="hero-title">#763 <span class="accent">划分字母区间</span></h1>
+    <p class="hero-desc">给定一个字符串 <code>s</code> ，将该字符串划分为尽可能多的片段，使得同一字母最多出现在一个片段中。返回一个表示每个字符串片段长度的列表。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">s = "ababcbacadefegdehijhklij"</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">[9,7,8]</span></div>
+      <div class="example-explain">分区为 "ababcbaca"、"defegde"、"hijhklij"，每个字母只出现在一个分区中</div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">s = "eccbbbbdec"</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">[10]</span></div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">字符串</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill done">同一字母同一段</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">尽可能多分段</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">每段长度</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>同一字母<strong>只能出现在一个片段</strong>中</li>
+        <li>要<strong>尽可能多</strong>的分段（贪心：尽早切割）</li>
+        <li>返回的是每段的<strong>长度</strong>，不是子串</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>贪心法 O(n)</strong>：先统计每个字母的<strong>最后出现位置</strong>，再遍历扩展区间：</p>
+      <div class="step-flow">
+        <span class="step-pill">统计 last[char]</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">遍历扩展 end</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">i == end → 切割</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">记录长度</span>
+      </div>
+      <p>遍历时 <code>end = max(end, last[s[i]])</code>，当 <code>i == end</code> 时说明当前区间内所有字母的最后位置都已包含，可以切割。</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">partitionLabels</span>(s):</span>
+<span class="line">    last = {c: i <span class="kw">for</span> i, c <span class="kw">in</span> <span class="fn">enumerate</span>(s)}  <span class="cmt"># 每个字母最后位置</span></span>
+<span class="line">    result = []</span>
+<span class="line">    start = end = <span class="num">0</span></span>
+<span class="line">    <span class="kw">for</span> i, c <span class="kw">in</span> <span class="fn">enumerate</span>(s):</span>
+<span class="line hl">        end = <span class="fn">max</span>(end, last[c])  <span class="cmt"># 扩展区间右边界</span></span>
+<span class="line hl">        <span class="kw">if</span> i == end:  <span class="cmt"># 所有字母最后位置都已包含</span></span>
+<span class="line hl">            result.append(end - start + <span class="num">1</span>)  <span class="cmt"># 记录长度</span></span>
+<span class="line hl">            start = i + <span class="num">1</span>  <span class="cmt"># 新区间起点</span></span>
+<span class="line">    <span class="kw">return</span> result</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public</span> List&lt;Integer&gt; <span class="fn">partitionLabels</span>(String s) {</span>
+<span class="line">    <span class="kw">int</span>[] last = <span class="kw">new int</span>[<span class="num">26</span>];</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; s.length(); i++)</span>
+<span class="line">        last[s.charAt(i) - <span class="str">'a'</span>] = i;</span>
+<span class="line">    List&lt;Integer&gt; res = <span class="kw">new</span> ArrayList&lt;&gt;();</span>
+<span class="line">    <span class="kw">int</span> start = <span class="num">0</span>, end = <span class="num">0</span>;</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; s.length(); i++) {</span>
+<span class="line hl">        end = Math.max(end, last[s.charAt(i) - <span class="str">'a'</span>]);</span>
+<span class="line hl">        <span class="kw">if</span> (i == end) {</span>
+<span class="line hl">            res.add(end - start + <span class="num">1</span>);</span>
+<span class="line hl">            start = i + <span class="num">1</span>;</span>
+<span class="line">        }</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> res;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">vector</span>&lt;<span class="kw">int</span>&gt; <span class="fn">partitionLabels</span>(<span class="kw">string</span> s) {</span>
+<span class="line">    <span class="kw">int</span> last[<span class="num">26</span>] = {};</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; s.size(); i++)</span>
+<span class="line">        last[s[i] - <span class="str">'a'</span>] = i;</span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">int</span>&gt; res;</span>
+<span class="line">    <span class="kw">int</span> start = <span class="num">0</span>, end = <span class="num">0</span>;</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; s.size(); i++) {</span>
+<span class="line hl">        end = <span class="fn">max</span>(end, last[s[i] - <span class="str">'a'</span>]);</span>
+<span class="line hl">        <span class="kw">if</span> (i == end) {</span>
+<span class="line hl">            res.push_back(end - start + <span class="num">1</span>);</span>
+<span class="line hl">            start = i + <span class="num">1</span>;</span>
+<span class="line">        }</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> res;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">字母最远位置 + 区间划分</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 9</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="str-row" id="strRow"></div>
+        <div class="last-map" id="lastMap"></div>
+        <div id="partitionResult" class="partition-result" style="display:none"></div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>先统计再遍历</strong>
+        <p>必须先完整统计每个字母的<strong>最后出现位置</strong>，再遍历扩展区间。不能边遍历边统计，否则会遗漏后面的位置。</p>
+      </article>
+      <article class="note">
+        <strong>end 是动态扩展的</strong>
+        <p><code>end</code> 不是固定的，每遇到新字母都可能扩展。只有当 <code>i == end</code> 时才确定可以切割。</p>
+      </article>
+      <article class="note">
+        <strong>长度计算</strong>
+        <p>片段长度 = <code>end - start + 1</code>，别忘了 +1。切割后 <code>start = i + 1</code>，不是 <code>end + 1</code>。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>合并区间 (#56)</strong>：本题是合并区间的变体，先求每个字母的区间 [first, last]，再合并</li>
+        <li><strong>如果要求最少分段</strong>：那就是合并区间问题，把重叠区间合并</li>
+        <li><strong>如果字母范围更大</strong>：用 HashMap 代替数组，逻辑不变</li>
+        <li><strong>插入区间 (#57)</strong>：区间操作的另一经典题</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="55-跳跃游戏.html"><span class="num">#55</span>跳跃游戏</a>
+      <a class="related-chip" href="45-跳跃游戏II.html"><span class="num">#45</span>跳跃游戏II</a>
+      <a class="related-chip" href="121-买卖股票的最佳时机.html"><span class="num">#121</span>买卖股票的最佳时机</a>
+      <a class="related-chip" href="../05-普通数组/56-合并区间.html"><span class="num">#56</span>合并区间</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#763 划分字母区间</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const S='ababcbacadefegdehijhklij';
+// last positions
+const lastMap={};
+for(let i=0;i<S.length;i++) lastMap[S[i]]=i;
+// zone assignment: a-c for the 3 partitions
+const zones=new Array(S.length);
+const partitions=[[0,8],[9,15],[16,23]];
+partitions.forEach(([l,r],zi)=>{
+  for(let i=l;i<=r;i++) zones[i]=zi;
+});
+const zoneClass=['zone-a','zone-b','zone-c'];
+
+const STEPS=[
+  {i:-1,end:0,start:0,cut:[],msg:'初始：统计每个字母最后出现位置，start=0, end=0'},
+  {i:0,end:8,start:0,cut:[],msg:'i=0, s[0]="a", last["a"]=8 → end=max(0,8)=8，区间扩展到8'},
+  {i:8,end:8,start:0,cut:[9],msg:'i=8, s[8]="a", end不变=8, i==end → 切割！长度=8-0+1=9'},
+  {i:9,end:15,start:9,cut:[9],msg:'i=9, s[9]="d", last["d"]=15 → end=max(9,15)=15'},
+  {i:15,end:15,start:9,cut:[9,7],msg:'i=15, s[15]="e", end不变=15, i==end → 切割！长度=15-9+1=7'},
+  {i:16,end:23,start:16,cut:[9,7],msg:'i=16, s[16]="h", last["h"]=22 → end=max(16,22)=22'},
+  {i:22,end:23,start:16,cut:[9,7],msg:'i=22, s[22]="i", last["i"]=23 → end=max(22,23)=23'},
+  {i:23,end:23,start:16,cut:[9,7,8],msg:'i=23, s[23]="j", end不变=23, i==end → 切割！长度=23-16+1=8'},
+  {i:24,end:23,start:24,cut:[9,7,8],msg:'遍历结束 → 结果 [9, 7, 8] ✅'},
+];
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  const strRow=document.getElementById('strRow');
+  const lastMapEl=document.getElementById('lastMap');
+  const partResult=document.getElementById('partitionResult');
+  strRow.innerHTML='';
+
+  for(let i=0;i<S.length;i++){
+    const d=document.createElement('div');
+    d.className='str-cell';
+    const idxLabel=document.createElement('span');
+    idxLabel.className='sidx';idxLabel.textContent=i;d.appendChild(idxLabel);
+    d.appendChild(document.createTextNode(S[i]));
+    if(s){
+      if(i===s.i) d.classList.add('current');
+      else if(s.cut.length>0){
+        // determine which partition this index falls in
+        let cumLen=0;
+        let assigned=false;
+        for(let ci=0;ci<s.cut.length;ci++){
+          cumLen+=s.cut[ci];
+          if(i<cumLen){d.classList.add(zoneClass[ci]);assigned=true;break;}
+        }
+        if(!assigned&&i>=cumLen){
+          // in current scanning zone
+          d.classList.add('extend');
+        }
+      }else{
+        d.classList.add('extend');
+      }
+    }
+    strRow.appendChild(d);
+  }
+
+  // last map
+  lastMapEl.innerHTML='<span class="last-map-label">last =</span>';
+  const shown=new Set();
+  if(s){
+    // show letters seen so far
+    for(let i=0;i<=Math.min(s.i,S.length-1);i++){
+      if(!shown.has(S[i])){
+        shown.add(S[i]);
+        const e=document.createElement('span');
+        // determine zone
+        let zi=0;
+        for(const[zl,zr] of partitions){
+          if(S.indexOf(S[i])>=zl&&S.indexOf(S[i])<=zr) break;
+          zi++;
+        }
+        e.className='last-map-entry '+zoneClass[zi%3];
+        e.textContent=S[i]+'→'+lastMap[S[i]];
+        lastMapEl.appendChild(e);
+      }
+    }
+  }
+
+  // partition result
+  if(s&&s.cut.length>0){
+    partResult.style.display='inline-block';
+    partResult.textContent='已划分：['+s.cut.join(', ')+']';
+  }else{
+    partResult.style.display='none';
+  }
+
+  const info=document.getElementById('demoInfo');
+  info.innerHTML=s?s.msg:'点击 ▶ 开始逐步演示';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1500);
+}
+render();
+</script>
+</body>
+</html>

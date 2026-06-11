@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>面经详情 — AI 题库 & 面经</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --paper:#fffdf8;--ink:#151822;--muted:#5f6470;
+  --purple:#7a4fe3;--purple-soft:#ede7fc;
+  --green:#24c2a0;--green-soft:#e0f9f3;
+  --pink:#e9578f;--pink-soft:#ffe2ec;
+  --yellow:#ffd42a;--yellow-soft:#fff8db;
+  --blue:#47c7f4;--blue-soft:#e3f6fd;
+  --orange:#ff8c42;--orange-soft:#fff0e5;
+  --teal:#0d9488;--teal-soft:#ccfbf1;
+  --line:rgba(21,24,34,.1);
+  --shadow:6px 7px 0 var(--ink);--shadow-sm:3px 4px 0 var(--ink);--radius:14px;
+}
+html{font-size:17px;-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+body{min-height:100vh;color:var(--ink);font-family:"Nunito","Noto Sans SC",sans-serif;background:#d7d3c6;line-height:1.6}
+a{color:inherit;text-decoration:none}
+.scroll-bar{position:fixed;top:0;left:0;height:5px;z-index:999;background:var(--purple);border-radius:0 3px 3px 0;transition:width .15s}
+.frame{width:min(1080px,100vw);margin:0 auto;position:relative;overflow:visible;background:radial-gradient(circle,rgba(21,24,34,.1) 1.4px,transparent 1.6px) 0 0/20px 20px,linear-gradient(var(--line) 1px,transparent 1px) 0 35%/100% 190px,linear-gradient(90deg,var(--line) 1px,transparent 1px) 50% 0/330px 100%,var(--paper);padding:28px 38px 44px}
+
+/* ===== NAVIGATION ===== */
+.site-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 1.2rem;padding:.72rem .9rem;border:4px solid var(--ink);border-radius:18px;background:#fff;box-shadow:var(--shadow-sm);position:sticky;top:10px;z-index:80}
+.nav-brand{display:flex;align-items:center;gap:.5rem;font-family:"Baloo 2",sans-serif;font-size:1.02rem;font-weight:800;color:var(--purple);text-decoration:none}
+.nav-dot{width:14px;height:14px;border:3px solid var(--ink);border-radius:50%;background:var(--yellow);flex:0 0 auto}
+.nav-links{display:flex;gap:8px;flex-wrap:wrap}
+.nav-links a{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:2px 12px;border:3px solid var(--ink);border-radius:999px;background:#fff;color:var(--ink);text-decoration:none;font-size:.72rem;font-weight:900;line-height:1.1;box-shadow:2px 3px 0 var(--ink)}
+.nav-links a.primary{background:var(--yellow)}
+
+/* ===== HERO ===== */
+.hero{padding:1.5rem 0 1.8rem;margin-bottom:1.5rem;border-bottom:5px solid var(--ink);position:relative}
+.hero-eyebrow{display:inline-grid;place-items:center;min-height:36px;padding:2px 16px;border:4px solid var(--ink);border-radius:999px;background:var(--purple);color:#fff;box-shadow:var(--shadow-sm);font-family:"Baloo 2",sans-serif;font-size:.85rem;font-weight:800;margin-bottom:.8rem}
+.hero-title{font-family:"Baloo 2",sans-serif;font-size:2.4rem;font-weight:800;letter-spacing:-.02em;line-height:1.1;padding-right:60px}
+.hero-meta{display:flex;align-items:center;gap:8px;margin-top:.8rem;flex-wrap:wrap}
+.hero-line{width:140px;height:4px;border-radius:2px;background:var(--yellow);margin-top:1rem;box-shadow:3px 4px 0 var(--ink)}
+
+/* ===== DATE BADGE ===== */
+.date-badge{display:inline-block;padding:2px 12px;border:3px solid var(--ink);border-radius:8px;font-family:"Roboto Mono",monospace;font-size:.65rem;font-weight:700;color:#fff;box-shadow:2px 3px 0 var(--ink);margin-right:8px}
+
+/* ===== TAGS ===== */
+.hero-tag{font-size:.6rem;font-weight:800;padding:2px 8px;border-radius:6px;border:2px solid rgba(21,24,34,.12);background:rgba(255,255,255,.7);color:var(--muted)}
+
+/* ===== DELETE BUTTON ===== */
+.hero-del{position:absolute;top:1.5rem;right:0;width:36px;height:36px;display:grid;place-items:center;border:3px solid var(--ink);border-radius:10px;background:#fff;font-size:1rem;font-weight:900;cursor:pointer;color:var(--pink);transition:all .15s;box-shadow:var(--shadow-sm)}
+.hero-del:hover{background:var(--pink-soft);transform:translate(-1px,-1px);box-shadow:4px 5px 0 var(--ink)}
+
+/* ===== QUESTION BOX ===== */
+.q-box{border:4px solid var(--ink);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow-sm);margin-bottom:14px;overflow:hidden;transition:all .15s}
+.q-box:hover{box-shadow:5px 6px 0 var(--ink)}
+.q-box-header{display:flex;align-items:center;gap:10px;padding:.7rem 1rem;cursor:pointer;user-select:none}
+.q-box-num{font-family:"Roboto Mono",monospace;font-size:.72rem;font-weight:700;color:var(--muted);min-width:28px;flex-shrink:0}
+.q-box-title{flex:1;font-family:"Baloo 2",sans-serif;font-size:.92rem;font-weight:800;line-height:1.3}
+.q-box-toggle{width:28px;height:28px;display:grid;place-items:center;border:3px solid var(--ink);border-radius:8px;background:#fff;font-size:.8rem;font-weight:900;cursor:pointer;flex-shrink:0;transition:all .15s}
+.q-box-toggle.open{background:var(--purple);color:#fff}
+.q-box-body{display:none;padding:0 1rem 1rem}
+.q-box-body.open{display:block;animation:fadeUp .25s ease both}
+
+/* ===== INNER SUB-BOX ===== */
+.q-sub{border:3px solid rgba(21,24,34,.15);border-radius:10px;padding:.7rem .9rem;margin-bottom:.6rem;background:rgba(255,255,255,.6)}
+.q-sub-title{font-family:"Baloo 2",sans-serif;font-size:.78rem;font-weight:800;margin-bottom:.4rem;color:var(--purple)}
+.q-sub-title.answer{color:var(--green)}
+.q-sub-title.detail{color:var(--blue)}
+.q-sub-title.tip{color:var(--pink)}
+.q-sub p{font-size:.78rem;line-height:1.6;color:var(--muted);font-weight:700;margin:.2rem 0}
+.q-sub ul{padding-left:1.1rem;margin:.3rem 0}
+.q-sub li{font-size:.76rem;line-height:1.55;color:var(--muted);font-weight:700;margin:.15rem 0}
+.q-sub ol{padding-left:1.1rem;margin:.3rem 0}
+.q-sub ol li{font-size:.76rem;line-height:1.55;color:var(--muted);font-weight:700;margin:.15rem 0}
+.q-sub code{font-family:"Roboto Mono",monospace;font-size:.72rem;background:var(--yellow-soft);border-radius:4px;padding:1px 4px;font-weight:700}
+.q-sub strong{color:var(--ink);font-weight:900}
+.q-sub table{width:100%;border-collapse:collapse;margin:.4rem 0;font-size:.7rem}
+.q-sub th,.q-sub td{border:2px solid rgba(21,24,34,.12);padding:3px 6px;text-align:left;font-weight:700}
+.q-sub th{background:var(--purple-soft);color:var(--purple);font-size:.65rem}
+.q-sub pre{background:var(--ink);color:#c9d1d9;padding:.5rem .7rem;border-radius:8px;font-family:"Roboto Mono",monospace;font-size:.68rem;line-height:1.6;overflow-x:auto;margin:.4rem 0}
+
+/* ===== TOC ===== */
+.toc{position:fixed;top:80px;right:20px;width:200px;max-height:calc(100vh - 100px);overflow-y:auto;padding:.6rem;border:3px solid var(--ink);border-radius:14px;background:#fff;box-shadow:var(--shadow-sm);z-index:50;font-size:.62rem;font-weight:800;display:none}
+.toc.visible{display:block}
+.toc-title{font-family:"Baloo 2",sans-serif;font-size:.78rem;font-weight:800;margin-bottom:.4rem;color:var(--purple)}
+.toc-link{display:block;padding:3px 6px;border-radius:4px;color:var(--muted);cursor:pointer;transition:all .15s;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.toc-link:hover{background:var(--purple-soft);color:var(--purple)}
+.toc-link.active{background:var(--purple);color:#fff}
+
+/* ===== CONFIRM DIALOG ===== */
+.confirm-overlay{display:none;position:fixed;inset:0;background:rgba(21,24,34,.45);z-index:200;justify-content:center;align-items:center;padding:20px}
+.confirm-overlay.show{display:flex}
+.confirm-box{width:min(420px,100%);background:var(--paper);border:4px solid var(--ink);border-radius:18px;box-shadow:8px 10px 0 var(--ink);padding:1.5rem;animation:popIn .25s ease}
+.confirm-title{font-family:"Baloo 2",sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:.6rem;display:flex;align-items:center;gap:8px}
+.confirm-title .confirm-icon{display:inline-grid;place-items:center;width:36px;height:36px;border:3px solid var(--ink);border-radius:8px;background:var(--pink-soft);color:var(--pink);font-size:1rem;font-weight:900;box-shadow:2px 3px 0 var(--ink)}
+.confirm-msg{font-size:.85rem;color:var(--muted);font-weight:700;line-height:1.6;margin-bottom:1.2rem}
+.confirm-actions{display:flex;gap:10px;justify-content:flex-end}
+
+/* ===== BUTTONS ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:4px 18px;border:3px solid var(--ink);border-radius:999px;font-weight:900;cursor:pointer;font-family:inherit;font-size:.8rem;box-shadow:2px 3px 0 var(--ink);transition:all .15s}
+.btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+.btn-primary{background:var(--yellow);color:var(--ink)}
+.btn-secondary{background:#fff;color:var(--ink)}
+.btn-danger{background:var(--pink);color:#fff}
+
+/* ===== FOOTER ===== */
+.footer{margin-top:2.5rem;padding-top:1rem;border-top:4px dashed rgba(21,24,34,.15);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
+.footer-text{font-size:.68rem;color:var(--muted);font-weight:700;letter-spacing:.02em}
+.footer-text span{color:var(--purple)}
+
+/* ===== TOAST ===== */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);padding:.6rem 1.4rem;border:3px solid var(--ink);border-radius:999px;background:var(--green);color:#fff;font-weight:900;font-size:.82rem;box-shadow:var(--shadow-sm);z-index:300;transition:transform .3s ease;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.02)}100%{transform:scale(1);opacity:1}}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:860px){
+  .frame{padding:18px 16px 30px}
+  .hero-title{font-size:1.8rem}
+  .toc{display:none!important}
+  .q-box-header{flex-wrap:wrap}
+}
+@media(min-width:1200px){.toc.visible{display:block}}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../index.html">主页</a>
+      <a href="index.html">AI 题库 & 面经</a>
+      <a class="primary" href="#">面经详情</a>
+    </div>
+  </nav>
+
+  <div class="hero" id="hero">
+    <div class="hero-eyebrow">面经</div>
+    <h1 class="hero-title" id="heroTitle">加载中...</h1>
+    <div class="hero-meta" id="heroMeta"></div>
+    <div class="hero-line"></div>
+    <button class="hero-del" id="heroDel" title="删除面经">&times;</button>
+  </div>
+
+  <div style="display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap">
+    <a class="btn btn-secondary" href="index.html">← 返回面经列表</a>
+  </div>
+
+  <div id="questionsContainer"></div>
+
+  <div class="footer">
+    <span class="footer-text" id="footerLeft">AI 题库 & <span>面经</span></span>
+    <span class="footer-text">主页 → AI 题库 & 面经 → <span id="footerCat">面经详情</span></span>
+  </div>
+</main>
+
+<!-- TOC -->
+<div class="toc" id="toc">
+  <div class="toc-title">本篇题目</div>
+  <div id="tocLinks"></div>
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-title"><span class="confirm-icon">!</span>确认删除</div>
+    <div class="confirm-msg" id="confirmMsg">确定要删除这篇面经吗？删除后无法恢复。</div>
+    <div class="confirm-actions">
+      <button class="btn btn-secondary" id="confirmCancel">取消</button>
+      <button class="btn btn-danger" id="confirmOk">删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== INTERVIEW DATA ===== */
+const interviews = {
+  1: {
+    title: '腾讯 AI Agent 后端一面',
+    date: '2026-06-06',
+    dateColor: 'var(--purple)',
+    tags: ['腾讯', 'Agent', 'RAG', 'Tool', 'Prompt', '后端'],
+    items: [
+      { q: '自我介绍 + Agent 项目介绍', answer: '自我介绍遵循"背景+核心能力+项目亮点"三段式结构。Agent项目介绍遵循"场景→架构→职责→成果"的叙事逻辑，重点突出自己在项目中的技术决策和解决的问题。', detail: '<table><tr><th>维度</th><th>要点</th></tr><tr><td>场景</td><td>项目解决什么业务问题，用户是谁</td></tr><tr><td>架构</td><td>整体技术架构（Agent框架+LLM+工具+存储）</td></tr><tr><td>职责</td><td>你具体负责哪些模块，做了什么技术决策</td></tr><tr><td>成果</td><td>量化指标（准确率提升、延迟降低、用户量等）</td></tr></table>', tip: '自我介绍控制在2分钟以内，不要背简历。项目介绍聚焦"你做了什么"而非"团队做了什么"。用数字说话，避免"大幅提升"等模糊表述。' },
+      { q: 'Agent 项目上线与部署方式', answer: '区分"上线"与"Demo/POC"：面试官关注的是工程化能力。部署方式涵盖：模型服务部署、Agent服务部署、基础设施（K8s/Docker）。', detail: '<p><strong>典型Agent项目部署架构</strong>：</p><pre>用户请求 → Nginx/网关 → Agent服务(Pod×N) → LLM推理服务(vLLM/TGI)\n                                    ↓\n                              工具服务(微服务)\n                                    ↓\n                         向量库(Milvus/ES) + MySQL + Redis</pre><p>关键部署要点：①模型服务：vLLM/TGI部署，支持动态批处理和KV Cache复用 ②Agent服务：无状态设计，K8s Deployment + HPA弹性伸缩 ③可观测性：Prometheus + Grafana监控，LangFuse追踪Agent链路 ④发布策略：灰度发布（金丝雀），A/B测试对比新旧版本</p>', tip: '如果项目没上线，诚实说明，但补充"做了哪些上线前的准备"。部署方式要讲清楚每一层的选型理由。' },
+      { q: 'Agent 与普通 LLM 应用的区别', answer: 'Agent = LLM + 感知 + 推理 + 行动(工具) + 记忆。核心区别：自主决策能力和工具使用能力。普通LLM应用是"输入→输出"的单次映射；Agent是"感知→推理→行动→观察"的循环。', detail: '<table><tr><th>维度</th><th>普通LLM应用</th><th>Agent</th></tr><tr><td>交互模式</td><td>单轮问答</td><td>多轮自主决策循环</td></tr><tr><td>工具使用</td><td>无/固定流程</td><td>动态选择和调用工具</td></tr><tr><td>记忆</td><td>仅上下文窗口</td><td>短期+长期记忆</td></tr><tr><td>纠错</td><td>人工干预</td><td>自我反思和修正</td></tr></table>', tip: '先给精确定义，再用类比让面试官快速理解。强调"自主决策"和"工具使用"这两个核心差异。' },
+      { q: 'ReAct 模式的落地实践', answer: 'ReAct落地的核心是设计好Thought-Action-Observation的循环。需要解决：工具选择准确性、循环终止条件、死循环防护。', detail: '<p><strong>Prompt设计</strong>：</p><pre>你可以使用以下工具：\n{tool_descriptions}\n\n请按以下格式思考和行动：\nThought: 分析用户意图，决定下一步\nAction: 工具名称(参数)\nObservation: 工具返回结果\n... (可多轮)\nThought: 我已经获得足够信息\nFinal Answer: 最终回答</pre><p><strong>循环控制</strong>：最大迭代次数限制（如5轮），防止死循环；设置"无需工具"分支；超时机制。</p><p><strong>工程化改造</strong>：标准ReAct每步都调LLM成本高 → 可用小模型做Action选择，大模型做最终回答；加缓存；加日志。</p>', tip: '一定要结合自己项目讲，不要只讲理论。重点讲"落地时遇到什么问题，怎么解决的"。提到死循环防护和成本控制，体现工程意识。' },
+      { q: '知识库搭建与 RAG 流程', answer: '完整RAG流程：文档接入→解析→分块→Embedding→存入向量库→用户查询→Query改写→向量检索→重排→构造Prompt→LLM生成。', detail: '<p><strong>离线索引阶段</strong>：</p><table><tr><th>环节</th><th>说明</th><th>常用方案</th></tr><tr><td>文档接入</td><td>支持PDF/Word/HTML/表格/图片</td><td>MinIO/OSS + 格式检测</td></tr><tr><td>文档解析</td><td>提取文本、表格、图片</td><td>Unstructured/PyPDF/自研</td></tr><tr><td>文档分块</td><td>将长文档切分为Chunk</td><td>递归字符/语义/结构分块</td></tr><tr><td>Embedding</td><td>文本块转为向量</td><td>bge-large-zh / OpenAI</td></tr><tr><td>存入向量库</td><td>向量索引+原文存储</td><td>Milvus / ES + kNN</td></tr></table><p><strong>在线检索阶段</strong>：</p><table><tr><th>环节</th><th>说明</th><th>常用方案</th></tr><tr><td>Query预处理</td><td>改写/扩展/意图识别</td><td>LLM改写 / HyDE</td></tr><tr><td>多路召回</td><td>向量+关键词+知识图谱</td><td>Milvus ANN + ES bm25</td></tr><tr><td>重排</td><td>精排提升相关性</td><td>Cross-encoder / Cohere Rerank</td></tr><tr><td>LLM生成</td><td>基于检索上下文生成回答</td><td>GPT-4 / Claude / Qwen</td></tr></table>', tip: '画流程图式回答，让面试官清晰看到全链路。每个环节说出具体的技术选型和参数。' },
+      { q: '怎么控制模型幻觉？从 RAG、Prompt 和输出约束角度拆', answer: 'RAG角度：检索增强+引用溯源+检索质量保障。Prompt角度：约束输出格式+要求标注来源+设置"不知道"选项。输出约束角度：后处理校验+事实核查+置信度过滤。', detail: '<p><strong>第一层：RAG（预防）</strong></p><table><tr><th>方法</th><th>原理</th><th>效果</th></tr><tr><td>高质量检索</td><td>多路召回+重排，确保相关文档被召回</td><td>减少因信息缺失导致的幻觉</td></tr><tr><td>引用溯源</td><td>要求回答标注来源文档</td><td>可验证、可追溯</td></tr></table><p><strong>第二层：Prompt（引导）</strong></p><pre>你是一个严谨的知识问答助手。请遵循以下规则：\n1. 只根据提供的参考资料回答，不要使用外部知识\n2. 如果参考资料中没有相关信息，回答"根据现有资料，我无法回答"\n3. 在回答中用[来源X]标注每个事实的出处</pre><p><strong>第三层：输出约束（校验）</strong></p><table><tr><th>方法</th><th>适用场景</th></tr><tr><td>引用校验</td><td>所有RAG场景</td></tr><tr><td>事实核查LLM</td><td>高准确率要求场景</td></tr><tr><td>置信度评估</td><td>风险敏感场景</td></tr></table>', tip: '按面试官给的角度逐一回答，每个角度给2-3个具体方法。强调"预防>校验"，幻觉不可能完全消除，只能尽量降低。' },
+      { q: 'SSE 流式输出中断恢复', answer: 'SSE是单向推送协议，客户端断开后服务端需要感知并处理。保留已输出内容：服务端边输出边存储（Redis/DB）。恢复机制：客户端重连后，拉取已输出内容+续传剩余部分。', detail: '<p><strong>边输出边存储</strong>：</p><pre>async def stream_response(query, conversation_id):\n    full_response = ""\n    async for chunk in llm_stream(query):\n        full_response += chunk\n        yield f"data: {json.dumps({\'chunk\': chunk})}\\n\\n"\n        # 每收到chunk就存Redis\n        redis.setex(f"stream:{conversation_id}", 3600, ...)</pre><p><strong>恢复机制</strong>：客户端带着conversation_id重连 → 服务端从Redis读取已输出内容 → 判断状态（streaming/completed/interrupted）→ 返回已输出内容+续传后续chunk。</p>', tip: '先分析问题（三个子问题），再逐一给方案。强调"边输出边存储"是核心思路。' },
+      { q: 'Prompt 层面提升回答速度与稳定性', answer: '更快：缩短Prompt长度、减少Few-shot示例数、设置max_tokens限制、明确要求简洁回答。更稳定：结构化输出约束、Few-shot示例、CoT引导、温度调低。', detail: '<table><tr><th>技巧</th><th>原理</th><th>目标</th></tr><tr><td>缩短Prompt</td><td>减少输入token数</td><td>更快</td></tr><tr><td>减少Few-shot</td><td>每个示例都增加输入token</td><td>更快</td></tr><tr><td>结构化输出</td><td>约束输出格式，如JSON</td><td>更稳定</td></tr><tr><td>CoT引导</td><td>分步推理减少跳步错误</td><td>更稳定</td></tr><tr><td>降低温度</td><td>减少随机性</td><td>更稳定</td></tr></table>', tip: '分"更快"和"更稳定"两个维度回答。提到速度和稳定性的权衡：CoT提升稳定性但降低速度。' }
+    ]
+  },
+  2: {
+    title: '字节 AI Agent 2-2 三轮技术面',
+    date: '2026-06-07',
+    dateColor: 'var(--blue)',
+    tags: ['字节', '三轮面', 'Agent', 'RAG', '记忆', '微调'],
+    items: [
+      { q: 'AI Agent 岗位自我介绍', answer: '面试官您好，我是XX，有X年大模型应用开发经验，主要聚焦AI Agent和企业级RAG方向。过去主导/参与了X个Agent项目，负责从需求分析、框架设计到上线运维的全流程。', detail: '<p>加分细节：主动提1个核心工程难题（如：解决了Agent工具调用准确率低的问题，从60%提升到92%）</p>', tip: '自我介绍控制在2分钟以内，突出核心能力和项目亮点。' },
+      { q: 'Agent 项目介绍（STAR 法则）', answer: '标准回答框架：背景→职责→具体做了什么→量化结果。一定要说量化指标（错误率、耗时、覆盖率），主动讲最大挑战和解决方案。', detail: '<table><tr><th>步骤</th><th>要点</th></tr><tr><td>Situation</td><td>项目背景、业务场景</td></tr><tr><td>Task</td><td>你的职责和目标</td></tr><tr><td>Action</td><td>具体做了什么技术决策和实现</td></tr><tr><td>Result</td><td>量化成果（准确率提升X%，延迟降低Yms）</td></tr></table>', tip: '量化描述问题严重程度和解决效果。讲清楚"为什么选这个方案"而非"碰巧这个行"。' },
+      { q: '多模态大模型结构', answer: '主流多模态大模型采用"视觉编码器+投影层+大语言模型"的三段式结构。衔接方式：直接拼接/适配器/交叉注意力。', detail: '<table><tr><th>衔接方式</th><th>原理</th><th>优点</th><th>缺点</th></tr><tr><td>直接拼接</td><td>视觉特征直接拼接到文本嵌入序列</td><td>实现简单</td><td>灵活性差</td></tr><tr><td>适配器(Adapter)</td><td>在LLM每层插入轻量级适配器</td><td>训练成本低</td><td>效果中等</td></tr><tr><td>交叉注意力</td><td>引入交叉注意力层让文本关注视觉特征</td><td>效果最好</td><td>计算量最大</td></tr></table>', tip: '提到工程上的坑：不同分辨率图片导致视觉特征长度不一致，高分辨率图片的视觉token数量巨大。' },
+      { q: 'ReAct 消息格式设计', answer: 'ReAct消息流：user → assistant(Thought+Action) → tool → assistant(Observation+Next Thought)。tool response必须用tool角色传回，不能用assistant角色。', detail: '<p>为什么不能用assistant角色：模型会将assistant消息识别为自己的输出，导致逻辑混乱。OpenAI格式中，tool角色是专门为工具返回结果设计的。</p><pre>消息流示例：\n[{"role":"user","content":"帮我查北京天气"}]\n[{"role":"assistant","content":null,"tool_calls":[{"function":{"name":"weather","arguments":"{\\"city\\":\\"北京\\"}"}}]}]\n[{"role":"tool","content":"北京明天晴，25°C","tool_call_id":"..."}]\n[{"role":"assistant","content":"北京明天天气晴朗，气温25°C"}]</pre>', tip: '这是高频考点，一定要说清楚tool角色的作用和为什么不能用assistant替代。' },
+      { q: 'Agent 三阶段训练（CPT/SFT/RL）', answer: 'CPT(继续预训练)：用大量工具调用轨迹数据做继续预训练。SFT(监督微调)：用高质量轨迹数据做SFT，关键是要mask observation tokens。RL(强化学习)：用任务完成度作为奖励信号。', detail: '<p><strong>为什么SFT要mask observation</strong>：训练时如果让模型看到observation，模型会"偷懒"依赖observation做决策，但推理时模型必须先做决策再获得observation。所以训练时要mask掉observation的loss，确保模型学会的是<strong>基于当前状态做决策</strong>，而不是基于未来信息做决策。</p>', tip: '这是Agent训练的核心问题，mask observation是关键区分点。如果答不出来会减分。' },
+      { q: 'Redis 在 Agent 中的应用', answer: '会话缓存/工具调用结果缓存/向量缓存/分布式锁/限流熔断/任务队列。缓存策略：过期时间+穿透/击穿/雪崩防护。', detail: '<table><tr><th>应用场景</th><th>Redis数据结构</th><th>说明</th></tr><tr><td>会话缓存</td><td>String/Hash</td><td>存储对话上下文，设TTL自动过期</td></tr><tr><td>工具结果缓存</td><td>String</td><td>相同工具调用结果缓存，减少重复调用</td></tr><tr><td>分布式锁</td><td>String+Lua</td><td>防止工具并发重复执行</td></tr><tr><td>限流</td><td>Sorted Set</td><td>滑动窗口限流</td></tr><tr><td>任务队列</td><td>List/Stream</td><td>异步任务队列</td></tr></table>', tip: '提到缓存三大问题（穿透/击穿/雪崩）的解决方案，体现生产经验。' },
+      { q: 'Agent 记忆机制设计', answer: '瞬时记忆(上下文窗口)/短期记忆(Redis会话缓存)/长期记忆(向量库+MySQL+知识图谱)。完整流程：写入→检索→整合→遗忘。', detail: '<table><tr><th>记忆类型</th><th>存储</th><th>生命周期</th><th>用途</th></tr><tr><td>瞬时记忆</td><td>LLM上下文窗口</td><td>单次对话</td><td>当前对话上下文</td></tr><tr><td>短期记忆</td><td>Redis</td><td>会话级(小时~天)</td><td>近期对话摘要</td></tr><tr><td>长期记忆</td><td>向量库+MySQL</td><td>永久</td><td>用户偏好/历史知识</td></tr></table>', tip: '提到"遗忘机制"——不是所有信息都需要长期保存，要有选择地遗忘无关信息。' }
+    ]
+  },
+  3: {
+    title: '阿里企业知识库 RAG 二面 10 道真题',
+    date: '2026-06-07',
+    dateColor: 'var(--blue)',
+    tags: ['阿里', 'RAG', '企业级', '数据清洗', '权限'],
+    items: [
+      { q: '企业知识库的数据清洗怎么做？', answer: '绝对不能跳过直接做向量化，否则会污染后续的召回和生成环节。清洗步骤：基础脏数据处理→冗余数据去重→元数据提取与剥离→结构化预处理。', detail: '<p><strong>清洗步骤（按优先级）</strong>：</p><ol><li>基础脏数据处理：过滤乱码、空白文档、损坏文件、无效的页眉页脚和水印</li><li>冗余数据处理：去重（包括完全重复和语义高度重复的文档）</li><li>元数据提取与剥离：分离文档中的权限标签、版本号、作者、更新时间等元信息</li><li>结构化预处理：初步识别文档中的标题层级、列表、表格、代码块等特殊结构</li></ol><p><strong>加分细节</strong>：清洗阶段就要建立数据质量评分体系，对低质量文档标记并单独处理；保留原始文档的备份。</p>', tip: '强调"不能跳过"——这是很多团队的坑。数据质量决定RAG上限。' },
+      { q: '文档切片为什么不能只按固定长度？', answer: '固定长度切片会强行切断标题、表格、代码块和语义上下文，导致召回的chunk信息不完整。混合切片策略：优先按语义边界切分→超长段落二次切分+10%-20%重叠→保留层级标题和来源信息。', detail: '<table><tr><th>策略</th><th>原理</th><th>优点</th><th>缺点</th></tr><tr><td>固定大小</td><td>按字符/token数切割</td><td>简单、均匀</td><td>可能切断语义</td></tr><tr><td>递归字符</td><td>按分隔符层级递归切割</td><td>保持段落完整</td><td>需要调分隔符</td></tr><tr><td>语义分块</td><td>Embedding相似度变化点切割</td><td>语义完整</td><td>计算成本高</td></tr><tr><td>文档结构</td><td>按标题/章节/段落切割</td><td>结构清晰</td><td>依赖文档格式</td></tr></table>', tip: '提到"给每个chunk打上父级标题ID"，召回时可以连带父级上下文一起返回。' },
+      { q: '表格数据进入 RAG 怎么处理？', answer: '表格绝对不能当成普通文本粗暴切分，否则会破坏行列对应关系。标准处理：保留表头行列关系→将行转换成结构化自然语言描述→复杂大表格单独建立索引。', detail: '<p>小表格：整体作为一个chunk。大表格：按行分块，每块保留表头。关联文本：表格前后的说明文字一起存储。</p><p>加分细节：可以同时保留表格的原始JSON结构和文本描述；对表格中的关键数值单独做索引。</p>', tip: '提到合并单元格、跨页表格等实际踩过的坑。' },
+      { q: '权限过滤应该在召回前还是召回后？', answer: '最优方案是召回前过滤+召回后二次校验。召回前：利用metadata直接过滤无权限内容。召回后：再做一次权限校验，防止索引更新延迟或配置异常导致的权限泄露。', detail: '<p>权限系统要和企业现有OA/SSO系统打通，实现权限的统一管理和实时同步。对敏感文档可以做细粒度的chunk级权限控制。</p>', tip: '强调权限过滤是企业RAG的主链路功能，不是可选的。' },
+      { q: '如何处理知识库增量更新？', answer: '增量更新的核心是准确识别变更并保证索引一致性。识别三种变更类型：新增、修改、删除。对修改和删除的文档，必须先让旧的chunk向量失效或彻底删除，再添加新向量。', detail: '<p>工程要点：</p><ol><li>给文档、版本、每个chunk都分配唯一ID</li><li>更新时按影响范围重建索引</li><li>必须保留回滚能力</li><li>采用增量索引+全量索引结合：每日增量，每周全量</li><li>对高频更新的文档设置单独的更新队列</li></ol>', tip: '提到回滚能力——当更新出现问题时可以快速恢复到上一个稳定版本。' },
+      { q: '多路召回怎么融合排序？', answer: '多路召回不是简单拼接，核心是解决不同召回源分数不可直接比较的问题。步骤：分别召回→分数归一化→去重→权重调优→重排序模型精排。', detail: '<p>归一化方法：Min-Max归一化。权重调优：用验证集调优不同召回源的权重。可以根据问题类型动态调整权重（如事实类问题提高BM25权重，推理类问题提高向量召回权重）。</p>', tip: '保留每个结果的召回源标签，方便后续问题定位和召回策略优化。' },
+      { q: 'RAG 答案为什么要带引用？', answer: '答案带引用是解决RAG幻觉问题的核心手段。可验证性：用户可以追溯答案的原始来源。约束模型：强制模型只能基于检索到的证据回答，减少编造内容的概率。', detail: '<p>工程上需要把每个chunk的来源文档、页码、章节标题、更新时间传给生成侧，并在prompt中明确要求模型必须标注引用来源。</p><p>引用要标注在对应的句子后面，而不是统一放在答案末尾。对多个来源的信息要分别标注。</p>', tip: '引用溯源是RAG系统可靠性的基石，面试必考。' },
+      { q: '知识库问答如何做拒答？', answer: '拒答不是模型不想回答，而是当证据不足时必须拒绝编造答案，这是企业知识库可靠性的关键。设置多维度拒答阈值：重排序分数、证据覆盖度、问题与知识库的相关性。', detail: '<p>当置信度低于阈值时，输出"无法确认该问题的答案"，并引导用户补充信息或转人工客服。对明显超出知识库范围的问题直接拒答。</p><p>可以建立常见拒答问题库，对高频无答案问题直接返回标准回复。记录所有拒答问题，定期分析并补充到知识库中。</p>', tip: '拒答机制是企业级RAG和Demo级RAG的核心区别。' },
+      { q: '怎么评估 RAG 的线上效果？', answer: 'RAG效果评估必须建立离线+线上的闭环体系。离线评估：召回命中率、排序准确率、答案正确性、答案忠实度。线上评估：用户追问率、点赞率、人工纠错率。', detail: '<p>最重要的是建立失败问题回流机制：把用户不满意的问题、人工纠错的问题收集起来，形成持续迭代的评测集。</p><p>定期做人工抽样评估，校准自动评估指标的准确性。按问题类型分别评估，针对性优化。</p>', tip: '强调"闭环"——评估不是一次性的，是持续迭代的过程。' },
+      { q: '企业 RAG 最容易踩的坑是什么？', answer: '最容易踩的坑是把RAG当成检索+大模型的简单拼接。真实企业级项目中，数据治理、权限控制、版本管理、效果闭环、工程稳定性这些环节往往决定了项目的成败。', detail: '<p>企业级RAG的核心不是算法有多先进，而是数据治理的精细度和工程闭环的完整性。一个能上线的企业知识库，80%的工作都在数据处理、权限管理、效果评估和运营迭代上，而不是大模型和向量库的选型。</p>', tip: '这句话可以作为面试的总结性观点，体现你对企业级RAG的深刻理解。' }
+    ]
+  },
+  4: {
+    title: '字节 AI Agent 面试经验分享',
+    date: '2026-06-11',
+    dateColor: 'var(--teal)',
+    tags: ['字节', '面试结构', '备考', 'Checklist'],
+    items: [
+      { q: '面试结构认知', answer: '一面考基础（项目介绍+技术原理），二面考项目深度（架构设计+难点攻克），三面考系统设计视野（开放性问题+技术趋势）。', detail: '<table><tr><th>轮次</th><th>考察重点</th><th>常见问题</th></tr><tr><td>一面</td><td>基础扎实度</td><td>项目介绍、技术原理、基础概念</td></tr><tr><td>二面</td><td>项目深度</td><td>架构设计、难点攻克、技术决策</td></tr><tr><td>三面</td><td>系统设计视野</td><td>开放性问题、技术趋势、团队协作</td></tr></table>', tip: '每轮面试的准备策略不同，一面重广度，二面重深度，三面重高度。' },
+      { q: '备考 Checklist', answer: 'Agent原理、RAG全流程、Prompt工程、工具调用、记忆机制、后端基础各准备2-3个深挖方向。', detail: '<table><tr><th>模块</th><th>必准备问题</th><th>深挖方向</th></tr><tr><td>Agent原理</td><td>Agent vs LLM、ReAct模式</td><td>推理模式对比、工具调用链路</td></tr><tr><td>RAG</td><td>知识库搭建、召回重排</td><td>高并发优化、评估体系</td></tr><tr><td>Prompt</td><td>Prompt结构、CoT</td><td>结构化输出、Prompt安全</td></tr><tr><td>工具调用</td><td>Function Calling、MCP</td><td>参数提取、命中率优化</td></tr><tr><td>记忆</td><td>短期/长期记忆</td><td>上下文管理、遗忘机制</td></tr><tr><td>后端</td><td>MySQL、Redis</td><td>索引优化、缓存策略</td></tr></table>', tip: '核心建议：回答用STAR法则，量化成果，主动讲挑战和解决方案。' }
+    ]
+  },
+  5: {
+    title: '字节 Agent 一面',
+    date: '2026-06-11',
+    dateColor: 'var(--teal)',
+    tags: ['字节', 'STAR', 'Prompt', 'RAG', 'ReAct', 'MySQL'],
+    items: [
+      { q: '自我介绍 + 项目 STAR 法则深挖', answer: '自我介绍2分钟以内，项目用STAR法则：Situation→Task→Action→Result。量化成果，主动讲挑战。', detail: '<p>常见追问方向：①为什么选这个技术方案 ②遇到的最大挑战 ③如果重新做会怎么改进 ④项目上线后的效果数据</p>', tip: '提前准备3个深挖方向，面试官大概率追问。' },
+      { q: 'Prompt 工程：完整 Prompt 结构 + CoT + Few-shot', answer: '完整Prompt六要素：Role + Context + Task + Examples(Few-shot) + Output Format + Constraints。CoT引导分步推理，Few-shot提供标准答案模板。', detail: '<pre>[Role] 你是一个专业的电商客服Agent。\n[Context] 用户正在咨询退货问题...\n[Task] 请判断用户是否符合退货条件。\n[Examples] 用户：我想退货 → {"eligible":true,...}\n[Output Format] 请用JSON格式输出。\n[Constraints] 只根据提供的信息判断，不要编造。</pre>', tip: '不是每个Prompt都需要全部要素，根据场景取舍。' },
+      { q: 'RAG：知识库搭建 + 分块策略 + 召回重排 + Lost in the middle', answer: '知识库搭建分离线索引和在线检索两个阶段。分块用递归字符分块，chunk_size=512-1024，overlap 10-20%。召回用向量+BM25混合，重排用Cross-encoder。Lost in the middle用文档重排解决。', detail: '<p>Lost in the middle解决方案：按相关性排序后，把最相关的文档放在上下文的首尾位置，次相关的放中间。用"首尾交替插入"的排列策略。</p>', tip: '提到论文《Lost in the Middle》的出处，体现学术素养。' },
+      { q: 'ReAct 模式：消息格式 + 循环控制 + 死循环防护', answer: 'ReAct消息流：user→assistant(Thought+Action)→tool→assistant(Observation)。循环控制：最大迭代次数5轮，超时机制，"无需工具"分支。', detail: '<p>死循环防护三招：①最大迭代次数限制 ②单次工具调用超时 ③检测重复Action（连续3次相同Action则终止）</p>', tip: '提到成本控制：标准ReAct每步都调LLM成本高，可用小模型做Action选择。' }
+    ]
+  },
+  6: {
+    title: '小厂 AI 应用开发面经',
+    date: '2026-06-11',
+    dateColor: 'var(--teal)',
+    tags: ['小厂', 'Prompt', 'RAG', 'LangChain', 'MVP'],
+    items: [
+      { q: '小厂 vs 大厂面试差异', answer: '小厂重MVP速度和全栈能力，大厂重系统设计和深度。小厂面试更看重"能不能快速出活"，大厂更看重"能不能设计好系统"。', detail: '<table><tr><th>维度</th><th>小厂</th><th>大厂</th></tr><tr><td>考察重点</td><td>MVP速度、全栈能力</td><td>系统设计、技术深度</td></tr><tr><td>项目追问</td><td>怎么快速落地</td><td>为什么这样设计</td></tr><tr><td>算法要求</td><td>基础即可</td><td>中等偏难</td></tr><tr><td>薪资范围</td><td>15-25K</td><td>25-50K+</td></tr></table>', tip: '面试小厂时强调执行力和落地能力，面试大厂时强调设计思维和深度。' },
+      { q: 'RAG 落地实战', answer: '文档解析（Unstructured/PyPDF）、分块（递归字符，512 tokens）、向量库选型（Milvus vs ES）、召回策略（向量+BM25混合）、成本控制（Token优化、模型分层）。', detail: '<p>小厂RAG落地优先级：①先跑通端到端流程 ②优化检索质量 ③优化生成质量 ④做成本控制</p><p>常见坑：文档格式复杂解析失败、分块太粗导致召回不精确、向量库选型不当导致性能差。</p>', tip: '小厂面试更关注"你怎么解决实际问题的"，少讲理论多讲实践。' }
+    ]
+  },
+  7: {
+    title: '蚂蚁 AI 应用开发二面',
+    date: '2026-06-11',
+    dateColor: 'var(--teal)',
+    tags: ['蚂蚁', 'NL2SQL', 'RAG', '模型选型', '系统设计'],
+    items: [
+      { q: 'NL2SQL 实现方案', answer: 'Text-to-SQL + Schema链接 + 校验。核心流程：用户问题→Schema链接（识别表名/列名）→SQL生成→语法校验→执行→结果自然语言化。', detail: '<p>Schema链接是关键：用LLM识别问题中涉及的表和列，缩小SQL生成范围。校验层：语法检查+执行计划检查+结果抽样验证。</p>', tip: '提到NL2SQL的准确率提升方法：Few-shot示例+Schema描述优化+错误重试。' },
+      { q: 'RAG 三层架构', answer: '检索层（向量+关键词混合召回）、生成层（Prompt约束+引用溯源）、任务层（任务完成度评估+badcase回流）。', detail: '<p>三层架构的核心思想：每层独立评估和优化，不把所有问题混在一起。</p>', tip: '提到"评估闭环"是三层架构能持续优化的关键。' },
+      { q: '模型选型：GPT-4o vs Claude vs 开源模型', answer: '选型维度：能力、成本、延迟、数据安全、部署约束。GPT-4o综合最强但贵，Claude长上下文+代码强，开源模型可控但需自部署。', detail: '<table><tr><th>模型</th><th>优势</th><th>劣势</th><th>适用场景</th></tr><tr><td>GPT-4o</td><td>综合能力强</td><td>贵、数据出境</td><td>通用场景</td></tr><tr><td>Claude</td><td>长上下文、代码强</td><td>API限制</td><td>长文档、代码</td></tr><tr><td>Qwen-72B</td><td>中文强、可本地</td><td>需GPU</td><td>数据敏感场景</td></tr></table>', tip: '生产环境通常用分层策略：简单问题用小模型，复杂问题用大模型。' }
+    ]
+  },
+  8: {
+    title: 'Agent Skill 过多？4 招提升命中',
+    date: '2026-06-11',
+    dateColor: 'var(--teal)',
+    tags: ['Skill', '命中率', '路由', '向量检索'],
+    items: [
+      { q: '技能描述优化', answer: '写清楚适用场景、不适用场景、参数示例，让LLM能正确判断何时调用。差的描述："查询信息"。好的描述："查询指定类型的业务信息，适用场景：用户需要查询订单、物流、账户等业务数据时使用"。', detail: '<p>好的描述包含5要素：①功能说明 ②适用场景 ③不适用场景 ④参数说明 ⑤返回格式</p>', tip: '描述是给LLM看的，不是给人看的。要站在LLM的角度写描述。' },
+      { q: '技能分组路由', answer: '先做意图分类，只在相关分组中选择工具，缩小选择范围。例如：售后意图→只暴露退货/换货/维修工具，不暴露查询/推荐工具。', detail: '<p>路由架构：用户输入→意图分类(3-5个大类)→选择对应工具分组→LLM在小组内选择具体工具</p>', tip: '分组数量不宜过多，3-5个大类即可，否则意图分类本身成为瓶颈。' },
+      { q: '动态技能列表', answer: '根据上下文只传入当前可能用到的工具子集。例如：用户在退货流程中，只传入退货相关工具；用户在查询模式，只传入查询工具。', detail: '<p>实现方式：维护一个"上下文→可用工具"的映射表，根据对话状态动态调整工具列表。</p>', tip: '动态列表和分组路由可以结合使用：先分组路由，再在组内做动态筛选。' },
+      { q: '向量检索匹配', answer: '用embedding检索最相关的Top-K工具。将工具描述做embedding，用户query也做embedding，用向量相似度检索最相关的K个工具。', detail: '<p>核心思路：减少每次LLM需要判断的工具数量。从几十个工具中检索出最相关的5-10个，再让LLM选择。</p>', tip: '向量检索是终极方案，但需要维护工具embedding索引，有额外开销。' }
+    ]
+  },
+  9: {
+    title: 'RAG 评估四维度',
+    date: '2026-06-11',
+    dateColor: 'var(--teal)',
+    tags: ['RAG评估', '检索层', '生成层', '任务层', '系统层'],
+    items: [
+      { q: '检索层评估：看"找不找得到"', answer: '核心指标：召回率(Recall)、精确率(Precision)、MRR。召回率最重要——如果相关文档都没召回，后面全白费。', detail: '<table><tr><th>指标</th><th>含义</th><th>计算方式</th></tr><tr><td>Recall@K</td><td>TopK中包含相关文档的比例</td><td>相关文档∩TopK / 相关文档总数</td></tr><tr><td>Precision@K</td><td>TopK中相关文档的比例</td><td>相关文档∩TopK / K</td></tr><tr><td>MRR</td><td>第一个相关文档的排名倒数</td><td>1/第一个相关文档的排名</td></tr></table>', tip: '检索层评估是基础，检索质量直接决定生成质量。' },
+      { q: '生成层评估：看"答不答得对"', answer: '核心指标：忠实度（是否基于检索文档）、相关性、完整性。忠实度最重要——回答必须基于检索到的文档，不能编造。', detail: '<p>忠实度评估方法：用另一个LLM判断回答中的每个声明是否都能在检索文档中找到出处。</p>', tip: '面试官问RAG评估千万别只说准确率！要从四个维度拆解。' },
+      { q: '任务层评估：看"任务完没完成"', answer: '核心指标：任务成功率、步骤效率。不仅看最终结果，还要看Agent走没走最优路径。', detail: '<p>步骤效率 = 最少步骤数 / 实际步骤数。如果Agent用了10步完成一个5步就能完成的任务，效率只有50%。</p>', tip: '任务层评估是Agent特有的，普通RAG不需要这一层。' },
+      { q: '系统层评估：看"跑不跑得动"', answer: '核心指标：延迟(P50/P99)、吞吐量(QPS)、成本(单次请求费用)。生产级RAG必须关注系统层指标。', detail: '<table><tr><th>指标</th><th>目标值</th><th>说明</th></tr><tr><td>P50延迟</td><td>&lt;3s</td><td>50%请求的响应时间</td></tr><tr><td>P99延迟</td><td>&lt;10s</td><td>99%请求的响应时间</td></tr><tr><td>QPS</td><td>根据业务定</td><td>每秒处理请求数</td></tr><tr><td>单次成本</td><td>&lt;0.1元</td><td>Token费用+推理费用</td></tr></table>', tip: '系统层指标和业务指标要一起看，不能只优化一个。' }
+    ]
+  },
+  10: {
+    title: 'RAG 高并发优化 — 800 QPS',
+    date: '2026-06-11',
+    dateColor: 'var(--teal)',
+    tags: ['高并发', '800QPS', '缓存', '限流', '分层路由'],
+    items: [
+      { q: '定位瓶颈：800QPS 时到底哪里崩了？', answer: 'LLM推理是最大瓶颈（GPU利用率>90%），检索层次之。先定位瓶颈再优化，不要盲目优化。', detail: '<p>瓶颈定位方法：①监控各环节P99延迟 ②看GPU/内存/IO利用率 ③压测逐步提高QPS，观察哪个环节先崩</p>', tip: '先定位再优化，这是系统设计的基本原则。' },
+      { q: 'LLM 层优化：分层路由 + 量化 + Continuous Batching', answer: '分层路由：简单问题→小模型，复杂问题→大模型。量化：AWQ/GPTQ INT4，2-4x加速。Continuous Batching：动态批处理，提高GPU利用率。', detail: '<p>分层路由效果：70%的简单问题用小模型（延迟&lt;1s，成本降80%），30%的复杂问题用大模型。整体QPS提升3倍，成本降60%。</p>', tip: '量化是性价比最高的优化，2行代码就能实现2x加速。' },
+      { q: '三级缓存体系', answer: '语义缓存（相似Query直接返回）→精确缓存（相同Query命中）→结果缓存（热点文档预计算）。命中率30%时，QPS直接提升30%。', detail: '<table><tr><th>缓存层</th><th>命中条件</th><th>延迟</th><th>命中率</th></tr><tr><td>语义缓存</td><td>Query embedding相似度&gt;0.95</td><td>&lt;50ms</td><td>10-15%</td></tr><tr><td>精确缓存</td><td>Query完全相同</td><td>&lt;10ms</td><td>15-20%</td></tr><tr><td>结果缓存</td><td>热点文档预计算</td><td>&lt;5ms</td><td>5-10%</td></tr></table>', tip: '缓存是投入产出比最高的优化手段。' },
+      { q: '限流熔断降级', answer: '令牌桶限流+熔断降级+队列缓冲。限流保护系统不崩，熔断快速失败避免级联故障，降级保证核心功能可用。', detail: '<p>限流：令牌桶算法，800QPS时限制在600QPS，超出的排队等待。熔断：错误率&gt;10%时自动熔断，5分钟后半开试探。降级：关闭非核心功能（如引用溯源、事实核查），只保留基础问答。</p>', tip: '限流熔断降级是生产系统的标配，面试必考。' }
+    ]
+  },
+  11: {
+    title: 'Agent 工程师面试题资源索引',
+    date: '2026-06-11',
+    dateColor: 'var(--teal)',
+    tags: ['资源索引', '复习路线', '9大模块'],
+    items: [
+      { q: '9 大知识模块复习路线', answer: '按顺序系统复习：①LLM基础 → ②Prompt工程 → ③RAG → ④Agent原理 → ⑤Agent框架 → ⑥Tool&MCP → ⑦Agent记忆 → ⑧系统设计 → ⑨评估', detail: '<table><tr><th>模块</th><th>核心知识点</th><th>必考题数</th></tr><tr><td>LLM基础</td><td>Token/Embedding/幻觉</td><td>3-5题</td></tr><tr><td>Prompt工程</td><td>CoT/Few-shot/结构化输出</td><td>2-3题</td></tr><tr><td>RAG</td><td>全流程/召回优化/评估</td><td>5-8题</td></tr><tr><td>Agent原理</td><td>ReAct/Plan-Execute/工具调用</td><td>3-5题</td></tr><tr><td>Agent框架</td><td>LangChain/LangGraph/CrewAI</td><td>1-2题</td></tr><tr><td>Tool&MCP</td><td>Function Calling/MCP协议</td><td>2-3题</td></tr><tr><td>Agent记忆</td><td>短期/长期/上下文管理</td><td>1-2题</td></tr><tr><td>系统设计</td><td>部署/多租户/可观测性</td><td>2-3题</td></tr><tr><td>评估</td><td>RAGAS/性能量化</td><td>1-2题</td></tr></table>', tip: '建议按顺序复习，前面模块是后面模块的基础。RAG和Agent是面试重点，投入最多时间。' }
+    ]
+  },
+  12: {
+    title: 'AI Agent 性能评估面试题',
+    date: '2026-06-07',
+    dateColor: 'var(--blue)',
+    tags: ['Agent评估', '性能量化', '轨迹评估', 'RAGAS'],
+    items: [
+      { q: '任务级评估：Agent 能不能完成任务？', answer: '核心指标：成功率/完成率/错误率。不仅要看最终结果对不对，还要看完成过程中有没有犯错。', detail: '<p>成功率 = 正确完成的任务数 / 总任务数。完成率 = 完成的任务数 / 总任务数（包括部分完成）。错误率 = 过程中犯错的次数 / 总步骤数。</p>', tip: '任务级评估是最终目标，但不够细——不知道为什么失败。' },
+      { q: '轨迹级评估：Agent 走没走最优路径？', answer: '核心指标：步骤效率（最少步骤比）、工具调用准确率、推理合理性。', detail: '<p>步骤效率 = 最少步骤数 / 实际步骤数。工具调用准确率 = 正确选择工具的次数 / 总工具调用次数。</p><p>轨迹评估能发现Agent"虽然完成了任务但走了弯路"的问题。</p>', tip: '轨迹级评估是Agent特有的，普通LLM应用不需要这一层。' },
+      { q: '系统级评估：跑不跑得动？', answer: '核心指标：延迟/P50/P99、成本/单次请求费用、吞吐量/QPS。', detail: '<table><tr><th>指标</th><th>目标</th><th>优化手段</th></tr><tr><td>P50延迟</td><td>&lt;3s</td><td>流式输出、缓存</td></tr><tr><td>P99延迟</td><td>&lt;10s</td><td>分层路由、量化</td></tr><tr><td>单次成本</td><td>&lt;0.1元</td><td>小模型路由、Token优化</td></tr><tr><td>QPS</td><td>根据业务</td><td>批处理、缓存、分片</td></tr></table>', tip: '系统级指标和业务指标要一起看。' },
+      { q: '评测手段：人工 vs LLM-as-Judge vs 自动框架', answer: '人工评测（黄金标准但贵）、LLM-as-Judge（便宜但不够准）、自动评测框架（RAGAS/BenchCLAUDE）。关键：评估要建立闭环，badcase回流驱动优化。', detail: '<table><tr><th>手段</th><th>优点</th><th>缺点</th><th>适用场景</th></tr><tr><td>人工评测</td><td>最准确</td><td>贵、慢</td><td>小规模验证</td></tr><tr><td>LLM-as-Judge</td><td>便宜、快</td><td>有偏差</td><td>大规模初筛</td></tr><tr><td>自动框架</td><td>可重复</td><td>指标有限</td><td>持续监控</td></tr></table>', tip: '最佳实践：自动框架做日常监控 + LLM-as-Judge做大规模评估 + 人工做小规模校准。' }
+    ]
+  }
+};
+
+/* ===== PAGE INIT ===== */
+const urlId = new URLSearchParams(window.location.search).get('id');
+const interviewId = parseInt(urlId, 10);
+if (!urlId || !interviews[interviewId]) {
+  window.location.href = 'index.html';
+}
+const interview = interviews[interviewId];
+
+/* ===== RENDER HERO ===== */
+document.getElementById('heroTitle').textContent = interview.title;
+document.title = interview.title + ' — AI 题库 & 面经';
+document.getElementById('footerCat').textContent = interview.title;
+document.getElementById('footerLeft').innerHTML = 'AI 题库 & <span>面经</span> — <span>' + interview.items.length + ' 题</span>';
+
+// Render meta: date badge + tags
+let metaHtml = '<span class="date-badge" style="background:' + interview.dateColor + '">' + interview.date + '</span>';
+(interview.tags || []).forEach(t => {
+  metaHtml += '<span class="hero-tag">' + t + '</span>';
+});
+document.getElementById('heroMeta').innerHTML = metaHtml;
+
+/* ===== RENDER QUESTIONS ===== */
+const container = document.getElementById('questionsContainer');
+const tocContainer = document.getElementById('tocLinks');
+
+function renderQuestions() {
+  container.innerHTML = '';
+  tocContainer.innerHTML = '';
+  if (!interview.items || interview.items.length === 0) {
+    container.innerHTML = '<div class="empty-state">暂无题目</div>';
+    return;
+  }
+  interview.items.forEach((item, i) => {
+    const qId = 'q-' + i;
+    // Build sub-boxes
+    let subsHtml = '';
+    if (item.answer) {
+      subsHtml += '<div class="q-sub"><div class="q-sub-title answer">参考答案</div>' + item.answer + '</div>';
+    }
+    if (item.detail) {
+      subsHtml += '<div class="q-sub"><div class="q-sub-title detail">详细解析</div>' + item.detail + '</div>';
+    }
+    if (item.tip) {
+      subsHtml += '<div class="q-sub"><div class="q-sub-title tip">面试加分 / 回答技巧</div>' + item.tip + '</div>';
+    }
+
+    const box = document.createElement('div');
+    box.className = 'q-box';
+    box.id = qId;
+    box.style.animation = 'fadeUp .4s ease ' + (i * 0.05) + 's both';
+    box.innerHTML =
+      '<div class="q-box-header" onclick="toggleQ(this)">' +
+        '<span class="q-box-num">Q' + (i + 1) + '</span>' +
+        '<span class="q-box-title">' + item.q + '</span>' +
+        '<span class="q-box-toggle">&#9660;</span>' +
+      '</div>' +
+      '<div class="q-box-body">' + subsHtml + '</div>';
+    container.appendChild(box);
+
+    // TOC link
+    const tocLink = document.createElement('a');
+    tocLink.className = 'toc-link';
+    tocLink.href = '#' + qId;
+    tocLink.textContent = 'Q' + (i + 1) + ' ' + item.q;
+    tocLink.addEventListener('click', e => {
+      e.preventDefault();
+      document.getElementById(qId).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    tocContainer.appendChild(tocLink);
+  });
+}
+renderQuestions();
+
+/* ===== SCROLL BAR ===== */
+window.addEventListener('scroll', () => {
+  const bar = document.getElementById('scrollBar');
+  const h = document.documentElement.scrollHeight - window.innerHeight;
+  bar.style.width = h > 0 ? (window.scrollY / h * 100) + '%' : '0%';
+});
+
+/* ===== TOC ACTIVE STATE ===== */
+function updateToc() {
+  const links = tocContainer.querySelectorAll('.toc-link');
+  let current = '';
+  interview.items.forEach((item, i) => {
+    const el = document.getElementById('q-' + i);
+    if (el && el.getBoundingClientRect().top <= 120) current = 'q-' + i;
+  });
+  links.forEach(link => {
+    const href = link.getAttribute('href');
+    link.classList.toggle('active', href === '#' + current);
+  });
+}
+window.addEventListener('scroll', updateToc);
+document.getElementById('toc').classList.add('visible');
+
+/* ===== TOGGLE QUESTION ===== */
+function toggleQ(header) {
+  const box = header.closest('.q-box');
+  const body = box.querySelector('.q-box-body');
+  const toggle = box.querySelector('.q-box-toggle');
+  body.classList.toggle('open');
+  toggle.classList.toggle('open');
+  toggle.innerHTML = body.classList.contains('open') ? '&#9650;' : '&#9660;';
+}
+
+/* ===== DELETE INTERVIEW ===== */
+const confirmOverlay = document.getElementById('confirmOverlay');
+document.getElementById('heroDel').addEventListener('click', () => {
+  document.getElementById('confirmMsg').textContent = '确定要删除《' + interview.title + '》吗？删除后无法恢复。';
+  confirmOverlay.classList.add('show');
+});
+document.getElementById('confirmCancel').addEventListener('click', () => {
+  confirmOverlay.classList.remove('show');
+});
+confirmOverlay.addEventListener('click', e => {
+  if (e.target === confirmOverlay) confirmOverlay.classList.remove('show');
+});
+document.getElementById('confirmOk').addEventListener('click', () => {
+  confirmOverlay.classList.remove('show');
+  showToast('面经已删除');
+  setTimeout(() => {
+    window.location.href = 'index.html';
+  }, 800);
+});
+
+/* ===== TOAST ===== */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>

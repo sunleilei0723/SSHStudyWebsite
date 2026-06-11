@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>分类题库 — AI 题库 & 面经</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --paper:#fffdf8;--ink:#151822;--muted:#5f6470;
+  --purple:#7a4fe3;--purple-soft:#ede7fc;
+  --green:#24c2a0;--green-soft:#e0f9f3;
+  --pink:#e9578f;--pink-soft:#ffe2ec;
+  --yellow:#ffd42a;--yellow-soft:#fff8db;
+  --blue:#47c7f4;--blue-soft:#e3f6fd;
+  --orange:#ff8c42;--orange-soft:#fff0e5;
+  --teal:#0d9488;--teal-soft:#ccfbf1;
+  --line:rgba(21,24,34,.1);
+  --shadow:6px 7px 0 var(--ink);--shadow-sm:3px 4px 0 var(--ink);--radius:14px;
+}
+html{font-size:17px;-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+body{min-height:100vh;color:var(--ink);font-family:"Nunito","Noto Sans SC",sans-serif;background:#d7d3c6;line-height:1.6}
+a{color:inherit;text-decoration:none}
+.scroll-bar{position:fixed;top:0;left:0;height:5px;z-index:999;background:var(--purple);border-radius:0 3px 3px 0;transition:width .15s}
+.frame{width:min(1080px,100vw);margin:0 auto;position:relative;overflow:visible;background:radial-gradient(circle,rgba(21,24,34,.1) 1.4px,transparent 1.6px) 0 0/20px 20px,linear-gradient(var(--line) 1px,transparent 1px) 0 35%/100% 190px,linear-gradient(90deg,var(--line) 1px,transparent 1px) 50% 0/330px 100%,var(--paper);padding:28px 38px 44px}
+
+/* ===== NAVIGATION ===== */
+.site-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 1.2rem;padding:.72rem .9rem;border:4px solid var(--ink);border-radius:18px;background:#fff;box-shadow:var(--shadow-sm);position:sticky;top:10px;z-index:80}
+.nav-brand{display:flex;align-items:center;gap:.5rem;font-family:"Baloo 2",sans-serif;font-size:1.02rem;font-weight:800;color:var(--purple);text-decoration:none}
+.nav-dot{width:14px;height:14px;border:3px solid var(--ink);border-radius:50%;background:var(--yellow);flex:0 0 auto}
+.nav-links{display:flex;gap:8px;flex-wrap:wrap}
+.nav-links a{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:2px 12px;border:3px solid var(--ink);border-radius:999px;background:#fff;color:var(--ink);text-decoration:none;font-size:.72rem;font-weight:900;line-height:1.1;box-shadow:2px 3px 0 var(--ink)}
+.nav-links a.primary{background:var(--yellow)}
+
+/* ===== HERO ===== */
+.hero{padding:1.5rem 0 1.8rem;margin-bottom:1.5rem;border-bottom:5px solid var(--ink)}
+.hero-eyebrow{display:inline-grid;place-items:center;min-height:36px;padding:2px 16px;border:4px solid var(--ink);border-radius:999px;background:var(--purple);color:#fff;box-shadow:var(--shadow-sm);font-family:"Baloo 2",sans-serif;font-size:.85rem;font-weight:800;margin-bottom:.8rem}
+.hero-title{font-family:"Baloo 2",sans-serif;font-size:3rem;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.hero-title .accent{color:var(--pink)}
+.hero-sub{margin-top:.6rem;font-size:.9rem;line-height:1.7;max-width:680px;color:var(--muted);font-weight:700}
+.hero-line{width:140px;height:4px;border-radius:2px;background:var(--yellow);margin-top:1rem;box-shadow:3px 4px 0 var(--ink)}
+
+/* ===== STATS ===== */
+.stats{display:flex;gap:12px;margin:1.5rem 0 2rem;flex-wrap:wrap;animation:fadeUp .5s ease .05s both}
+.stat{display:flex;align-items:center;gap:10px;padding:.6rem 1.1rem;border:4px solid var(--ink);border-radius:12px;background:#fff;box-shadow:var(--shadow-sm)}
+.stat-num{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:1.6rem;line-height:1}
+.stat-num.purple{color:var(--purple)}.stat-num.green{color:var(--green)}.stat-num.pink{color:var(--pink)}.stat-num.blue{color:var(--blue)}.stat-num.orange{color:var(--orange)}.stat-num.teal{color:var(--teal)}
+.stat-label{font-size:.7rem;color:var(--muted);font-weight:800;letter-spacing:.02em}
+
+/* ===== QUESTION BOX ===== */
+.q-box{border:4px solid var(--ink);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow-sm);margin-bottom:14px;overflow:hidden;transition:all .15s}
+.q-box:hover{box-shadow:5px 6px 0 var(--ink)}
+.q-box-header{display:flex;align-items:center;gap:10px;padding:.7rem 1rem;cursor:pointer;user-select:none}
+.q-box-num{font-family:"Roboto Mono",monospace;font-size:.72rem;font-weight:700;color:var(--muted);min-width:28px;flex-shrink:0}
+.q-box-title{flex:1;font-family:"Baloo 2",sans-serif;font-size:.92rem;font-weight:800;line-height:1.3}
+.q-box-tags{display:flex;gap:4px;flex-wrap:wrap;flex-shrink:0}
+.q-box-tag{font-size:.55rem;font-weight:800;padding:1px 6px;border-radius:4px;background:rgba(21,24,34,.05);color:var(--muted)}
+.q-box-diff{font-family:"Roboto Mono",monospace;font-size:.6rem;font-weight:700;padding:3px 8px;border-radius:6px;border:3px solid var(--ink);flex-shrink:0;white-space:nowrap}
+.q-box-diff.easy{background:var(--green-soft);color:var(--green)}.q-box-diff.medium{background:var(--yellow-soft);color:#b8860b}.q-box-diff.hard{background:var(--pink-soft);color:var(--pink)}
+.q-box-toggle{width:28px;height:28px;display:grid;place-items:center;border:3px solid var(--ink);border-radius:8px;background:#fff;font-size:.8rem;font-weight:900;cursor:pointer;flex-shrink:0;transition:all .15s}
+.q-box-toggle.open{background:var(--purple);color:#fff}
+.q-box-del{width:28px;height:28px;display:grid;place-items:center;border:3px solid var(--ink);border-radius:8px;background:#fff;font-size:.75rem;font-weight:900;cursor:pointer;flex-shrink:0;color:var(--pink);transition:all .15s}
+.q-box-del:hover{background:var(--pink-soft)}
+.q-box-body{display:none;padding:0 1rem 1rem}
+.q-box-body.open{display:block;animation:fadeUp .25s ease both}
+
+/* ===== INNER SUB-BOX ===== */
+.q-sub{border:3px solid rgba(21,24,34,.15);border-radius:10px;padding:.7rem .9rem;margin-bottom:.6rem;background:rgba(255,255,255,.6)}
+.q-sub-title{font-family:"Baloo 2",sans-serif;font-size:.78rem;font-weight:800;margin-bottom:.4rem;color:var(--purple)}
+.q-sub-title.answer{color:var(--green)}
+.q-sub-title.detail{color:var(--blue)}
+.q-sub-title.tip{color:var(--pink)}
+.q-sub p{font-size:.78rem;line-height:1.6;color:var(--muted);font-weight:700;margin:.2rem 0}
+.q-sub ul{padding-left:1.1rem;margin:.3rem 0}
+.q-sub li{font-size:.76rem;line-height:1.55;color:var(--muted);font-weight:700;margin:.15rem 0}
+.q-sub code{font-family:"Roboto Mono",monospace;font-size:.72rem;background:var(--yellow-soft);border-radius:4px;padding:1px 4px;font-weight:700}
+.q-sub strong{color:var(--ink);font-weight:900}
+.q-sub table{width:100%;border-collapse:collapse;margin:.4rem 0;font-size:.7rem}
+.q-sub th,.q-sub td{border:2px solid rgba(21,24,34,.12);padding:3px 6px;text-align:left;font-weight:700}
+.q-sub th{background:var(--purple-soft);color:var(--purple);font-size:.65rem}
+.q-sub pre{background:var(--ink);color:#c9d1d9;padding:.5rem .7rem;border-radius:8px;font-family:"Roboto Mono",monospace;font-size:.68rem;line-height:1.6;overflow-x:auto;margin:.4rem 0}
+
+/* ===== MODAL ===== */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(21,24,34,.45);z-index:200;justify-content:center;align-items:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{width:min(560px,100%);max-height:85vh;overflow-y:auto;background:var(--paper);border:4px solid var(--ink);border-radius:18px;box-shadow:8px 10px 0 var(--ink);padding:1.5rem;animation:popIn .25s ease}
+.modal-title{font-family:"Baloo 2",sans-serif;font-size:1.3rem;font-weight:800;margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+.modal-title .modal-badge{display:inline-grid;place-items:center;min-width:36px;min-height:30px;padding:2px 10px;border:3px solid var(--ink);border-radius:8px;background:var(--purple);color:#fff;font-size:.7rem;font-weight:800;box-shadow:2px 3px 0 var(--ink)}
+.modal-close{margin-left:auto;width:32px;height:32px;display:grid;place-items:center;border:3px solid var(--ink);border-radius:8px;background:#fff;font-size:1rem;font-weight:900;cursor:pointer;box-shadow:2px 3px 0 var(--ink)}
+.modal-close:hover{background:var(--pink-soft)}
+.form-group{margin-bottom:1rem}
+.form-label{display:block;font-size:.78rem;font-weight:900;margin-bottom:.3rem;color:var(--ink)}
+.form-input,.form-select,.form-textarea{width:100%;padding:.5rem .7rem;border:3px solid var(--ink);border-radius:10px;background:#fff;font-family:inherit;font-size:.85rem;font-weight:700;color:var(--ink);box-shadow:2px 3px 0 var(--ink)}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--purple);box-shadow:2px 3px 0 var(--purple)}
+.form-textarea{min-height:100px;resize:vertical;line-height:1.6}
+.form-select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%23151822' stroke-width='2'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px}
+.form-input[readonly]{background:var(--purple-soft);cursor:not-allowed;opacity:.8}
+.form-row{display:flex;gap:10px}
+.form-row .form-group{flex:1}
+.form-actions{display:flex;gap:10px;margin-top:1.2rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:4px 18px;border:3px solid var(--ink);border-radius:999px;font-weight:900;cursor:pointer;font-family:inherit;font-size:.8rem;box-shadow:2px 3px 0 var(--ink);transition:all .15s}
+.btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+.btn-primary{background:var(--yellow);color:var(--ink)}
+.btn-secondary{background:#fff;color:var(--ink)}
+
+/* ===== TOC ===== */
+.toc{position:fixed;top:80px;right:20px;width:180px;max-height:calc(100vh - 100px);overflow-y:auto;padding:.6rem;border:3px solid var(--ink);border-radius:14px;background:#fff;box-shadow:var(--shadow-sm);z-index:50;font-size:.62rem;font-weight:800;display:none}
+.toc.visible{display:block}
+.toc-title{font-family:"Baloo 2",sans-serif;font-size:.78rem;font-weight:800;margin-bottom:.4rem;color:var(--purple)}
+.toc-link{display:block;padding:3px 6px;border-radius:4px;color:var(--muted);cursor:pointer;transition:all .15s;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.toc-link:hover{background:var(--purple-soft);color:var(--purple)}
+.toc-link.active{background:var(--purple);color:#fff}
+
+/* ===== FOOTER ===== */
+.footer{margin-top:2.5rem;padding-top:1rem;border-top:4px dashed rgba(21,24,34,.15);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
+.footer-text{font-size:.68rem;color:var(--muted);font-weight:700;letter-spacing:.02em}
+.footer-text span{color:var(--purple)}
+
+/* ===== TOAST ===== */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);padding:.6rem 1.4rem;border:3px solid var(--ink);border-radius:999px;background:var(--green);color:#fff;font-weight:900;font-size:.82rem;box-shadow:var(--shadow-sm);z-index:300;transition:transform .3s ease;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ===== EMPTY STATE ===== */
+.empty-state{padding:1.5rem;color:var(--muted);font-weight:800;font-size:.85rem;border:3px dashed rgba(21,24,34,.15);border-radius:var(--radius);text-align:center;animation:fadeUp .4s ease both}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.02)}100%{transform:scale(1);opacity:1}}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:860px){
+  .frame{padding:18px 16px 30px}
+  .hero-title{font-size:2rem}
+  .stats{gap:8px}
+  .stat{padding:.4rem .8rem}
+  .stat-num{font-size:1.2rem}
+  .toc{display:none!important}
+  .q-box-header{flex-wrap:wrap}
+  .q-box-tags{order:4;width:100%;margin-top:4px}
+}
+@media(min-width:1200px){.toc.visible{display:block}}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links" id="navLinks">
+      <a href="../index.html">主页</a>
+      <a href="index.html">AI 题库 & 面经</a>
+      <a class="primary" href="#" id="navCategory">分类</a>
+    </div>
+  </nav>
+
+  <div class="hero" id="hero">
+    <div class="hero-eyebrow" id="heroEyebrow">--</div>
+    <h1 class="hero-title" id="heroTitle">分类 <span class="accent">题库</span></h1>
+    <p class="hero-sub" id="heroSub">加载中...</p>
+    <div class="hero-line"></div>
+  </div>
+
+  <div class="stats" id="statsBar">
+    <div class="stat"><span class="stat-num purple" id="statTotal">0</span><span class="stat-label">总题数</span></div>
+    <div class="stat"><span class="stat-num green" id="statEasy">0</span><span class="stat-label">Easy</span></div>
+    <div class="stat"><span class="stat-num orange" id="statMed">0</span><span class="stat-label">Medium</span></div>
+    <div class="stat"><span class="stat-num pink" id="statHard">0</span><span class="stat-label">Hard</span></div>
+  </div>
+
+  <div style="display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap">
+    <button class="btn btn-primary" id="addQuestionBtn" type="button">+ 增加新题</button>
+    <a class="btn btn-secondary" href="index.html">← 返回题库首页</a>
+  </div>
+
+  <div id="questionsContainer"></div>
+
+  <div class="footer">
+    <span class="footer-text" id="footerLeft">AI 题库 & <span>面经</span></span>
+    <span class="footer-text">主页 → AI 题库 & 面经 → <span id="footerCat">分类</span></span>
+  </div>
+</main>
+
+<!-- TOC -->
+<div class="toc" id="toc">
+  <div class="toc-title">本分类题目</div>
+  <div id="tocLinks"></div>
+</div>
+
+<!-- ADD QUESTION MODAL -->
+<div class="modal-overlay" id="addQuestionModal">
+  <div class="modal">
+    <div class="modal-title"><span class="modal-badge">NEW</span>增加新题<button class="modal-close" id="closeQuestionModal">&times;</button></div>
+    <div class="form-group">
+      <label class="form-label">分类</label>
+      <input class="form-input" id="questionCategory" readonly />
+    </div>
+    <div class="form-group">
+      <label class="form-label">题目名称</label>
+      <input class="form-input" id="questionTitle" placeholder="例如：RAG中的混合检索策略" />
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">难度</label>
+        <select class="form-select" id="questionDiff"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">标签（逗号分隔）</label>
+        <input class="form-input" id="questionTags" placeholder="例如：RAG, 混合检索" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">参考答案（可选）</label>
+      <textarea class="form-textarea" id="questionAnswer" placeholder="简要写出参考答案要点"></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" id="submitQuestion" type="button">添加题目</button>
+      <button class="btn btn-secondary" id="cancelQuestion" type="button">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== CATEGORY DATA ===== */
+const categories = {
+  '01-LLM': {
+    name: 'LLM', num: '01', color: 'c1',
+    desc: '大语言模型基础、Token、Embedding、幻觉控制、多模态',
+    questions: [
+      {
+        title: 'Embedding 模型怎么选型？主要看哪些指标？',
+        tags: ['Embedding', '选型'], diff: 'medium',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p>核心指标：检索质量（MTEB排名）、维度、推理速度、多语言支持、领域适配性</p><p>常见模型：text-embedding-3-large(OpenAI)、bge-large-zh(智源)、m3e-base(M3E)</p><p>选型决策：先看MTEB排名筛选候选，再根据部署约束（API/本地）和语言需求确定</p>' },
+          { type: 'detail', title: '详细解析', content: '<table><tr><th>指标</th><th>说明</th><th>重要性</th></tr><tr><td>MTEB排名</td><td>综合检索/分类/聚类等任务的基准排名</td><td>⭐⭐⭐⭐⭐</td></tr><tr><td>向量维度</td><td>影响存储成本和检索速度</td><td>⭐⭐⭐⭐</td></tr><tr><td>推理速度</td><td>吞吐量(QPS)和延迟</td><td>⭐⭐⭐⭐</td></tr><tr><td>多语言支持</td><td>中文/英文/多语言能力</td><td>⭐⭐⭐⭐</td></tr></table><table><tr><th>模型</th><th>维度</th><th>中文</th><th>部署</th><th>特点</th></tr><tr><td>text-embedding-3-large</td><td>3072</td><td>中</td><td>API</td><td>综合最强，成本高</td></tr><tr><td>bge-large-zh-v1.5</td><td>1024</td><td>强</td><td>本地</td><td>中文最佳开源</td></tr><tr><td>m3e-base</td><td>768</td><td>强</td><td>本地</td><td>轻量中文模型</td></tr></table><p><strong>选型决策流程</strong>：1.确定语言需求 → 2.确定部署约束 → 3.确定性能需求 → 4.在候选模型上做领域数据评测 → 5.选定模型，持续监控</p>' },
+          { type: 'tip', title: '面试加分', content: '<p>提到在自己的业务数据上做评测比看MTEB排名更重要，因为MTEB是通用基准，和业务场景可能有偏差。</p>' }
+        ]
+      },
+      {
+        title: '怎么控制模型幻觉？从RAG、Prompt和输出约束角度拆',
+        tags: ['幻觉', '工程'], diff: 'hard',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p><strong>RAG角度</strong>：检索增强+引用溯源+检索质量保障</p><p><strong>Prompt角度</strong>：约束输出格式+要求标注来源+设置"不知道"选项</p><p><strong>输出约束角度</strong>：后处理校验+事实核查+置信度过滤</p>' },
+          { type: 'detail', title: '三层防控体系', content: '<p><strong>第一层：RAG（预防）</strong></p><table><tr><th>方法</th><th>原理</th><th>效果</th></tr><tr><td>高质量检索</td><td>多路召回+重排，确保相关文档被召回</td><td>减少因信息缺失导致的幻觉</td></tr><tr><td>引用溯源</td><td>要求回答标注来源文档</td><td>可验证、可追溯</td></tr><tr><td>检索质量监控</td><td>监控召回率和相关性</td><td>及时发现检索退化</td></tr></table><p><strong>第二层：Prompt（引导）</strong></p><pre>你是一个严谨的知识问答助手。请遵循以下规则：\n1. 只根据提供的参考资料回答，不要使用外部知识\n2. 如果参考资料中没有相关信息，回答"根据现有资料，我无法回答"\n3. 在回答中用[来源X]标注每个事实的出处\n4. 不要推测或编造任何信息</pre><p><strong>第三层：输出约束（校验）</strong></p><table><tr><th>方法</th><th>适用场景</th></tr><tr><td>引用校验</td><td>所有RAG场景</td></tr><tr><td>事实核查LLM</td><td>高准确率要求场景</td></tr><tr><td>置信度评估</td><td>风险敏感场景</td></tr><tr><td>结构化输出</td><td>API调用场景</td></tr></table>' },
+          { type: 'tip', title: '回答技巧', content: '<p>按面试官给的角度逐一回答，每个角度给2-3个具体方法。强调"预防>校验"，幻觉不可能完全消除，只能尽量降低。</p>' }
+        ]
+      },
+      {
+        title: 'Token 和字符有什么区别？为什么中文 Token 消耗更高？',
+        tags: ['Token', 'Tokenizer'], diff: 'easy',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p>Token是模型处理的最小单元，字符是人类阅读的最小单元</p><p>1个中文≈1-2个token，1个英文单词≈1个token，代码token化效率更低</p><p>分词算法：BPE(Byte Pair Encoding)是最主流的方案</p>' },
+          { type: 'detail', title: 'Token vs 字符', content: '<table><tr><th>维度</th><th>字符</th><th>Token</th></tr><tr><td>定义</td><td>文本的最小书写单元</td><td>模型处理的最小单元</td></tr><tr><td>中文"你好"</td><td>2个字符</td><td>2-3个token</td></tr><tr><td>英文"hello"</td><td>5个字符</td><td>1个token</td></tr><tr><td>计费</td><td>-</td><td>按token计费</td></tr></table><p><strong>实际影响</strong>：①成本：API按token计费，中文成本约为英文的2-3倍 ②上下文长度：中文能容纳的文本更少 ③速度：token数直接影响推理速度</p>' },
+          { type: 'tip', title: '面试加分', content: '<p>提到不同模型的分词器不同（GPT用tiktoken，Claude用自有分词器，Llama用SentencePiece），同一文本在不同模型上的token数不同。</p>' }
+        ]
+      },
+      {
+        title: '多模态大模型的结构？视觉编码器和语言模型的衔接方式？',
+        tags: ['多模态', '架构'], diff: 'hard',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p>主流多模态大模型采用<strong>"视觉编码器+投影层+大语言模型"</strong>的三段式结构：</p><ul><li><strong>视觉编码器</strong>：CLIP/ViT，将图像转换成视觉特征向量</li><li><strong>投影层</strong>：将视觉特征映射到语言模型的词嵌入空间</li><li><strong>大语言模型</strong>：接收文本嵌入和映射后的视觉嵌入，统一推理</li></ul>' },
+          { type: 'detail', title: '三种衔接方式', content: '<table><tr><th>衔接方式</th><th>原理</th><th>优点</th><th>缺点</th></tr><tr><td>直接拼接</td><td>视觉特征直接拼接到文本嵌入序列</td><td>实现简单</td><td>灵活性差</td></tr><tr><td>适配器(Adapter)</td><td>在LLM每层插入轻量级适配器</td><td>训练成本低</td><td>效果中等</td></tr><tr><td>交叉注意力</td><td>引入交叉注意力层让文本关注视觉特征</td><td>效果最好</td><td>计算量最大</td></tr></table><p><strong>工程上的坑</strong>：不同分辨率图片导致视觉特征长度不一致，需做padding或裁剪；高分辨率图片的视觉token数量巨大，会占用大量上下文窗口。</p>' }
+        ]
+      }
+    ]
+  },
+  '02-微调': {
+    name: '微调', num: '02', color: 'c2',
+    desc: 'SFT、RLHF、LoRA、Agentic训练流程',
+    questions: [
+      {
+        title: 'Agentic CPT、SFT、RL 三阶段训练流程？为什么SFT时要mask observation tokens？',
+        tags: ['SFT', 'RLHF', 'Agentic'], diff: 'hard',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p>Agent的三阶段训练是专门针对工具使用和任务执行能力设计的：</p><ul><li><strong>CPT(继续预训练)</strong>：用大量工具调用轨迹数据做继续预训练，让模型学会工具调用的格式和基本模式</li><li><strong>SFT(监督微调)</strong>：用高质量轨迹数据做SFT，关键是要mask observation tokens——因为推理时模型看不到工具返回结果，只有执行后才能看到</li><li><strong>RL(强化学习)</strong>：用任务完成度作为奖励信号，让模型学会选择最优工具调用序列</li></ul>' },
+          { type: 'detail', title: '为什么SFT要mask observation', content: '<p>训练时如果让模型看到observation，模型会"偷懒"依赖observation做决策，但推理时模型必须先做决策再获得observation。所以训练时要mask掉observation的loss，确保模型学会的是<strong>基于当前状态做决策</strong>，而不是基于未来信息做决策。</p>' }
+        ]
+      }
+    ]
+  },
+  '03-Prompt': {
+    name: 'Prompt', num: '03', color: 'c3',
+    desc: 'Prompt工程、CoT、Few-shot、结构化输出',
+    questions: [
+      {
+        title: 'Prompt层面有哪些办法让模型回答更快、更稳定？',
+        tags: ['CoT', 'Few-shot'], diff: 'medium',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p><strong>更快</strong>：缩短Prompt长度、减少Few-shot示例数、设置max_tokens限制、明确要求简洁回答</p><p><strong>更稳定</strong>：结构化输出约束、Few-shot示例、CoT引导、温度调低</p>' },
+          { type: 'detail', title: '详细解析', content: '<p><strong>提升速度</strong></p><table><tr><th>技巧</th><th>原理</th></tr><tr><td>缩短Prompt</td><td>减少输入token数</td></tr><tr><td>减少Few-shot</td><td>每个示例都增加输入token</td></tr><tr><td>限制输出长度</td><td>设置max_tokens</td></tr><tr><td>避免CoT</td><td>不要求推理过程</td></tr></table><p><strong>提升稳定性</strong></p><table><tr><th>技巧</th><th>原理</th></tr><tr><td>结构化输出</td><td>约束输出格式，如JSON</td></tr><tr><td>Few-shot示例</td><td>提供标准答案模板</td></tr><tr><td>CoT引导</td><td>分步推理减少跳步错误</td></tr><tr><td>降低温度</td><td>减少随机性</td></tr></table>' }
+        ]
+      },
+      {
+        title: '一个完整的Prompt通常包含哪些部分？',
+        tags: ['结构化输出', '模板'], diff: 'medium',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p>完整Prompt通常包含：<strong>角色设定 + 任务描述 + 约束条件 + 输出格式 + Few-shot示例 + 输入数据</strong></p>' },
+          { type: 'detail', title: '各部分详解', content: '<pre>你是一个严谨的技术问答助手。          ← 角色设定\n请根据提供的文档回答用户问题。          ← 任务描述\n只使用文档中的信息，不要编造。          ← 约束条件\n用JSON格式输出：{"answer":"...","source":"..."}  ← 输出格式\n\n示例：                              ← Few-shot\n问题：什么是RAG？\n回答：{"answer":"检索增强生成","source":"文档第3页"}\n\n问题：{user_question}               ← 输入数据</pre>' }
+        ]
+      }
+    ]
+  },
+  '04-RAG': {
+    name: 'RAG', num: '04', color: 'c4',
+    desc: '检索增强生成、文档处理、向量检索、混合检索、高级RAG',
+    questions: [
+      {
+        title: '知识库是怎么搭的？从文档接入到检索的完整流程',
+        tags: ['RAG基础', '架构'], diff: 'easy',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p>RAG系统分为<strong>离线索引阶段</strong>和<strong>在线检索阶段</strong>两大环节</p>' },
+          { type: 'detail', title: '离线索引阶段', content: '<table><tr><th>环节</th><th>说明</th><th>常用方案</th></tr><tr><td>文档接入</td><td>支持PDF/Word/HTML/表格/图片</td><td>MinIO/OSS + 格式检测</td></tr><tr><td>文档解析</td><td>提取文本、表格、图片</td><td>Unstructured/PyPDF/自研</td></tr><tr><td>文档分块</td><td>将长文档切分为Chunk</td><td>递归字符/语义/结构分块</td></tr><tr><td>Embedding</td><td>文本块转为向量</td><td>bge-large-zh / OpenAI</td></tr><tr><td>存入向量库</td><td>向量索引+原文存储</td><td>Milvus / ES + kNN</td></tr></table>' },
+          { type: 'detail', title: '在线检索阶段', content: '<table><tr><th>环节</th><th>说明</th><th>常用方案</th></tr><tr><td>Query预处理</td><td>改写/扩展/意图识别</td><td>LLM改写 / HyDE</td></tr><tr><td>多路召回</td><td>向量+关键词+知识图谱</td><td>Milvus ANN + ES BM25</td></tr><tr><td>重排</td><td>精排提升相关性</td><td>Cross-encoder / Cohere Rerank</td></tr><tr><td>LLM生成</td><td>基于检索上下文生成回答</td><td>GPT-4 / Claude / Qwen</td></tr><tr><td>后处理</td><td>引用溯源/格式化/事实核查</td><td>引用标注/置信度评估</td></tr></table>' },
+          { type: 'tip', title: '回答技巧', content: '<p>先给整体框架（离线+在线），每个环节点到关键技术选型，强调你做过的优化，准备一个端到端的数据。</p>' }
+        ]
+      },
+      {
+        title: '文档分块策略怎么设计？',
+        tags: ['文档处理', '切片'], diff: 'medium',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p>主流策略：<strong>固定长度分块</strong>（简单但语义可能断裂）、<strong>递归字符分块</strong>（按分隔符层级切分，最常用）、<strong>语义分块</strong>（基于embedding相似度切分，效果好但慢）</p>' },
+          { type: 'detail', title: '推荐配置', content: '<p>递归字符分块，chunk_size=512-1024 tokens，overlap 10-20%，兼顾语义完整性和检索粒度。</p>' }
+        ]
+      },
+      {
+        title: 'RAG召回优化：混合检索、重排序、Query改写',
+        tags: ['召回优化', '重排序'], diff: 'hard',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p><strong>混合检索</strong>：向量检索捕获语义 + BM25捕获关键词，互补优势</p><p><strong>重排序</strong>：Cross-encoder精排，比双塔模型准确率高10-15%</p><p><strong>Query改写</strong>：LLM改写/扩展/HyDE，提升召回率</p>' }
+        ]
+      },
+      {
+        title: 'RAG数据一致性：MySQL和ES的数据怎么保证一致？',
+        tags: ['数据一致性', '增量更新'], diff: 'medium',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p>核心思路：<strong>双写+异步对账</strong>。写入时同时写MySQL和ES，用消息队列解耦；定期跑对账任务，比对两边数据一致性；增量更新通过CDC(Change Data Capture)监听MySQL binlog同步到ES。</p>' }
+        ]
+      },
+      {
+        title: '高级RAG：Self-RAG、CRAG、Adaptive RAG原理',
+        tags: ['高级RAG', 'Self-RAG'], diff: 'hard',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p><strong>Self-RAG</strong>：模型自己决定是否需要检索、检索结果是否有用、回答是否需要修正</p><p><strong>CRAG</strong>：用评估器判断检索结果质量，质量低时用Web搜索补充</p><p><strong>Adaptive RAG</strong>：根据查询复杂度自适应选择检索策略（简单查询直接回答，复杂查询走RAG）</p>' }
+        ]
+      },
+      {
+        title: 'RAG评估：RAGAS框架与四大维度',
+        tags: ['RAGAS', '评估'], diff: 'medium',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p>RAGAS四大维度：<strong>检索层</strong>（召回率/精确率）、<strong>生成层</strong>（忠实度/相关性）、<strong>任务层</strong>（答案正确性）、<strong>系统层</strong>（延迟/吞吐量/成本）</p>' }
+        ]
+      },
+      {
+        title: 'RAG高并发优化：800 QPS架构设计',
+        tags: ['高并发', '性能'], diff: 'hard',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p><strong>LLM层</strong>：分层路由（简单问题→小模型，复杂问题→大模型）</p><p><strong>检索层</strong>：HNSW索引优化、分片、读写分离</p><p><strong>缓存层</strong>：三级缓存（语义缓存→精确缓存→结果缓存）</p><p><strong>限流降级</strong>：令牌桶限流+熔断降级+队列缓冲</p>' }
+        ]
+      }
+    ]
+  },
+  '05-Agent': {
+    name: 'Agent', num: '05', color: 'c5',
+    desc: 'AI Agent原理、ReAct、推理模式、工具调用',
+    questions: [
+      {
+        title: '你怎么理解Agent？它和普通LLM应用最大的区别是什么？',
+        tags: ['Agent原理', '概念'], diff: 'easy',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p>Agent = LLM + 记忆 + 工具 + 规划。最大区别：<strong>自主决策能力</strong>——普通LLM应用是单轮问答，Agent能自主规划步骤、调用工具、根据结果调整策略。</p>' },
+          { type: 'detail', title: '核心区别', content: '<table><tr><th>维度</th><th>普通LLM应用</th><th>Agent</th></tr><tr><td>决策</td><td>人决定流程</td><td>模型自主规划</td></tr><tr><td>工具</td><td>无或固定调用</td><td>动态选择和调用</td></tr><tr><td>记忆</td><td>单轮或简单上下文</td><td>短期+长期记忆</td></tr><tr><td>纠错</td><td>人工干预</td><td>自我反思和修正</td></tr></table>' }
+        ]
+      },
+      {
+        title: 'Agent推理模式：ReAct vs Plan-and-Execute vs Reflexion',
+        tags: ['推理模式', 'ReAct'], diff: 'medium',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<table><tr><th>模式</th><th>原理</th><th>适用场景</th></tr><tr><td>ReAct</td><td>思考→行动→观察循环</td><td>工具调用密集型</td></tr><tr><td>Plan-and-Execute</td><td>先规划完整步骤再逐步执行</td><td>复杂多步任务</td></tr><tr><td>Reflexion</td><td>执行后自我反思并修正</td><td>需要纠错的场景</td></tr></table>' }
+        ]
+      },
+      {
+        title: 'ReAct框架的消息格式如何设计？tool response用什么角色？',
+        tags: ['ReAct', '消息格式'], diff: 'hard',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p>ReAct消息流：<code>user</code> → <code>assistant(Thought+Action)</code> → <code>tool</code> → <code>assistant(Observation+Next Thought)</code></p><p>tool response用<code>tool</code>角色传回（OpenAI格式），不要用<code>user</code>角色，否则模型会混淆对话角色。</p>' }
+        ]
+      },
+      {
+        title: 'Agent注册几十个工具后命中率大幅下降，怎么提升？',
+        tags: ['Skill', '命中率'], diff: 'hard',
+        subs: [
+          { type: 'answer', title: '4招提升命中率', content: '<p><strong>1. 技能描述优化</strong>：写清楚每个工具的适用场景，用具体例子说明</p><p><strong>2. 技能分组路由</strong>：先做意图分类，只在相关分组中选择工具</p><p><strong>3. 动态技能列表</strong>：根据上下文只传入当前可能用到的工具</p><p><strong>4. 向量检索匹配</strong>：用embedding检索最相关的Top-K工具</p>' }
+        ]
+      }
+    ]
+  },
+  '06-框架': {
+    name: '框架', num: '06', color: 'c6',
+    desc: 'LangChain、LangGraph、CrewAI',
+    questions: [
+      {
+        title: 'LangChain vs LangGraph：选型与适用场景',
+        tags: ['LangChain', 'LangGraph'], diff: 'medium',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p><strong>LangChain</strong>：适合线性链式调用（Chain），快速搭建原型</p><p><strong>LangGraph</strong>：适合有状态图、循环、条件分支的复杂Agent，支持持久化和人工介入</p>' }
+        ]
+      }
+    ]
+  },
+  '07-Tool_MCP': {
+    name: 'Tool / MCP', num: '07', color: 'c7',
+    desc: 'MCP协议、Function Calling、工具设计',
+    questions: [
+      {
+        title: 'MCP协议核心概念：Server、Tool、Resource',
+        tags: ['MCP', '协议'], diff: 'medium',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p><strong>MCP Server</strong>：提供工具和资源的服务端，类似微服务</p><p><strong>Tool</strong>：可被调用的函数，有输入输出schema</p><p><strong>Resource</strong>：可被读取的数据源（文件、API等）</p><p>MCP的价值：统一工具接入标准，Agent不需要为每个工具写适配代码</p>' }
+        ]
+      }
+    ]
+  },
+  '08-记忆': {
+    name: '记忆', num: '08', color: 'c8',
+    desc: '短期记忆、长期记忆、上下文管理',
+    questions: [
+      {
+        title: '短期记忆 vs 长期记忆：实现策略与权衡',
+        tags: ['短期记忆', '长期记忆'], diff: 'medium',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p><strong>短期记忆</strong>：对话上下文窗口，滑动窗口+摘要压缩，超限时丢弃旧消息</p><p><strong>长期记忆</strong>：向量数据库存储，按语义检索历史对话/用户偏好</p>' }
+        ]
+      }
+    ]
+  },
+  '09-系统设计': {
+    name: '系统设计', num: '09', color: 'c9',
+    desc: 'Agent部署架构、多租户、可观测性',
+    questions: [
+      {
+        title: 'Agent系统部署架构：多租户隔离与发布流程',
+        tags: ['部署', '多租户'], diff: 'hard',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p><strong>部署</strong>：K8s + Docker，Agent服务无状态化，状态存Redis/DB</p><p><strong>多租户</strong>：逻辑隔离（tenant_id字段过滤）vs 物理隔离（独立命名空间/集群）</p><p><strong>发布</strong>：蓝绿部署+灰度发布，Agent配置版本化管理</p>' }
+        ]
+      }
+    ]
+  },
+  '10-MultiAgent': {
+    name: 'MultiAgent', num: '10', color: 'c10',
+    desc: '多Agent协作、通信、编排',
+    questions: []
+  },
+  '11-评估': {
+    name: '评估', num: '11', color: 'c11',
+    desc: 'Agent评估、RAGAS、性能量化',
+    questions: [
+      {
+        title: 'Agent性能如何量化评估？核心指标有哪些？',
+        tags: ['评估指标', '量化'], diff: 'medium',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p>三个层面：<strong>任务级</strong>（成功率/完成率）、<strong>轨迹级</strong>（步骤效率/工具调用准确率）、<strong>系统级</strong>（延迟/成本/吞吐量）</p>' }
+        ]
+      }
+    ]
+  },
+  '12-工程实践': {
+    name: '工程实践', num: '12', color: 'c12',
+    desc: 'SSE流式输出、Token优化、成本控制',
+    questions: [
+      {
+        title: 'SSE流式输出：实现与优化',
+        tags: ['SSE', '流式'], diff: 'medium',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p>SSE(Server-Sent Events)：服务端向客户端单向推送，基于HTTP长连接。LLM场景下逐token推送，用户看到打字机效果。</p><p><strong>优化</strong>：连接复用、断线重连、背压控制、分块传输</p>' }
+        ]
+      },
+      {
+        title: 'Token优化策略：Prompt压缩与上下文裁剪',
+        tags: ['Token优化', '成本控制'], diff: 'medium',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p><strong>Prompt压缩</strong>：LLMLingua等工具压缩冗余token</p><p><strong>上下文裁剪</strong>：滑动窗口+摘要，保留最近N轮+历史摘要</p><p><strong>模型分层</strong>：简单问题用小模型，复杂问题用大模型</p>' }
+        ]
+      }
+    ]
+  },
+  '13-AI工具': {
+    name: 'AI工具', num: '13', color: 'c13',
+    desc: 'Claude Code、Cursor、AI辅助开发',
+    questions: [
+      {
+        title: 'AI辅助代码重构工作流：Claude Code / Cursor 实战',
+        tags: ['Claude Code', 'Cursor'], diff: 'medium',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p><strong>Claude Code</strong>：CLI工具，通过CLAUDE.md定义项目上下文，支持Skill扩展</p><p><strong>Cursor</strong>：IDE集成，Composer模式做跨文件重构，Chat模式做单文件修改</p><p><strong>核心工作流</strong>：先让AI理解项目结构 → 生成重构方案 → 逐步执行 → 人工Review</p>' }
+        ]
+      }
+    ]
+  },
+  '14-后端基础': {
+    name: '后端基础', num: '14', color: 'c1',
+    desc: 'MySQL、Redis、系统设计基础',
+    questions: [
+      {
+        title: 'MySQL索引原理：B+树与查询优化',
+        tags: ['MySQL', '索引'], diff: 'medium',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p>B+树索引：非叶子节点只存key，叶子节点存key+data，叶子节点链表连接。优势：范围查询快、IO次数少（树高度低）。</p><p><strong>查询优化</strong>：覆盖索引、最左前缀匹配、避免索引失效（函数/类型转换/OR）</p>' }
+        ]
+      },
+      {
+        title: 'Redis数据结构与缓存策略',
+        tags: ['Redis', '缓存'], diff: 'medium',
+        subs: [
+          { type: 'answer', title: '参考答案', content: '<p>五种基本结构：String/Hash/List/Set/ZSet</p><p><strong>缓存策略</strong>：Cache Aside（旁路缓存）最常用；过期策略：LRU/LFU；穿透/击穿/雪崩的解决方案</p>' }
+        ]
+      }
+    ]
+  }
+};
+
+/* ===== PAGE INIT ===== */
+const catKey = new URLSearchParams(window.location.search).get('cat');
+if (!catKey || !categories[catKey]) {
+  window.location.href = 'index.html';
+}
+const cat = categories[catKey];
+
+/* ===== RENDER HERO ===== */
+document.getElementById('heroEyebrow').textContent = cat.num;
+document.getElementById('heroTitle').innerHTML = cat.name + ' <span class="accent">题库</span>';
+document.getElementById('heroSub').textContent = cat.desc;
+document.getElementById('navCategory').textContent = cat.name;
+document.title = cat.name + ' 题库 — AI 题库 & 面经';
+
+/* ===== RENDER STATS ===== */
+function updateStats() {
+  const qs = cat.questions;
+  const total = qs.length;
+  const easy = qs.filter(q => q.diff === 'easy').length;
+  const med = qs.filter(q => q.diff === 'medium').length;
+  const hard = qs.filter(q => q.diff === 'hard').length;
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statEasy').textContent = easy;
+  document.getElementById('statMed').textContent = med;
+  document.getElementById('statHard').textContent = hard;
+  document.getElementById('footerLeft').innerHTML = 'AI 题库 & <span>面经</span> — ' + cat.name + ' <span>' + total + ' 题</span>';
+  document.getElementById('footerCat').textContent = cat.name;
+}
+updateStats();
+
+/* ===== RENDER QUESTIONS ===== */
+const container = document.getElementById('questionsContainer');
+const tocContainer = document.getElementById('tocLinks');
+
+function renderQuestions() {
+  container.innerHTML = '';
+  tocContainer.innerHTML = '';
+  if (cat.questions.length === 0) {
+    container.innerHTML = '<div class="empty-state">暂无题目，点击上方按钮添加</div>';
+    return;
+  }
+  cat.questions.forEach((q, i) => {
+    const qId = 'q-' + i;
+    // Build sub-boxes
+    let subsHtml = '';
+    if (q.subs && q.subs.length) {
+      q.subs.forEach(sub => {
+        const typeClass = sub.type === 'answer' ? 'answer' : sub.type === 'detail' ? 'detail' : 'tip';
+        subsHtml += '<div class="q-sub"><div class="q-sub-title ' + typeClass + '">' + sub.title + '</div>' + sub.content + '</div>';
+      });
+    }
+    // Build tags
+    const tagsHtml = (q.tags || []).map(t => '<span class="q-box-tag">' + t + '</span>').join('');
+    const diffLabel = { easy: 'Easy', medium: 'Med', hard: 'Hard' }[q.diff] || 'Med';
+
+    const box = document.createElement('div');
+    box.className = 'q-box';
+    box.id = qId;
+    box.style.animation = 'fadeUp .4s ease ' + (i * 0.05) + 's both';
+    box.innerHTML =
+      '<div class="q-box-header" onclick="toggleQ(this)">' +
+        '<span class="q-box-num">Q' + (i + 1) + '</span>' +
+        '<span class="q-box-title">' + q.title + '</span>' +
+        '<span class="q-box-tags">' + tagsHtml + '</span>' +
+        '<span class="q-box-diff ' + q.diff + '">' + diffLabel + '</span>' +
+        '<span class="q-box-del" onclick="event.stopPropagation();delQ(this)">&times;</span>' +
+        '<span class="q-box-toggle">&#9660;</span>' +
+      '</div>' +
+      '<div class="q-box-body">' + subsHtml + '</div>';
+    container.appendChild(box);
+
+    // TOC link
+    const tocLink = document.createElement('a');
+    tocLink.className = 'toc-link';
+    tocLink.href = '#' + qId;
+    tocLink.textContent = 'Q' + (i + 1) + ' ' + q.title;
+    tocLink.addEventListener('click', e => {
+      e.preventDefault();
+      document.getElementById(qId).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    tocContainer.appendChild(tocLink);
+  });
+}
+renderQuestions();
+
+/* ===== SCROLL BAR ===== */
+window.addEventListener('scroll', () => {
+  const bar = document.getElementById('scrollBar');
+  const h = document.documentElement.scrollHeight - window.innerHeight;
+  bar.style.width = h > 0 ? (window.scrollY / h * 100) + '%' : '0%';
+});
+
+/* ===== TOC ACTIVE STATE ===== */
+function updateToc() {
+  const links = tocContainer.querySelectorAll('.toc-link');
+  let current = '';
+  cat.questions.forEach((q, i) => {
+    const el = document.getElementById('q-' + i);
+    if (el && el.getBoundingClientRect().top <= 120) current = 'q-' + i;
+  });
+  links.forEach(link => {
+    const href = link.getAttribute('href');
+    link.classList.toggle('active', href === '#' + current);
+  });
+}
+window.addEventListener('scroll', updateToc);
+document.getElementById('toc').classList.add('visible');
+
+/* ===== TOGGLE QUESTION ===== */
+function toggleQ(header) {
+  const box = header.closest('.q-box');
+  const body = box.querySelector('.q-box-body');
+  const toggle = box.querySelector('.q-box-toggle');
+  body.classList.toggle('open');
+  toggle.classList.toggle('open');
+  toggle.innerHTML = body.classList.contains('open') ? '&#9650;' : '&#9660;';
+}
+
+/* ===== DELETE QUESTION ===== */
+function delQ(btn) {
+  const box = btn.closest('.q-box');
+  box.style.transition = 'all .25s';
+  box.style.opacity = '0';
+  box.style.transform = 'translateX(40px)';
+  setTimeout(() => {
+    // Find index and remove from data
+    const idx = cat.questions.findIndex((q, i) => document.getElementById('q-' + i) === box);
+    if (idx > -1) cat.questions.splice(idx, 1);
+    renderQuestions();
+    updateStats();
+    showToast('题目已删除');
+  }, 250);
+}
+
+/* ===== TOAST ===== */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* ===== ADD QUESTION MODAL ===== */
+const addQuestionModal = document.getElementById('addQuestionModal');
+const questionCategoryInput = document.getElementById('questionCategory');
+questionCategoryInput.value = catKey + ' - ' + cat.name;
+
+document.getElementById('addQuestionBtn').addEventListener('click', () => {
+  addQuestionModal.classList.add('show');
+});
+function closeQuestionModal() { addQuestionModal.classList.remove('show') }
+document.getElementById('closeQuestionModal').addEventListener('click', closeQuestionModal);
+document.getElementById('cancelQuestion').addEventListener('click', closeQuestionModal);
+addQuestionModal.addEventListener('click', e => { if (e.target === addQuestionModal) closeQuestionModal() });
+
+document.getElementById('submitQuestion').addEventListener('click', () => {
+  const title = document.getElementById('questionTitle').value.trim();
+  const diff = document.getElementById('questionDiff').value;
+  const tagsRaw = document.getElementById('questionTags').value.trim();
+  const answer = document.getElementById('questionAnswer').value.trim();
+  if (!title) { showToast('请输入题目名称'); return }
+  const tags = tagsRaw ? tagsRaw.split(/[,，]/).map(t => t.trim()).filter(Boolean) : [];
+  const newQ = {
+    title: title,
+    tags: tags,
+    diff: diff,
+    subs: answer ? [{ type: 'answer', title: '参考答案', content: '<p>' + answer.replace(/\n/g, '</p><p>') + '</p>' }] : []
+  };
+  cat.questions.push(newQ);
+  renderQuestions();
+  updateStats();
+  document.getElementById('questionTitle').value = '';
+  document.getElementById('questionTags').value = '';
+  document.getElementById('questionAnswer').value = '';
+  closeQuestionModal();
+  showToast('题目已添加到 ' + cat.name);
+  // Scroll to new question
+  setTimeout(() => {
+    const newEl = document.getElementById('q-' + (cat.questions.length - 1));
+    if (newEl) newEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>416. 分割等和子集 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.knapsack-grid{overflow-x:auto;margin:1rem 0}
+.knapsack-table{border-collapse:separate;border-spacing:3px}
+.knapsack-table th,.knapsack-table td{width:36px;height:36px;text-align:center;border:3px solid var(--ink);border-radius:6px;font-family:"Roboto Mono",monospace;font-size:.68rem;font-weight:700;padding:0}
+.knapsack-table th{background:var(--yellow-soft);color:var(--ink)}
+.knapsack-table td{background:#fff;box-shadow:1px 2px 0 var(--ink);transition:all .3s}
+.knapsack-table td.current{background:var(--purple);color:#fff;box-shadow:3px 4px 0 var(--ink)}
+.knapsack-table td.filled{background:var(--green-soft);color:var(--green)}
+.knapsack-table td.true-cell{background:var(--green);color:#fff;box-shadow:2px 3px 0 var(--ink)}
+.knapsack-table td.false-cell{background:#f5f5f5;color:#ccc}
+.nums-row{display:flex;gap:6px;margin:.6rem 0;flex-wrap:wrap;align-items:center}
+.nums-chip{padding:4px 12px;border:3px solid var(--ink);border-radius:8px;background:var(--purple-soft);font-family:"Roboto Mono",monospace;font-size:.82rem;font-weight:700;box-shadow:2px 3px 0 var(--ink)}
+.nums-chip.selected{background:var(--green);color:#fff}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">动态规划</span>
+      <span class="hero-tag">0-1背包</span>
+    </div>
+    <h1 class="hero-title">#416 <span class="accent">分割等和子集</span></h1>
+    <p class="hero-desc">给你一个<strong>只包含正整数</strong>的非空数组 <code>nums</code>。请你判断是否可以将这个数组分割成两个子集，使得两个子集的元素和相等。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [1,5,11,5]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">true</span></div>
+      <div class="example-explain">可以分割成 [1,5,5] 和 [11]，两子集和都为 11</div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [1,2,3,5]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">false</span></div>
+      <div class="example-explain">总和为 11，无法分成两个等和子集</div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">正整数数组</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill done">总和为偶数？</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">能否凑出 sum/2</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">0-1背包问题</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>总和必须为<strong>偶数</strong>，否则直接返回 false</li>
+        <li>等价于：能否从数组中选出若干元素，使其和恰好为 <code>sum/2</code></li>
+        <li>每个元素<strong>只能用一次</strong> → 0-1 背包</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>DP O(n × target)</strong>：定义 <code>dp[j]</code> = 能否用前 i 个数凑出和 j：</p>
+      <div class="step-flow">
+        <span class="step-pill">dp[0] = true</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">dp[j] = dp[j] || dp[j-nums[i]]</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">内层逆序遍历</span>
+      </div>
+      <p>0-1 背包：内层循环必须<strong>逆序</strong>，保证每个数只用一次。空间优化为一维数组。</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">canPartition</span>(nums):</span>
+<span class="line">    total = <span class="fn">sum</span>(nums)</span>
+<span class="line">    <span class="kw">if</span> total % <span class="num">2</span>: <span class="kw">return</span> <span class="kw">False</span></span>
+<span class="line">    target = total // <span class="num">2</span></span>
+<span class="line">    dp = [<span class="kw">False</span>] * (target + <span class="num">1</span>)</span>
+<span class="line">    dp[<span class="num">0</span>] = <span class="kw">True</span></span>
+<span class="line hl">    <span class="kw">for</span> num <span class="kw">in</span> nums:</span>
+<span class="line hl">        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(target, num - <span class="num">1</span>, -<span class="num">1</span>):</span>
+<span class="line hl">            dp[j] = dp[j] <span class="kw">or</span> dp[j - num]</span>
+<span class="line">    <span class="kw">return</span> dp[target]</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public</span> <span class="kw">boolean</span> <span class="fn">canPartition</span>(<span class="kw">int</span>[] nums) {</span>
+<span class="line">    <span class="kw">int</span> total = <span class="fn">sum</span>(nums);</span>
+<span class="line">    <span class="kw">if</span> (total % <span class="num">2</span> != <span class="num">0</span>) <span class="kw">return false</span>;</span>
+<span class="line">    <span class="kw">int</span> target = total / <span class="num">2</span>;</span>
+<span class="line">    <span class="kw">boolean</span>[] dp = <span class="kw">new</span> <span class="kw">boolean</span>[target + <span class="num">1</span>];</span>
+<span class="line">    dp[<span class="num">0</span>] = <span class="kw">true</span>;</span>
+<span class="line hl">    <span class="kw">for</span> (<span class="kw">int</span> num : nums) {</span>
+<span class="line hl">        <span class="kw">for</span> (<span class="kw">int</span> j = target; j >= num; j--) {</span>
+<span class="line hl">            dp[j] = dp[j] || dp[j - num];</span>
+<span class="line">        }</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> dp[target];</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">bool</span> <span class="fn">canPartition</span>(<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&amp; nums) {</span>
+<span class="line">    <span class="kw">int</span> total = <span class="fn">accumulate</span>(nums.begin(), nums.end(), <span class="num">0</span>);</span>
+<span class="line">    <span class="kw">if</span> (total % <span class="num">2</span>) <span class="kw">return false</span>;</span>
+<span class="line">    <span class="kw">int</span> target = total / <span class="num">2</span>;</span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">bool</span>&gt; dp(target + <span class="num">1</span>, <span class="kw">false</span>);</span>
+<span class="line">    dp[<span class="num">0</span>] = <span class="kw">true</span>;</span>
+<span class="line hl">    <span class="kw">for</span> (<span class="kw">int</span> num : nums) {</span>
+<span class="line hl">        <span class="kw">for</span> (<span class="kw">int</span> j = target; j >= num; j--) {</span>
+<span class="line hl">            dp[j] = dp[j] || dp[j - num];</span>
+<span class="line">        }</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> dp[target];</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">逐步演示</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 5</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="nums-row" id="numsRow"></div>
+        <div class="knapsack-grid" id="ksGrid"></div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>总和为奇数直接 false</strong>
+        <p>如果 sum 为奇数，不可能分成两个等和子集，直接返回 false，这是快速剪枝。</p>
+      </article>
+      <article class="note">
+        <strong>内层逆序</strong>
+        <p>0-1 背包必须逆序遍历 j，否则同一个数会被重复使用。这是与完全背包的关键区别。</p>
+      </article>
+      <article class="note">
+        <strong>dp[0] = true</strong>
+        <p>和为 0 总是可以凑出的（不选任何元素），这是递推基础。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>分成 k 个等和子集</strong>：LeetCode 698，NP 完全问题，需要回溯+剪枝</li>
+        <li><strong>二维 DP 表</strong>：还原具体方案，用 prev 数组回溯哪些元素被选中</li>
+        <li><strong>bitmask 优化</strong>：用 bitset 代替 bool 数组，常数优化</li>
+        <li><strong>与子集和问题的关系</strong>：本题等价于子集和问题，是 0-1 背包的特例</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="322-零钱兑换.html"><span class="num">#322</span>零钱兑换</a>
+      <a class="related-chip" href="279-完全平方数.html"><span class="num">#279</span>完全平方数</a>
+      <a class="related-chip" href="198-打家劫舍.html"><span class="num">#198</span>打家劫舍</a>
+      <a class="related-chip" href="300-最长递增子序列.html"><span class="num">#300</span>最长递增子序列</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#416 分割等和子集</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const NUMS=[1,5,11,5];
+const TARGET=11;
+// dp after each num:
+// init: [T,F,F,F,F,F,F,F,F,F,F,F]
+// +1:   [T,T,F,F,F,F,F,F,F,F,F,F]
+// +5:   [T,T,F,F,F,T,T,F,F,F,F,F]
+// +11:  [T,T,F,F,F,T,T,F,F,F,F,T,T]
+// +5:   [T,T,F,F,F,T,T,F,F,F,T,T,T]
+const STEPS=[
+  {dp:[1,0,0,0,0,0,0,0,0,0,0,0],curNum:-1,msg:'初始 dp[0]=true，其余为 false。target=11'},
+  {dp:[1,1,0,0,0,0,0,0,0,0,0,0],curNum:0,msg:'加入 nums[0]=1：dp[1]=true（凑出1）'},
+  {dp:[1,1,0,0,0,1,1,0,0,0,0,0],curNum:1,msg:'加入 nums[1]=5：dp[5]=true, dp[6]=true（1+5）'},
+  {dp:[1,1,0,0,0,1,1,0,0,0,0,1],curNum:2,msg:'加入 nums[2]=11：dp[11]=<code>true</code>（凑出11！）'},
+  {dp:[1,1,0,0,0,1,1,0,0,0,1,1],curNum:3,msg:'加入 nums[3]=5：dp[10]=true, dp[11]=true ✓ 答案为true',done:true},
+];
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  // nums row
+  const numsRow=document.getElementById('numsRow');
+  numsRow.innerHTML='<span style="font-family:Baloo 2;font-weight:800;font-size:.85rem;color:var(--pink)">nums =</span>';
+  NUMS.forEach((v,i)=>{
+    const chip=document.createElement('span');
+    chip.className='nums-chip';
+    if(s&&s.curNum>=i) chip.classList.add('selected');
+    chip.textContent=v;
+    numsRow.appendChild(chip);
+  });
+  // dp table
+  const grid=document.getElementById('ksGrid');
+  grid.innerHTML='';
+  const table=document.createElement('table');
+  table.className='knapsack-table';
+  // header
+  const thead=document.createElement('tr');
+  const th0=document.createElement('th');
+  th0.textContent='j';thead.appendChild(th0);
+  for(let j=0;j<=TARGET;j++){
+    const th=document.createElement('th');
+    th.textContent=j;thead.appendChild(th);
+  }
+  table.appendChild(thead);
+  // dp row
+  const tr=document.createElement('tr');
+  const td0=document.createElement('td');
+  td0.textContent='dp';td0.style.background='var(--purple-soft)';tr.appendChild(td0);
+  for(let j=0;j<=TARGET;j++){
+    const td=document.createElement('td');
+    if(s){
+      if(s.dp[j]){
+        td.textContent='T';
+        if(j===TARGET&&s.done) td.classList.add('true-cell');
+        else td.classList.add('filled');
+      }else{
+        td.textContent='F';
+        td.classList.add('false-cell');
+      }
+    }else{
+      td.textContent='-';
+      td.classList.add('false-cell');
+    }
+    tr.appendChild(td);
+  }
+  table.appendChild(tr);
+  grid.appendChild(table);
+  const info=document.getElementById('demoInfo');
+  info.innerHTML=s?s.msg:'点击 ▶ 开始逐步演示';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1500);
+}
+render();
+</script>
+</body>
+</html>

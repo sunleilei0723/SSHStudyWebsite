@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>287. 寻找重复数 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.link-node{display:inline-grid;place-items:center;width:52px;height:52px;border:4px solid var(--ink);border-radius:50%;font-family:"Roboto Mono",monospace;font-size:1rem;font-weight:700;background:#fff;box-shadow:2px 3px 0 var(--ink);transition:all .3s;position:relative}
+.link-node.slow{background:var(--purple);color:#fff;transform:scale(1.1);box-shadow:4px 5px 0 var(--ink)}
+.link-node.fast{background:var(--pink);color:#fff;transform:scale(1.1);box-shadow:4px 5px 0 var(--ink)}
+.link-node.meet{background:var(--green);color:#fff;transform:scale(1.15);box-shadow:4px 5px 0 var(--ink)}
+.link-node.found{background:var(--yellow);color:var(--ink);transform:scale(1.15);box-shadow:4px 5px 0 var(--ink)}
+.link-arrow{font-size:1.3rem;font-weight:900;color:var(--pink);margin:0 4px}
+.link-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin:.5rem 0;justify-content:center}
+.ptr-info{display:flex;gap:12px;flex-wrap:wrap;margin-top:.6rem;align-items:center}
+.ptr-box{padding:4px 14px;border:3px solid var(--ink);border-radius:8px;font-family:"Roboto Mono",monospace;font-size:.78rem;font-weight:700;box-shadow:2px 3px 0 var(--ink)}
+.ptr-box.slow-ptr{background:var(--purple-soft);color:var(--purple)}
+.ptr-box.fast-ptr{background:var(--pink-soft);color:var(--pink)}
+.demo-body{min-height:240px}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">快慢指针</span>
+      <span class="hero-tag">链表</span>
+    </div>
+    <h1 class="hero-title">#287 <span class="accent">寻找重复数</span></h1>
+    <p class="hero-desc">给定一个包含 <code>n + 1</code> 个整数的数组 <code>nums</code>，其数字都在 <code>[1, n]</code> 范围内，可知至少存在一个重复的整数。假设只有一个重复的整数，找出这个重复数。必须不修改数组，且只用常量级 O(1) 额外空间。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [1,3,4,2,2]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">2</span></div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [3,1,3,4,2]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">3</span></div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">n+1 个数</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill done">值域 [1,n]</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">找重复数</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">不修改 O(1)</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li><strong>不能修改</strong>数组（不能排序）</li>
+        <li><strong>O(1) 额外空间</strong>（不能用哈希表）</li>
+        <li>值域 <code>[1,n]</code>，长度 <code>n+1</code>，必有重复</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>数组 → 链表映射：</strong>把 <code>nums[i]</code> 看成从节点 <code>i</code> 指向节点 <code>nums[i]</code> 的指针。重复数意味着有两个节点指向同一个节点 → <strong>链表有环</strong>！</p>
+      <p><strong>快慢指针找环入口：</strong></p>
+      <div class="step-flow">
+        <span class="step-pill">slow = nums[slow]</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">fast = nums[nums[fast]]</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">相遇点</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">一个回起点，同步走</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">再次相遇 = 环入口</span>
+      </div>
+      <p><strong>为什么环入口就是重复数？</strong>因为环入口被两个不同的下标指向，即有两个 <code>i</code> 使得 <code>nums[i]</code> 相同。</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">findDuplicate</span>(nums):</span>
+<span class="line">    slow = fast = <span class="num">0</span></span>
+<span class="line">    <span class="cmt"># 第一阶段：快慢指针找相遇点</span></span>
+<span class="line hl">    <span class="kw">while</span> <span class="kw">True</span>:</span>
+<span class="line hl">        slow = nums[slow]</span>
+<span class="line hl">        fast = nums[nums[fast]]</span>
+<span class="line hl">        <span class="kw">if</span> slow == fast: <span class="kw">break</span></span>
+<span class="line">    <span class="cmt"># 第二阶段：找环入口</span></span>
+<span class="line hl">    slow = <span class="num">0</span></span>
+<span class="line hl">    <span class="kw">while</span> slow != fast:</span>
+<span class="line hl">        slow = nums[slow]</span>
+<span class="line hl">        fast = nums[fast]</span>
+<span class="line">    <span class="kw">return</span> slow</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public</span> <span class="kw">int</span> <span class="fn">findDuplicate</span>(<span class="kw">int</span>[] nums) {</span>
+<span class="line">    <span class="kw">int</span> slow = <span class="num">0</span>, fast = <span class="num">0</span>;</span>
+<span class="line hl">    <span class="kw">do</span> {</span>
+<span class="line hl">        slow = nums[slow];</span>
+<span class="line hl">        fast = nums[nums[fast]];</span>
+<span class="line hl">    } <span class="kw">while</span> (slow != fast);</span>
+<span class="line hl">    slow = <span class="num">0</span>;</span>
+<span class="line hl">    <span class="kw">while</span> (slow != fast) {</span>
+<span class="line hl">        slow = nums[slow];</span>
+<span class="line hl">        fast = nums[fast];</span>
+<span class="line hl">    }</span>
+<span class="line">    <span class="kw">return</span> slow;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">int</span> <span class="fn">findDuplicate</span>(<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&amp; nums) {</span>
+<span class="line">    <span class="kw">int</span> slow = <span class="num">0</span>, fast = <span class="num">0</span>;</span>
+<span class="line hl">    <span class="kw">do</span> {</span>
+<span class="line hl">        slow = nums[slow];</span>
+<span class="line hl">        fast = nums[nums[fast]];</span>
+<span class="line hl">    } <span class="kw">while</span> (slow != fast);</span>
+<span class="line hl">    slow = <span class="num">0</span>;</span>
+<span class="line hl">    <span class="kw">while</span> (slow != fast) {</span>
+<span class="line hl">        slow = nums[slow];</span>
+<span class="line hl">        fast = nums[fast];</span>
+<span class="line hl">    }</span>
+<span class="line">    <span class="kw">return</span> slow;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">数组→链表映射 + 快慢指针</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 0</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div id="demoChain" style="text-align:center"></div>
+        <div class="ptr-info">
+          <span class="demo-hash-label">指针：</span>
+          <span class="ptr-box slow-ptr" id="demoSlow">slow = 0</span>
+          <span class="ptr-box fast-ptr" id="demoFast">fast = 0</span>
+        </div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始快慢指针</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>起点是 0 不是 nums[0]</strong>
+        <p>链表从虚拟头节点 0 开始，<code>slow = nums[slow]</code> 才是第一步移动。初始 <code>slow = fast = 0</code>。</p>
+      </article>
+      <article class="note">
+        <strong>第二阶段 slow 回到 0</strong>
+        <p>相遇后，<code>slow</code> 要回到起点 0（不是回到 nums[0]），然后 <code>slow</code> 和 <code>fast</code> 同步走一步。</p>
+      </article>
+      <article class="note">
+        <strong>do-while vs while</strong>
+        <p>初始 <code>slow == fast == 0</code>，如果用 <code>while</code> 循环会直接退出，所以第一阶段用 <code>do-while</code>。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>二分法</strong>：对值域 [1,n] 二分，统计 ≤ mid 的个数，O(n log n) 时间 O(1) 空间</li>
+        <li><strong>位运算法</strong>：统计每个 bit 位上 1 的个数，比无重复时多出的 bit 就是重复数的 bit</li>
+        <li><strong>如果可以修改数组</strong>：排序或标记法（把访问过的值取反），更简单</li>
+        <li><strong>多个重复数</strong>：快慢指针法不适用，需要其他方法</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="136-只出现一次的数字.html"><span class="num">#136</span>只出现一次的数字</a>
+      <a class="related-chip" href="169-多数元素.html"><span class="num">#169</span>多数元素</a>
+      <a class="related-chip" href="75-颜色分类.html"><span class="num">#75</span>颜色分类</a>
+      <a class="related-chip" href="31-下一个排列.html"><span class="num">#31</span>下一个排列</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#287 寻找重复数</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const NUMS=[1,3,4,2,2];
+// Chain: 0→1→3→2→4→2→4→2→... (cycle: 2→4→2)
+// Phase 1: slow/fast meet
+// Phase 2: slow back to 0, both step 1
+
+const steps=[];
+let slow=0,fast=0;
+steps.push({slow:0,fast:0,phase:'init',msg:'初始 slow=0, fast=0'});
+
+// Phase 1
+do{
+  slow=NUMS[slow];
+  fast=NUMS[NUMS[fast]];
+  steps.push({slow,fast,phase:'chase',msg:`slow → ${slow}, fast → ${fast}${slow===fast?' → 相遇！':''}`});
+}while(slow!==fast);
+
+// Phase 2
+slow=0;
+steps.push({slow,fast,phase:'reset',msg:`slow 回到 0，fast 保持 ${fast}，开始同步走`});
+while(slow!==fast){
+  slow=NUMS[slow];
+  fast=NUMS[fast];
+  steps.push({slow,fast,phase:'find',msg:`slow → ${slow}, fast → ${fast}${slow===fast?' → 再次相遇！环入口 = <strong>'+slow+'</strong>':''}`});
+}
+
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:steps[step];
+  const chain=document.getElementById('demoChain');
+  chain.innerHTML='';
+  // Show chain: 0 → 1 → 3 → 2 → 4 → 2 (cycle)
+  const chainNodes=[0,1,3,2,4];
+  const row=document.createElement('div');
+  row.className='link-row';
+  chainNodes.forEach((v,idx)=>{
+    const node=document.createElement('div');
+    node.className='link-node';
+    node.textContent=v;
+    if(s){
+      if(s.phase==='chase'||s.phase==='init'||s.phase==='reset'){
+        if(v===s.slow&&v===s.fast) node.classList.add('meet');
+        else if(v===s.slow) node.classList.add('slow');
+        else if(v===s.fast) node.classList.add('fast');
+      }
+      if(s.phase==='find'){
+        if(v===s.slow&&v===s.fast) node.classList.add('found');
+        else if(v===s.slow) node.classList.add('slow');
+        else if(v===s.fast) node.classList.add('fast');
+      }
+    }
+    row.appendChild(node);
+    if(idx<chainNodes.length-1){
+      const arrow=document.createElement('span');
+      arrow.className='link-arrow';arrow.textContent='→';
+      row.appendChild(arrow);
+    }
+  });
+  // Add cycle arrow
+  const cycleLabel=document.createElement('span');
+  cycleLabel.style.cssText='font-size:.72rem;font-weight:700;color:var(--pink);margin-left:8px';
+  cycleLabel.textContent='(2→4→2 循环)';
+  row.appendChild(cycleLabel);
+  chain.appendChild(row);
+
+  document.getElementById('demoSlow').textContent='slow = '+(s?s.slow:0);
+  document.getElementById('demoFast').textContent='fast = '+(s?s.fast:0);
+  document.getElementById('demoInfo').innerHTML=s?s.msg:'点击 ▶ 开始快慢指针';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+steps.length;
+}
+
+function nextStep(){if(step<steps.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<steps.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1000);
+}
+render();
+</script>
+</body>
+</html>

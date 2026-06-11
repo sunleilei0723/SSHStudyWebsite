@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5. 最长回文子串 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.demo-str-cell.palindrome{background:var(--green);color:#fff;transform:translateY(-3px);box-shadow:3px 4px 0 var(--ink)}
+.demo-str-cell.center{background:var(--purple);color:#fff;transform:translateY(-3px) scale(1.1);box-shadow:3px 4px 0 var(--ink)}
+.demo-str-cell.expanding{background:var(--yellow-soft);border-color:var(--yellow);transform:translateY(-2px)}
+.demo-body{min-height:200px}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">动态规划</span>
+      <span class="hero-tag">字符串</span>
+    </div>
+    <h1 class="hero-title">#5 <span class="accent">最长回文子串</span></h1>
+    <p class="hero-desc">给定一个字符串 <code>s</code>，找到 <code>s</code> 中最长的回文子串。如果存在多个最长回文子串，返回第一个。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">s = "babad"</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">"bab"</span></div>
+      <div class="example-explain">"aba" 同样是合法答案</div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">s = "cbbd"</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">"bb"</span></div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">字符串 s</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill done">找回文</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">最长子串</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">返回子串</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li><strong>子串</strong>（连续），不是子序列</li>
+        <li>回文 = 正读反读一样，如 "aba"、"bb"</li>
+        <li>长度 ≥ 1 的子串一定是回文</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>中心扩展法 O(n²)：</strong>以每个字符（和每两个字符之间）为中心，向两边扩展：</p>
+      <div class="step-flow">
+        <span class="step-pill">选中心</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">左右扩展</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">不等则停</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">记录最长</span>
+      </div>
+      <p><strong>DP 法 O(n²)：</strong><code>dp[i][j]</code> 表示 <code>s[i..j]</code> 是否回文，<code>dp[i][j] = dp[i+1][j-1] && s[i]==s[j]</code></p>
+      <p><strong>Manacher O(n)：</strong>最优解但较复杂，面试一般掌握中心扩展即可</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">longestPalindrome</span>(s):</span>
+<span class="line">    <span class="kw">def</span> <span class="fn">expand</span>(l, r):</span>
+<span class="line">        <span class="kw">while</span> l >= <span class="num">0</span> <span class="kw">and</span> r &lt; <span class="fn">len</span>(s) <span class="kw">and</span> s[l] == s[r]:</span>
+<span class="line hl">            l -= <span class="num">1</span>; r += <span class="num">1</span></span>
+<span class="line">        <span class="kw">return</span> s[l+<span class="num">1</span>:r]  <span class="cmt"># 返回回文子串</span></span>
+<span class="line">    res = s[<span class="num">0</span>]</span>
+<span class="line">    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(s)):</span>
+<span class="line hl">        odd = <span class="fn">expand</span>(i, i)      <span class="cmt"># 奇数长度</span></span>
+<span class="line hl">        even = <span class="fn">expand</span>(i, i+<span class="num">1</span>)  <span class="cmt"># 偶数长度</span></span>
+<span class="line">        res = <span class="fn">max</span>(res, odd, even, key=<span class="fn">len</span>)</span>
+<span class="line">    <span class="kw">return</span> res</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public</span> <span class="kw">String</span> <span class="fn">longestPalindrome</span>(<span class="kw">String</span> s) {</span>
+<span class="line">    <span class="kw">String</span> res = s.<span class="fn">substring</span>(<span class="num">0</span>, <span class="num">1</span>);</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; s.length(); i++) {</span>
+<span class="line hl">        <span class="kw">String</span> odd = <span class="fn">expand</span>(s, i, i);</span>
+<span class="line hl">        <span class="kw">String</span> even = <span class="fn">expand</span>(s, i, i+<span class="num">1</span>);</span>
+<span class="line">        <span class="kw">if</span> (odd.length() > res.length()) res = odd;</span>
+<span class="line">        <span class="kw">if</span> (even.length() > res.length()) res = even;</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> res;</span>
+<span class="line">}</span>
+<span class="line"><span class="kw">String</span> <span class="fn">expand</span>(<span class="kw">String</span> s, <span class="kw">int</span> l, <span class="kw">int</span> r) {</span>
+<span class="line">    <span class="kw">while</span> (l >= <span class="num">0</span> && r &lt; s.length() && s.<span class="fn">charAt</span>(l) == s.<span class="fn">charAt</span>(r)) { l--; r++; }</span>
+<span class="line">    <span class="kw">return</span> s.<span class="fn">substring</span>(l+<span class="num">1</span>, r);</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">string</span> <span class="fn">longestPalindrome</span>(<span class="kw">string</span> s) {</span>
+<span class="line">    <span class="kw">int</span> n = s.size(), start = <span class="num">0</span>, maxLen = <span class="num">1</span>;</span>
+<span class="line">    <span class="kw">auto</span> <span class="fn">expand</span> = [&](<span class="kw">int</span> l, <span class="kw">int</span> r) {</span>
+<span class="line">        <span class="kw">while</span> (l >= <span class="num">0</span> && r &lt; n && s[l] == s[r]) { l--; r++; }</span>
+<span class="line">        <span class="kw">if</span> (r-l-<span class="num">1</span> > maxLen) { start = l+<span class="num">1</span>; maxLen = r-l-<span class="num">1</span>; }</span>
+<span class="line">    };</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; n; i++) {</span>
+<span class="line hl">        <span class="fn">expand</span>(i, i);      <span class="cmt">// 奇数</span></span>
+<span class="line hl">        <span class="fn">expand</span>(i, i+<span class="num">1</span>);  <span class="cmt">// 偶数</span></span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> s.<span class="fn">substr</span>(start, maxLen);</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">中心扩展过程 — "babad"</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 0</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="demo-str-row" id="demoStr"></div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始中心扩展</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>奇偶中心</strong>
+        <p>必须同时考虑奇数长度（单字符中心）和偶数长度（双字符中心）的回文。只考虑一种会漏解。</p>
+      </article>
+      <article class="note">
+        <strong>边界返回</strong>
+        <p>扩展结束后，回文范围是 <code>[l+1, r-1]</code>（因为退出时 <code>s[l]!=s[r]</code>），注意 +1 和 -1。</p>
+      </article>
+      <article class="note">
+        <strong>初始值</strong>
+        <p>至少有一个字符是回文，所以初始 <code>res = s[0]</code>，长度至少为 1。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>Manacher 算法</strong>：O(n) 时间，通过插入分隔符统一奇偶，用已知回文加速</li>
+        <li><strong>回文子串个数</strong>：遍历每个中心，统计每个中心能扩展出的回文数</li>
+        <li><strong>最长回文子序列</strong>：不要求连续，用区间 DP，<code>dp[i][j]</code> 表示最长回文子序列长度</li>
+        <li><strong>分割回文串</strong>：LeetCode 131，回溯 + DP 判断回文</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="62-不同路径.html"><span class="num">#62</span>不同路径</a>
+      <a class="related-chip" href="64-最小路径和.html"><span class="num">#64</span>最小路径和</a>
+      <a class="related-chip" href="1143-最长公共子序列.html"><span class="num">#1143</span>最长公共子序列</a>
+      <a class="related-chip" href="72-编辑距离.html"><span class="num">#72</span>编辑距离</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#5 最长回文子串</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const S='babad';
+const steps=[];
+// Build expansion steps for each center
+for(let i=0;i<S.length;i++){
+  // Odd length
+  let l=i,r=i;
+  steps.push({center:i,range:[i,i],type:'odd',msg:`中心 i=${i}（奇数），s[${i}]='${S[i]}'，初始回文 "${S[i]}"`});
+  while(l-1>=0&&r+1<S.length&&S[l-1]===S[r+1]){
+    l--;r++;
+    steps.push({center:i,range:[l,r],type:'odd',msg:`扩展 → s[${l}]='${S[l]}' == s[${r}]='${S[r]}'，回文 "${S.slice(l,r+1)}"`});
+  }
+  // Even length
+  if(i+1<S.length){
+    l=i;r=i+1;
+    if(S[l]===S[r]){
+      steps.push({center:i,range:[l,r],type:'even',msg:`中心 i=${i}（偶数），s[${i}]='${S[i]}' == s[${i+1}]='${S[i+1]}'，回文 "${S.slice(l,r+1)}"`});
+      while(l-1>=0&&r+1<S.length&&S[l-1]===S[r+1]){
+        l--;r++;
+        steps.push({center:i,range:[l,r],type:'even',msg:`扩展 → s[${l}]='${S[l]}' == s[${r}]='${S[r]}'，回文 "${S.slice(l,r+1)}"`});
+      }
+    } else {
+      steps.push({center:i,range:[-1,-1],type:'even',msg:`中心 i=${i}（偶数），s[${i}]='${S[i]}' ≠ s[${i+1}]='${S[i+1]}'，无法形成偶数回文`});
+    }
+  }
+}
+
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:steps[step];
+  const strEl=document.getElementById('demoStr');
+  strEl.innerHTML='';
+  const label=document.createElement('span');
+  label.className='demo-str-label';label.textContent='s =';
+  strEl.appendChild(label);
+  for(let i=0;i<S.length;i++){
+    const cell=document.createElement('div');
+    cell.className='demo-str-cell';
+    cell.textContent=S[i];
+    if(s&&s.range[0]>=0){
+      if(i>=s.range[0]&&i<=s.range[1]) cell.classList.add('palindrome');
+      if(i===s.center) cell.classList.add('center');
+    }
+    strEl.appendChild(cell);
+  }
+  document.getElementById('demoInfo').innerHTML=s?s.msg:'点击 ▶ 开始中心扩展';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+steps.length;
+}
+
+function nextStep(){if(step<steps.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<steps.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },800);
+}
+render();
+</script>
+</body>
+</html>

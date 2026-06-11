@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>31. 下一个排列 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.demo-cell.find-i{background:var(--purple);color:#fff;transform:translateY(-3px);box-shadow:4px 5px 0 var(--ink)}
+.demo-cell.find-j{background:var(--blue);color:#fff;transform:translateY(-3px);box-shadow:4px 5px 0 var(--ink)}
+.demo-cell.swapping{background:var(--yellow-soft);border-color:var(--yellow);transform:translateY(-3px) scale(1.1);box-shadow:3px 4px 0 var(--ink)}
+.demo-cell.reversed{background:var(--green-soft);border-color:var(--green);color:var(--green)}
+.step-desc{margin-top:.6rem;padding:.5rem .8rem;border:3px solid var(--ink);border-radius:8px;background:var(--purple-soft);font-size:.78rem;font-weight:700;line-height:1.5}
+.demo-body{min-height:200px}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">双指针</span>
+      <span class="hero-tag">排列</span>
+    </div>
+    <h1 class="hero-title">#31 <span class="accent">下一个排列</span></h1>
+    <p class="hero-desc">给定一个整数数组 <code>nums</code>，找出 <code>nums</code> 的下一个排列。必须<strong>原地</strong>修改，只使用额外常数空间。如果不存在下一个排列，则将数组重新排列成最小的排列（升序）。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [1,2,3]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">[1,3,2]</span></div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [3,2,1]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">[1,2,3]</span></div>
+      <div class="example-explain">已经是最大排列，返回最小排列</div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 3</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [1,1,5]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">[1,5,1]</span></div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">当前排列</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill done">字典序下一个</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">原地修改</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">O(1) 空间</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>找<strong>字典序</strong>下一个更大的排列</li>
+        <li><strong>原地</strong>修改，不能返回新数组</li>
+        <li>如果是最大排列，返回<strong>最小排列</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>三步法：</strong></p>
+      <div class="step-flow">
+        <span class="step-pill active">① 从右找第一个升序对 i</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">② 从右找第一个 > nums[i] 的 j</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">③ 交换 i,j，反转 i+1..end</span>
+      </div>
+      <p><strong>直觉：</strong>要让排列"稍微变大"，需要从右往左找到第一个可以增大的位置，然后把后面部分变成最小的排列（反转即可）。</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">nextPermutation</span>(nums):</span>
+<span class="line">    n = <span class="fn">len</span>(nums)</span>
+<span class="line hl">    <span class="cmt"># ① 从右找第一个升序对</span></span>
+<span class="line hl">    i = n - <span class="num">2</span></span>
+<span class="line hl">    <span class="kw">while</span> i >= <span class="num">0</span> <span class="kw">and</span> nums[i] >= nums[i+<span class="num">1</span>]: i -= <span class="num">1</span></span>
+<span class="line">    <span class="kw">if</span> i >= <span class="num">0</span>:  <span class="cmt"># 不是最大排列</span></span>
+<span class="line hl">        <span class="cmt"># ② 从右找第一个 > nums[i]</span></span>
+<span class="line hl">        j = n - <span class="num">1</span></span>
+<span class="line hl">        <span class="kw">while</span> nums[j] &lt;= nums[i]: j -= <span class="num">1</span></span>
+<span class="line hl">        nums[i], nums[j] = nums[j], nums[i]  <span class="cmt"># ③ 交换</span></span>
+<span class="line hl">    <span class="cmt"># ④ 反转 i+1..end</span></span>
+<span class="line hl">    nums[i+<span class="num">1</span>:] = <span class="fn">reversed</span>(nums[i+<span class="num">1</span>:])</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public</span> <span class="kw">void</span> <span class="fn">nextPermutation</span>(<span class="kw">int</span>[] nums) {</span>
+<span class="line">    <span class="kw">int</span> n = nums.length, i = n - <span class="num">2</span>;</span>
+<span class="line hl">    <span class="kw">while</span> (i >= <span class="num">0</span> && nums[i] >= nums[i+<span class="num">1</span>]) i--;</span>
+<span class="line">    <span class="kw">if</span> (i >= <span class="num">0</span>) {</span>
+<span class="line">        <span class="kw">int</span> j = n - <span class="num">1</span>;</span>
+<span class="line hl">        <span class="kw">while</span> (nums[j] &lt;= nums[i]) j--;</span>
+<span class="line hl">        <span class="fn">swap</span>(nums, i, j);</span>
+<span class="line">    }</span>
+<span class="line hl">    <span class="fn">reverse</span>(nums, i+<span class="num">1</span>, n-<span class="num">1</span>);</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">void</span> <span class="fn">nextPermutation</span>(<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&amp; nums) {</span>
+<span class="line">    <span class="kw">int</span> n = nums.size(), i = n - <span class="num">2</span>;</span>
+<span class="line hl">    <span class="kw">while</span> (i >= <span class="num">0</span> && nums[i] >= nums[i+<span class="num">1</span>]) i--;</span>
+<span class="line">    <span class="kw">if</span> (i >= <span class="num">0</span>) {</span>
+<span class="line">        <span class="kw">int</span> j = n - <span class="num">1</span>;</span>
+<span class="line hl">        <span class="kw">while</span> (nums[j] &lt;= nums[i]) j--;</span>
+<span class="line hl">        <span class="fn">swap</span>(nums[i], nums[j]);</span>
+<span class="line">    }</span>
+<span class="line hl">    <span class="fn">reverse</span>(nums.<span class="fn">begin</span>()+i+<span class="num">1</span>, nums.<span class="fn">end</span>());</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">交换/反转过程</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 0</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="demo-arr" id="demoArr"></div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>找 i 的条件</strong>
+        <p>找的是 <code>nums[i] < nums[i+1]</code>，不是 <code>≤</code>。相等时不算升序，要继续往左找。</p>
+      </article>
+      <article class="note">
+        <strong>找 j 的条件</strong>
+        <p>找的是 <code>nums[j] > nums[i]</code>，不是 <code>≥</code>。如果相等，交换后没有变化。</p>
+      </article>
+      <article class="note">
+        <strong>i=-1 时也要反转</strong>
+        <p>如果 <code>i=-1</code>（整个数组降序），不需要交换，但仍然要反转整个数组，变成升序。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>上一个排列</strong>：对称操作——找降序对，找更小值，交换后反转</li>
+        <li><strong>全排列</strong>：不断调用 nextPermutation 直到回到初始排列</li>
+        <li><strong>第 k 个排列</strong>：LeetCode 60，用数学方法直接计算</li>
+        <li><strong>含重复元素</strong>：nextPermutation 仍然适用，但全排列需要去重</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="75-颜色分类.html"><span class="num">#75</span>颜色分类</a>
+      <a class="related-chip" href="136-只出现一次的数字.html"><span class="num">#136</span>只出现一次的数字</a>
+      <a class="related-chip" href="169-多数元素.html"><span class="num">#169</span>多数元素</a>
+      <a class="related-chip" href="287-寻找重复数.html"><span class="num">#287</span>寻找重复数</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#31 下一个排列</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const INIT=[1,2,3];
+const steps=[];
+let arr=[...INIT];
+const n=arr.length;
+
+// Step 1: Find i
+let i=n-2;
+while(i>=0&&arr[i]>=arr[i+1]) i--;
+steps.push({arr:[...arr],highlights:{findI:i>=0?i:null},phase:'findI',msg:`① 从右找升序对：i = ${i>=0?i:'-1（不存在，已是最大排列）'}`});
+
+if(i>=0){
+  // Step 2: Find j
+  let j=n-1;
+  while(arr[j]<=arr[i]) j--;
+  steps.push({arr:[...arr],highlights:{findI:i,findJ:j},phase:'findJ',msg:`② 从右找 > nums[${i}]=${arr[i]} 的位置：j = ${j}, nums[${j}]=${arr[j]}`});
+
+  // Step 3: Swap
+  [arr[i],arr[j]]=[arr[j],arr[i]];
+  steps.push({arr:[...arr],highlights:{swapA:i,swapB:j},phase:'swap',msg:`③ 交换 nums[${i}] 和 nums[${j}] → [${arr}]`});
+}
+
+// Step 4: Reverse
+let left=i+1,right=n-1;
+while(left<right){[arr[left],arr[right]]=[arr[right],arr[left]];left++;right--;}
+steps.push({arr:[...arr],highlights:{reverseFrom:i+1},phase:'reverse',msg:`④ 反转 [${i+1}..${n-1}] → <strong>[${arr}]</strong>`});
+
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:steps[step];
+  const arrEl=document.getElementById('demoArr');
+  arrEl.innerHTML='';
+  const curArr=s?s.arr:INIT;
+  curArr.forEach((_,idx)=>{
+    const d=document.createElement('div');d.className='demo-cell idx';d.textContent=idx;arrEl.appendChild(d);
+  });
+  arrEl.appendChild(document.createElement('br'));
+  curArr.forEach((v,idx)=>{
+    const d=document.createElement('div');d.className='demo-cell';
+    if(s&&s.highlights){
+      const h=s.highlights;
+      if(h.findI===idx) d.classList.add('find-i');
+      if(h.findJ===idx) d.classList.add('find-j');
+      if(h.swapA===idx||h.swapB===idx) d.classList.add('swapping');
+      if(h.reverseFrom!==undefined&&idx>=h.reverseFrom) d.classList.add('reversed');
+    }
+    d.textContent=v;arrEl.appendChild(d);
+  });
+  document.getElementById('demoInfo').innerHTML=s?s.msg:'点击 ▶ 开始演示';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+steps.length;
+}
+
+function nextStep(){if(step<steps.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<steps.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1200);
+}
+render();
+</script>
+</body>
+</html>

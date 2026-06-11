@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>75. 颜色分类 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.demo-cell.color-0{background:#e0f9f3;border-color:var(--green);color:var(--green)}
+.demo-cell.color-1{background:#fff8db;border-color:var(--yellow);color:#b8860b}
+.demo-cell.color-2{background:#ffe2ec;border-color:var(--pink);color:var(--pink)}
+.demo-cell.ptr-low{outline:3px solid var(--green);outline-offset:2px}
+.demo-cell.ptr-mid{outline:3px solid var(--purple);outline-offset:2px}
+.demo-cell.ptr-high{outline:3px solid var(--pink);outline-offset:2px}
+.demo-cell.swapping{background:var(--purple)!important;color:#fff!important;transform:scale(1.1);box-shadow:4px 5px 0 var(--ink)}
+.ptr-legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:.6rem}
+.ptr-tag{padding:2px 8px;border:3px solid var(--ink);border-radius:6px;font-size:.65rem;font-weight:700;font-family:"Roboto Mono",monospace;box-shadow:1px 2px 0 var(--ink)}
+.demo-body{min-height:200px}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">双指针</span>
+      <span class="hero-tag">排序</span>
+    </div>
+    <h1 class="hero-title">#75 <span class="accent">颜色分类</span></h1>
+    <p class="hero-desc">给定一个包含红色、白色和蓝色、共 <code>n</code> 个元素的数组 <code>nums</code>，原地对它们进行排序，使得相同颜色的元素相邻，并按照红色、白色、蓝色顺序排列。使用整数 0、1 和 2 分别表示红色、白色和蓝色。必须使用一趟扫描算法。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [2,0,2,1,1,0]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">[0,0,1,1,2,2]</span></div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [2,0,1]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">[0,1,2]</span></div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">只有 0/1/2</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill done">原地排序</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">一趟扫描</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">0..0..1..1..2..2</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>只有<strong>三种值</strong> 0、1、2</li>
+        <li><strong>原地</strong>排序，不能用额外数组</li>
+        <li><strong>一趟扫描</strong>，O(n) 时间</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>荷兰国旗问题 — 三指针分区：</strong></p>
+      <ul>
+        <li><code>low</code>：0 的右边界（0 放在 <code>[0, low-1]</code>）</li>
+        <li><code>mid</code>：当前扫描位置</li>
+        <li><code>high</code>：2 的左边界（2 放在 <code>[high+1, n-1]</code>）</li>
+      </ul>
+      <div class="step-flow">
+        <span class="step-pill">nums[mid]==0</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">swap(low,mid), low++, mid++</span>
+      </div>
+      <div class="step-flow">
+        <span class="step-pill">nums[mid]==1</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">mid++</span>
+      </div>
+      <div class="step-flow">
+        <span class="step-pill">nums[mid]==2</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">swap(mid,high), high--</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">sortColors</span>(nums):</span>
+<span class="line">    low, mid, high = <span class="num">0</span>, <span class="num">0</span>, <span class="fn">len</span>(nums)-<span class="num">1</span></span>
+<span class="line">    <span class="kw">while</span> mid &lt;= high:</span>
+<span class="line hl">        <span class="kw">if</span> nums[mid] == <span class="num">0</span>:</span>
+<span class="line hl">            nums[low], nums[mid] = nums[mid], nums[low]</span>
+<span class="line hl">            low += <span class="num">1</span>; mid += <span class="num">1</span></span>
+<span class="line">        <span class="kw">elif</span> nums[mid] == <span class="num">1</span>:</span>
+<span class="line">            mid += <span class="num">1</span></span>
+<span class="line">        <span class="kw">else</span>:  <span class="cmt"># nums[mid] == 2</span></span>
+<span class="line hl">            nums[mid], nums[high] = nums[high], nums[mid]</span>
+<span class="line hl">            high -= <span class="num">1</span></span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public</span> <span class="kw">void</span> <span class="fn">sortColors</span>(<span class="kw">int</span>[] nums) {</span>
+<span class="line">    <span class="kw">int</span> low = <span class="num">0</span>, mid = <span class="num">0</span>, high = nums.length - <span class="num">1</span>;</span>
+<span class="line">    <span class="kw">while</span> (mid &lt;= high) {</span>
+<span class="line hl">        <span class="kw">if</span> (nums[mid] == <span class="num">0</span>) { <span class="fn">swap</span>(nums, low++, mid++); }</span>
+<span class="line">        <span class="kw">else if</span> (nums[mid] == <span class="num">1</span>) { mid++; }</span>
+<span class="line hl">        <span class="kw">else</span> { <span class="fn">swap</span>(nums, mid, high--); }</span>
+<span class="line">    }</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">void</span> <span class="fn">sortColors</span>(<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&amp; nums) {</span>
+<span class="line">    <span class="kw">int</span> low = <span class="num">0</span>, mid = <span class="num">0</span>, high = nums.size() - <span class="num">1</span>;</span>
+<span class="line">    <span class="kw">while</span> (mid &lt;= high) {</span>
+<span class="line hl">        <span class="kw">if</span> (nums[mid] == <span class="num">0</span>) <span class="fn">swap</span>(nums[low++], nums[mid++]);</span>
+<span class="line">        <span class="kw">else if</span> (nums[mid] == <span class="num">1</span>) mid++;</span>
+<span class="line hl">        <span class="kw">else</span> <span class="fn">swap</span>(nums[mid], nums[high--]);</span>
+<span class="line">    }</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">三指针分区过程</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 0</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="demo-arr" id="demoArr"></div>
+        <div class="ptr-legend">
+          <span class="ptr-tag" style="background:var(--green-soft);border-color:var(--green)">low</span>
+          <span class="ptr-tag" style="background:var(--purple-soft);border-color:var(--purple)">mid</span>
+          <span class="ptr-tag" style="background:var(--pink-soft);border-color:var(--pink)">high</span>
+        </div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始三指针分区</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>遇 2 不移动 mid</strong>
+        <p>交换 <code>nums[mid]</code> 和 <code>nums[high]</code> 后，新的 <code>nums[mid]</code> 可能是 0，需要再判断，所以 <code>mid</code> 不能 ++。</p>
+      </article>
+      <article class="note">
+        <strong>遇 0 同时移动</strong>
+        <p>交换 <code>nums[low]</code> 和 <code>nums[mid]</code> 后，<code>low</code> 和 <code>mid</code> 都要 ++。因为 <code>low ≤ mid</code>，交换来的值一定是 1。</p>
+      </article>
+      <article class="note">
+        <strong>循环条件</strong>
+        <p>循环条件是 <code>mid ≤ high</code>，不是 <code>mid < high</code>。当 <code>mid == high</code> 时还需要判断一次。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>计数排序</strong>：统计 0/1/2 的个数再重写，两趟扫描但更直观</li>
+        <li><strong>四种颜色</strong>：需要更多指针或递归分区</li>
+        <li><strong>快速排序分区</strong>：荷兰国旗是快排三路分区的基础，处理大量重复元素</li>
+        <li><strong>k 种颜色</strong>：一般化为多路分区问题</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="31-下一个排列.html"><span class="num">#31</span>下一个排列</a>
+      <a class="related-chip" href="136-只出现一次的数字.html"><span class="num">#136</span>只出现一次的数字</a>
+      <a class="related-chip" href="169-多数元素.html"><span class="num">#169</span>多数元素</a>
+      <a class="related-chip" href="287-寻找重复数.html"><span class="num">#287</span>寻找重复数</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#75 颜色分类</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const INIT=[2,0,2,1,1,0];
+const steps=[];
+let arr=[...INIT],low=0,mid=0,high=arr.length-1;
+steps.push({arr:[...arr],low,mid,high,swap:null,msg:'初始状态：low=0, mid=0, high=5'});
+
+while(mid<=high){
+  if(arr[mid]===0){
+    [arr[low],arr[mid]]=[arr[mid],arr[low]];
+    const msg=`nums[mid]=0 → swap(${low},${mid}), low++, mid++ → [${arr}]`;
+    low++;mid++;
+    steps.push({arr:[...arr],low,mid,high,swap:null,msg});
+  } else if(arr[mid]===1){
+    mid++;
+    steps.push({arr:[...arr],low,mid,high,swap:null,msg:`nums[mid]=1 → mid++ → [${arr}]`});
+  } else {
+    [arr[mid],arr[high]]=[arr[high],arr[mid]];
+    const msg=`nums[mid]=2 → swap(${mid},${high}), high-- → [${arr}]`;
+    high--;
+    steps.push({arr:[...arr],low,mid,high,swap:null,msg});
+  }
+}
+steps.push({arr:[...arr],low,mid,high,swap:null,msg:`排序完成！[${arr}]`,done:true});
+
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:steps[step];
+  const arrEl=document.getElementById('demoArr');
+  arrEl.innerHTML='';
+  const curArr=s?s.arr:INIT;
+  // Index row
+  curArr.forEach((_,idx)=>{
+    const d=document.createElement('div');d.className='demo-cell idx';d.textContent=idx;arrEl.appendChild(d);
+  });
+  arrEl.appendChild(document.createElement('br'));
+  // Value row
+  curArr.forEach((v,idx)=>{
+    const d=document.createElement('div');d.className='demo-cell color-'+v;
+    if(s&&!s.done){
+      if(idx===s.low) d.classList.add('ptr-low');
+      if(idx===s.mid) d.classList.add('ptr-mid');
+      if(idx===s.high) d.classList.add('ptr-high');
+    }
+    if(s&&s.done) d.classList.add('color-'+v);
+    d.textContent=v;arrEl.appendChild(d);
+  });
+  document.getElementById('demoInfo').innerHTML=s?s.msg:'点击 ▶ 开始三指针分区';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+steps.length;
+}
+
+function nextStep(){if(step<steps.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<steps.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1000);
+}
+render();
+</script>
+</body>
+</html>

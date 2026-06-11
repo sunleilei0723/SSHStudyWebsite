@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 题库 & 面经 — 孙雷雷的学习网页</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --paper:#fffdf8;--ink:#151822;--muted:#5f6470;
+  --purple:#7a4fe3;--purple-soft:#ede7fc;
+  --green:#24c2a0;--green-soft:#e0f9f3;
+  --pink:#e9578f;--pink-soft:#ffe2ec;
+  --yellow:#ffd42a;--yellow-soft:#fff8db;
+  --blue:#47c7f4;--blue-soft:#e3f6fd;
+  --orange:#ff8c42;--orange-soft:#fff0e5;
+  --teal:#0d9488;--teal-soft:#ccfbf1;
+  --line:rgba(21,24,34,.1);
+  --shadow:6px 7px 0 var(--ink);--shadow-sm:3px 4px 0 var(--ink);--radius:14px;
+}
+html{font-size:17px;-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+body{min-height:100vh;color:var(--ink);font-family:"Nunito","Noto Sans SC",sans-serif;background:#d7d3c6;line-height:1.6}
+a{color:inherit;text-decoration:none}
+.frame{width:min(1080px,100vw);margin:0 auto;position:relative;overflow:visible;background:radial-gradient(circle,rgba(21,24,34,.1) 1.4px,transparent 1.6px) 0 0/20px 20px,linear-gradient(var(--line) 1px,transparent 1px) 0 35%/100% 190px,linear-gradient(90deg,var(--line) 1px,transparent 1px) 50% 0/330px 100%,var(--paper);padding:28px 38px 44px}
+.site-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 1.2rem;padding:.72rem .9rem;border:4px solid var(--ink);border-radius:18px;background:#fff;box-shadow:var(--shadow-sm);position:sticky;top:10px;z-index:80}
+.nav-brand{display:flex;align-items:center;gap:.5rem;font-family:"Baloo 2",sans-serif;font-size:1.02rem;font-weight:800;color:var(--purple);text-decoration:none}
+.nav-dot{width:14px;height:14px;border:3px solid var(--ink);border-radius:50%;background:var(--yellow);flex:0 0 auto}
+.nav-links{display:flex;gap:8px;flex-wrap:wrap}
+.nav-links a{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:2px 12px;border:3px solid var(--ink);border-radius:999px;background:#fff;color:var(--ink);text-decoration:none;font-size:.72rem;font-weight:900;line-height:1.1;box-shadow:2px 3px 0 var(--ink)}
+.nav-links a.primary{background:var(--yellow)}
+.hero{padding:1.5rem 0 1.8rem;margin-bottom:1.5rem;border-bottom:5px solid var(--ink)}
+.hero-eyebrow{display:inline-grid;place-items:center;min-height:36px;padding:2px 16px;border:4px solid var(--ink);border-radius:999px;background:var(--purple);color:#fff;box-shadow:var(--shadow-sm);font-family:"Baloo 2",sans-serif;font-size:.85rem;font-weight:800;margin-bottom:.8rem}
+.hero-title{font-family:"Baloo 2",sans-serif;font-size:3rem;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.hero-title .accent{color:var(--pink)}
+.hero-sub{margin-top:.6rem;font-size:.9rem;line-height:1.7;max-width:680px;color:var(--muted);font-weight:700}
+.hero-line{width:140px;height:4px;border-radius:2px;background:var(--yellow);margin-top:1rem;box-shadow:3px 4px 0 var(--ink)}
+.stats{display:flex;gap:12px;margin:1.5rem 0 2rem;flex-wrap:wrap;animation:fadeUp .5s ease .05s both}
+.stat{display:flex;align-items:center;gap:10px;padding:.6rem 1.1rem;border:4px solid var(--ink);border-radius:12px;background:#fff;box-shadow:var(--shadow-sm)}
+.stat-num{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:1.6rem;line-height:1}
+.stat-num.purple{color:var(--purple)}.stat-num.green{color:var(--green)}.stat-num.pink{color:var(--pink)}.stat-num.blue{color:var(--blue)}.stat-num.orange{color:var(--orange)}.stat-num.teal{color:var(--teal)}
+.stat-label{font-size:.7rem;color:var(--muted);font-weight:800;letter-spacing:.02em}
+.tab-switcher{display:flex;gap:0;margin-bottom:2rem;border:4px solid var(--ink);border-radius:18px;overflow:hidden;box-shadow:var(--shadow-sm);background:#fff}
+.tab-btn{flex:1;display:grid;place-items:center;min-height:48px;padding:.6rem 1rem;border:none;background:#fff;font-family:"Baloo 2",sans-serif;font-size:.95rem;font-weight:800;cursor:pointer;transition:all .18s;color:var(--muted);position:relative}
+.tab-btn+.tab-btn{border-left:3px solid var(--ink)}
+.tab-btn.active{background:var(--purple);color:#fff}
+.tab-btn:hover:not(.active){background:var(--purple-soft);color:var(--purple)}
+.tab-btn .tab-count{display:inline-block;min-width:22px;height:22px;line-height:22px;text-align:center;border-radius:999px;background:rgba(255,255,255,.2);font-size:.65rem;font-weight:800;margin-left:6px;padding:0 6px}
+.tab-btn.active .tab-count{background:rgba(255,255,255,.3)}
+.tab-panel{display:none}
+.tab-panel.active{display:block;animation:fadeUp .35s ease both}
+
+/* ===== CATEGORY CARDS ===== */
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.cat-card{padding:1.2rem;border:4px solid var(--ink);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow-sm);transition:all .15s;cursor:pointer;text-decoration:none;display:block}
+.cat-card:hover{transform:translate(-2px,-2px);box-shadow:5px 6px 0 var(--ink)}
+.cat-card-top{display:flex;align-items:center;gap:10px;margin-bottom:.6rem}
+.cat-card-badge{display:inline-grid;place-items:center;min-width:40px;min-height:34px;padding:2px 10px;border:3px solid var(--ink);border-radius:8px;font-family:"Baloo 2",sans-serif;font-size:.75rem;font-weight:800;color:#fff;box-shadow:2px 3px 0 var(--ink)}
+.cat-card-badge.c1{background:var(--purple)}.cat-card-badge.c2{background:var(--green)}.cat-card-badge.c3{background:var(--pink)}.cat-card-badge.c4{background:var(--yellow);color:var(--ink)}.cat-card-badge.c5{background:var(--blue)}.cat-card-badge.c6{background:var(--orange)}.cat-card-badge.c7{background:var(--teal)}.cat-card-badge.c8{background:var(--purple)}.cat-card-badge.c9{background:var(--green)}.cat-card-badge.c10{background:var(--pink)}.cat-card-badge.c11{background:var(--blue)}.cat-card-badge.c12{background:var(--orange)}.cat-card-badge.c13{background:var(--teal)}
+.cat-card-name{font-family:"Baloo 2",sans-serif;font-size:1.05rem;font-weight:800}
+.cat-card-count{font-family:"Roboto Mono",monospace;font-size:.65rem;font-weight:700;color:var(--muted)}
+.cat-card-desc{font-size:.75rem;color:var(--muted);font-weight:700;line-height:1.5}
+.cat-card-arrow{font-size:1.2rem;color:var(--purple);margin-top:.5rem;font-weight:900}
+
+/* ===== INTERVIEW CARD ===== */
+.interview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+.interview-card{padding:1rem;border:4px solid var(--ink);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow-sm);transition:all .15s;position:relative;cursor:pointer}
+.interview-card:hover{transform:translate(-2px,-2px);box-shadow:5px 6px 0 var(--ink)}
+.interview-title{font-family:"Baloo 2",sans-serif;font-size:.95rem;font-weight:800;line-height:1.3;margin-bottom:.4rem;padding-right:24px}
+.interview-desc{font-size:.78rem;color:var(--muted);font-weight:700;line-height:1.5}
+.interview-tags{display:flex;gap:4px;margin-top:.6rem;flex-wrap:wrap}
+.interview-tag{font-size:.55rem;font-weight:800;padding:2px 7px;border-radius:4px;border:2px solid rgba(21,24,34,.12);background:rgba(255,255,255,.7);color:var(--muted)}
+.interview-date-badge{display:inline-block;padding:2px 10px;border:3px solid var(--ink);border-radius:8px;font-family:"Roboto Mono",monospace;font-size:.6rem;font-weight:700;color:#fff;background:var(--teal);box-shadow:2px 3px 0 var(--ink);margin-top:.5rem}
+.interview-del{position:absolute;top:8px;right:8px;width:26px;height:26px;display:grid;place-items:center;border:3px solid var(--ink);border-radius:8px;background:#fff;font-size:.7rem;font-weight:900;cursor:pointer;color:var(--pink);transition:all .15s;opacity:0}
+.interview-card:hover .interview-del{opacity:1}
+.interview-del:hover{background:var(--pink-soft)}
+
+/* ===== KNOWLEDGE POINTS ===== */
+.kp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.kp-card{padding:1rem;border:4px solid var(--ink);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow-sm);transition:all .15s}
+.kp-card:hover{transform:translate(-2px,-2px);box-shadow:5px 6px 0 var(--ink)}
+.kp-top{display:flex;align-items:center;gap:8px;margin-bottom:.6rem}
+.kp-icon{display:grid;place-items:center;width:42px;height:42px;border:4px solid var(--ink);border-radius:12px;font-family:"Baloo 2",sans-serif;font-size:1.1rem;font-weight:800;color:#fff;box-shadow:var(--shadow-sm)}
+.kp-icon.c1{background:var(--purple)}.kp-icon.c2{background:var(--green)}.kp-icon.c3{background:var(--pink)}.kp-icon.c4{background:var(--yellow);color:var(--ink)}.kp-icon.c5{background:var(--blue)}.kp-icon.c6{background:var(--orange)}.kp-icon.c7{background:var(--teal)}.kp-icon.c8{background:var(--purple)}.kp-icon.c9{background:var(--green)}.kp-icon.c10{background:var(--pink)}.kp-icon.c11{background:var(--blue)}.kp-icon.c12{background:var(--orange)}.kp-icon.c13{background:var(--teal)}
+.kp-name{font-family:"Baloo 2",sans-serif;font-size:.9rem;font-weight:800}
+.kp-count{font-family:"Roboto Mono",monospace;font-size:.6rem;font-weight:700;color:var(--muted)}
+.kp-items{display:flex;flex-direction:column;gap:3px}
+.kp-item{font-size:.72rem;font-weight:700;color:var(--muted);padding:2px 0 2px 12px;border-left:3px solid rgba(21,24,34,.1);line-height:1.4}
+
+/* ===== MODAL ===== */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(21,24,34,.45);z-index:200;justify-content:center;align-items:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{width:min(560px,100%);max-height:85vh;overflow-y:auto;background:var(--paper);border:4px solid var(--ink);border-radius:18px;box-shadow:8px 10px 0 var(--ink);padding:1.5rem;animation:popIn .25s ease}
+.modal-title{font-family:"Baloo 2",sans-serif;font-size:1.3rem;font-weight:800;margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+.modal-title .modal-badge{display:inline-grid;place-items:center;min-width:36px;min-height:30px;padding:2px 10px;border:3px solid var(--ink);border-radius:8px;background:var(--purple);color:#fff;font-size:.7rem;font-weight:800;box-shadow:2px 3px 0 var(--ink)}
+.modal-close{margin-left:auto;width:32px;height:32px;display:grid;place-items:center;border:3px solid var(--ink);border-radius:8px;background:#fff;font-size:1rem;font-weight:900;cursor:pointer;box-shadow:2px 3px 0 var(--ink)}
+.modal-close:hover{background:var(--pink-soft)}
+.form-group{margin-bottom:1rem}
+.form-label{display:block;font-size:.78rem;font-weight:900;margin-bottom:.3rem;color:var(--ink)}
+.form-input,.form-textarea{width:100%;padding:.5rem .7rem;border:3px solid var(--ink);border-radius:10px;background:#fff;font-family:inherit;font-size:.85rem;font-weight:700;color:var(--ink);box-shadow:2px 3px 0 var(--ink)}
+.form-input:focus,.form-textarea:focus{outline:none;border-color:var(--purple);box-shadow:2px 3px 0 var(--purple)}
+.form-textarea{min-height:100px;resize:vertical;line-height:1.6}
+.form-actions{display:flex;gap:10px;margin-top:1.2rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:4px 18px;border:3px solid var(--ink);border-radius:999px;font-weight:900;cursor:pointer;font-family:inherit;font-size:.8rem;box-shadow:2px 3px 0 var(--ink);transition:all .15s}
+.btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+.btn-primary{background:var(--yellow);color:var(--ink)}
+.btn-secondary{background:#fff;color:var(--ink)}
+
+/* ===== FOOTER ===== */
+.footer{margin-top:2.5rem;padding-top:1rem;border-top:4px dashed rgba(21,24,34,.15);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
+.footer-text{font-size:.68rem;color:var(--muted);font-weight:700;letter-spacing:.02em}
+.footer-text span{color:var(--purple)}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.02)}100%{transform:scale(1);opacity:1}}
+
+/* ===== CONFIRM DIALOG ===== */
+.confirm-overlay{display:none;position:fixed;inset:0;background:rgba(21,24,34,.45);z-index:300;justify-content:center;align-items:center;padding:20px}
+.confirm-overlay.show{display:flex}
+.confirm-box{width:min(400px,90%);background:var(--paper);border:4px solid var(--ink);border-radius:18px;box-shadow:8px 10px 0 var(--ink);padding:1.5rem;animation:popIn .25s ease;text-align:center}
+.confirm-icon{font-size:2rem;margin-bottom:.5rem}
+.confirm-msg{font-family:"Baloo 2",sans-serif;font-size:1.1rem;font-weight:800;margin-bottom:1rem}
+.confirm-sub{font-size:.8rem;color:var(--muted);font-weight:700;margin-bottom:1.2rem}
+.confirm-actions{display:flex;gap:10px;justify-content:center}
+
+/* ===== TOAST ===== */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);padding:.6rem 1.4rem;border:3px solid var(--ink);border-radius:999px;background:var(--green);color:#fff;font-weight:900;font-size:.82rem;box-shadow:var(--shadow-sm);z-index:300;transition:transform .3s ease;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:860px){
+  .frame{padding:18px 16px 30px}
+  .hero-title{font-size:2rem}
+  .stats{gap:8px}
+  .stat{padding:.4rem .8rem}
+  .stat-num{font-size:1.2rem}
+  .interview-grid{grid-template-columns:1fr}
+  .kp-grid{grid-template-columns:1fr}
+  .cat-grid{grid-template-columns:1fr}
+  .tab-btn{font-size:.8rem;padding:.5rem .6rem}
+}
+</style>
+</head>
+<body>
+
+<main class="frame">
+
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../index.html">主页</a>
+      <a href="../hot100/index.html">LeetCode Hot 100</a>
+      <a class="primary" href="index.html">AI 题库 & 面经</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-eyebrow">AI Agent & RAG</div>
+    <h1 class="hero-title">AI 题库 & <span class="accent">面经</span></h1>
+    <p class="hero-sub">14 个分类题库 + 12 篇面经，覆盖 LLM、微调、RAG、Agent、Prompt、MCP、记忆、系统设计、MultiAgent、评估、工程实践、AI工具、后端基础。按分类刷题，按面经实战。</p>
+    <div class="hero-line"></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><span class="stat-num purple">46</span><span class="stat-label">题库总题数</span></div>
+    <div class="stat"><span class="stat-num green">14</span><span class="stat-label">题库分类</span></div>
+    <div class="stat"><span class="stat-num pink">12</span><span class="stat-label">面经篇数</span></div>
+    <div class="stat"><span class="stat-num blue">14</span><span class="stat-label">知识点模块</span></div>
+  </div>
+
+  <div class="tab-switcher">
+    <button class="tab-btn active" data-tab="questions">题库<span class="tab-count">46</span></button>
+    <button class="tab-btn" data-tab="interviews">面经<span class="tab-count">12</span></button>
+    <button class="tab-btn" data-tab="knowledge">知识点<span class="tab-count">14</span></button>
+  </div>
+
+  <!-- ==================== TAB 1: 题库（分类卡片） ==================== -->
+  <div class="tab-panel active" id="tab-questions">
+    <div class="cat-grid">
+
+      <a class="cat-card" href="category.html?cat=01-LLM">
+        <div class="cat-card-top"><span class="cat-card-badge c1">01</span><div><div class="cat-card-name">LLM</div><div class="cat-card-count">4 题</div></div></div>
+        <div class="cat-card-desc">大语言模型基础、Token、Embedding、幻觉控制、多模态</div>
+        <div class="cat-card-arrow">→</div>
+      </a>
+
+      <a class="cat-card" href="category.html?cat=02-微调">
+        <div class="cat-card-top"><span class="cat-card-badge c2">02</span><div><div class="cat-card-name">微调</div><div class="cat-card-count">1 题</div></div></div>
+        <div class="cat-card-desc">SFT、RLHF、LoRA、Agentic训练</div>
+        <div class="cat-card-arrow">→</div>
+      </a>
+
+      <a class="cat-card" href="category.html?cat=03-Prompt">
+        <div class="cat-card-top"><span class="cat-card-badge c3">03</span><div><div class="cat-card-name">Prompt</div><div class="cat-card-count">2 题</div></div></div>
+        <div class="cat-card-desc">Prompt工程、CoT、Few-shot、结构化输出</div>
+        <div class="cat-card-arrow">→</div>
+      </a>
+
+      <a class="cat-card" href="category.html?cat=04-RAG">
+        <div class="cat-card-top"><span class="cat-card-badge c4">04</span><div><div class="cat-card-name">RAG</div><div class="cat-card-count">7 题</div></div></div>
+        <div class="cat-card-desc">检索增强生成、文档处理、向量检索、混合检索、高级RAG</div>
+        <div class="cat-card-arrow">→</div>
+      </a>
+
+      <a class="cat-card" href="category.html?cat=05-Agent">
+        <div class="cat-card-top"><span class="cat-card-badge c5">05</span><div><div class="cat-card-name">Agent</div><div class="cat-card-count">4 题</div></div></div>
+        <div class="cat-card-desc">AI Agent原理、ReAct、推理模式、工具调用</div>
+        <div class="cat-card-arrow">→</div>
+      </a>
+
+      <a class="cat-card" href="category.html?cat=06-框架">
+        <div class="cat-card-top"><span class="cat-card-badge c6">06</span><div><div class="cat-card-name">框架</div><div class="cat-card-count">2 题</div></div></div>
+        <div class="cat-card-desc">LangChain、LangGraph、CrewAI</div>
+        <div class="cat-card-arrow">→</div>
+      </a>
+
+      <a class="cat-card" href="category.html?cat=07-Tool_MCP">
+        <div class="cat-card-top"><span class="cat-card-badge c7">07</span><div><div class="cat-card-name">Tool/MCP</div><div class="cat-card-count">2 题</div></div></div>
+        <div class="cat-card-desc">MCP协议、Function Calling、工具设计</div>
+        <div class="cat-card-arrow">→</div>
+      </a>
+
+      <a class="cat-card" href="category.html?cat=08-记忆">
+        <div class="cat-card-top"><span class="cat-card-badge c8">08</span><div><div class="cat-card-name">记忆</div><div class="cat-card-count">2 题</div></div></div>
+        <div class="cat-card-desc">短期记忆、长期记忆、上下文管理</div>
+        <div class="cat-card-arrow">→</div>
+      </a>
+
+      <a class="cat-card" href="category.html?cat=09-系统设计">
+        <div class="cat-card-top"><span class="cat-card-badge c9">09</span><div><div class="cat-card-name">系统设计</div><div class="cat-card-count">2 题</div></div></div>
+        <div class="cat-card-desc">Agent部署架构、多租户、可观测性</div>
+        <div class="cat-card-arrow">→</div>
+      </a>
+
+      <a class="cat-card" href="category.html?cat=10-MultiAgent">
+        <div class="cat-card-top"><span class="cat-card-badge c10">10</span><div><div class="cat-card-name">MultiAgent</div><div class="cat-card-count">0 题</div></div></div>
+        <div class="cat-card-desc">多Agent协作、通信、编排</div>
+        <div class="cat-card-arrow">→</div>
+      </a>
+
+      <a class="cat-card" href="category.html?cat=11-评估">
+        <div class="cat-card-top"><span class="cat-card-badge c11">11</span><div><div class="cat-card-name">评估</div><div class="cat-card-count">4 题</div></div></div>
+        <div class="cat-card-desc">Agent评估、RAGAS、性能量化</div>
+        <div class="cat-card-arrow">→</div>
+      </a>
+
+      <a class="cat-card" href="category.html?cat=12-工程实践">
+        <div class="cat-card-top"><span class="cat-card-badge c12">12</span><div><div class="cat-card-name">工程实践</div><div class="cat-card-count">5 题</div></div></div>
+        <div class="cat-card-desc">SSE流式输出、Token优化、成本控制</div>
+        <div class="cat-card-arrow">→</div>
+      </a>
+
+      <a class="cat-card" href="category.html?cat=13-AI工具">
+        <div class="cat-card-top"><span class="cat-card-badge c13">13</span><div><div class="cat-card-name">AI工具</div><div class="cat-card-count">1 题</div></div></div>
+        <div class="cat-card-desc">Claude Code、Cursor、AI辅助开发</div>
+        <div class="cat-card-arrow">→</div>
+      </a>
+
+      <a class="cat-card" href="category.html?cat=14-后端基础">
+        <div class="cat-card-top"><span class="cat-card-badge c1">14</span><div><div class="cat-card-name">后端基础</div><div class="cat-card-count">10 题</div></div></div>
+        <div class="cat-card-desc">MySQL、Redis、系统设计基础</div>
+        <div class="cat-card-arrow">→</div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- ==================== TAB 2: 面经 ==================== -->
+  <div class="tab-panel" id="tab-interviews">
+    <div style="display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap">
+      <button class="btn btn-primary" id="addInterviewBtn" type="button">+ 增加面经</button>
+    </div>
+    <div class="interview-grid" id="interviewGrid">
+
+      <div class="interview-card" onclick="window.location.href='interview.html?id=1'">
+        <button class="interview-del" onclick="event.stopPropagation();delInterview(this)">&times;</button>
+        <div class="interview-title">腾讯 AI Agent 后端一面</div>
+        <div class="interview-desc">40道真题，覆盖Agent项目介绍、部署方式、LangChain/LangGraph选型、ReAct落地、意图识别、工具注册管理、Function Calling、MCP+OAuth2.1、RAG全流程（分块/表格解析/Embedding选型/数据一致性/召回重排/Lost in the middle）、幻觉控制、多租户隔离、SSE流式恢复、Prompt优化、Token原理、K8s部署、线程池、HashMap、手撕算法</div>
+        <div class="interview-tags"><span class="interview-tag">腾讯</span><span class="interview-tag">Agent</span><span class="interview-tag">RAG</span><span class="interview-tag">Tool</span><span class="interview-tag">Prompt</span><span class="interview-tag">后端</span></div>
+        <div class="interview-date-badge" style="background:var(--purple)">2026-06-06</div>
+      </div>
+
+      <div class="interview-card" onclick="window.location.href='interview.html?id=2'">
+        <button class="interview-del" onclick="event.stopPropagation();delInterview(this)">&times;</button>
+        <div class="interview-title">字节 AI Agent 2-2 三轮技术面</div>
+        <div class="interview-desc">全程直击工程落地痛点。一面考基础：自我介绍+项目STAR；二面挖深度：多模态模型结构、ReAct消息格式（tool角色）、Agent三阶段训练（CPT/SFT/RL，SFT需mask observation）、Redis在Agent中的应用、MySQL索引失效、消息队列作用；三面考系统设计：父子索引+BM25向量融合、Agent记忆机制、上下文超限处理、手写算法</div>
+        <div class="interview-tags"><span class="interview-tag">字节</span><span class="interview-tag">三轮面</span><span class="interview-tag">Agent</span><span class="interview-tag">RAG</span><span class="interview-tag">记忆</span><span class="interview-tag">微调</span></div>
+        <div class="interview-date-badge" style="background:var(--blue)">2026-06-07</div>
+      </div>
+
+      <div class="interview-card" onclick="window.location.href='interview.html?id=3'">
+        <button class="interview-del" onclick="event.stopPropagation();delInterview(this)">&times;</button>
+        <div class="interview-title">阿里企业知识库 RAG 二面 10 道真题</div>
+        <div class="interview-desc">核心考察企业级RAG的数据治理能力和工程闭环思维。10道题：数据清洗（不能跳过直接向量化）、文档切片（不能只按固定长度）、表格进RAG（保留表头行列关系）、权限过滤（召回前+召回后二次校验）、增量更新（识别变更+索引一致性+回滚能力）、多路召回融合排序（分数归一化+权重调优）、答案带引用（幻觉控制核心手段）、拒答机制（证据不足时拒绝编造）、线上效果评估（离线+线上闭环）、企业RAG常见坑（不是检索+大模型简单拼接）</div>
+        <div class="interview-tags"><span class="interview-tag">阿里</span><span class="interview-tag">RAG</span><span class="interview-tag">企业级</span><span class="interview-tag">数据清洗</span><span class="interview-tag">权限</span></div>
+        <div class="interview-date-badge" style="background:var(--blue)">2026-06-07</div>
+      </div>
+
+      <div class="interview-card" onclick="window.location.href='interview.html?id=4'">
+        <button class="interview-del" onclick="event.stopPropagation();delInterview(this)">&times;</button>
+        <div class="interview-title">字节 AI Agent 面试经验分享</div>
+        <div class="interview-desc">面试结构认知：一面考基础（项目介绍+技术原理），二面考项目深度（架构设计+难点攻克），三面考系统设计视野（开放性问题+技术趋势）。备考Checklist：Agent原理、RAG全流程、Prompt工程、工具调用、记忆机制、后端基础各准备2-3个深挖方向。核心建议：回答用STAR法则，量化成果，主动讲挑战和解决方案</div>
+        <div class="interview-tags"><span class="interview-tag">字节</span><span class="interview-tag">面试结构</span><span class="interview-tag">备考</span><span class="interview-tag">Checklist</span></div>
+        <div class="interview-date-badge" style="background:var(--teal)">2026-06-11</div>
+      </div>
+
+      <div class="interview-card" onclick="window.location.href='interview.html?id=5'">
+        <button class="interview-del" onclick="event.stopPropagation();delInterview(this)">&times;</button>
+        <div class="interview-title">字节 Agent 一面</div>
+        <div class="interview-desc">自我介绍+项目STAR法则深挖。技术问题覆盖：Prompt工程（完整Prompt结构、CoT、Few-shot）、RAG（知识库搭建、分块策略、召回重排、Lost in the middle）、ReAct模式（消息格式、循环控制、死循环防护）、工具调用（注册管理、参数提取、Function Calling vs Prompt调用）、记忆机制（短期+长期）、后端（MySQL索引、Redis缓存策略）</div>
+        <div class="interview-tags"><span class="interview-tag">字节</span><span class="interview-tag">STAR</span><span class="interview-tag">Prompt</span><span class="interview-tag">RAG</span><span class="interview-tag">ReAct</span><span class="interview-tag">MySQL</span></div>
+        <div class="interview-date-badge" style="background:var(--teal)">2026-06-11</div>
+      </div>
+
+      <div class="interview-card" onclick="window.location.href='interview.html?id=6'">
+        <button class="interview-del" onclick="event.stopPropagation();delInterview(this)">&times;</button>
+        <div class="interview-title">小厂 AI 应用开发面经</div>
+        <div class="interview-desc">小厂vs大厂差异：小厂重MVP速度和全栈能力，大厂重系统设计和深度。技术问题：Prompt实战（结构化输出、温度调节）、RAG落地（文档解析、分块、向量库选型）、Agent基础（ReAct、工具调用）、LangChain/LangGraph选型、成本控制（Token优化、模型分层）。亮点：小厂面试更看重"能不能快速出活"，大厂更看重"能不能设计好系统"</div>
+        <div class="interview-tags"><span class="interview-tag">小厂</span><span class="interview-tag">Prompt</span><span class="interview-tag">RAG</span><span class="interview-tag">LangChain</span><span class="interview-tag">MVP</span></div>
+        <div class="interview-date-badge" style="background:var(--teal)">2026-06-11</div>
+      </div>
+
+      <div class="interview-card" onclick="window.location.href='interview.html?id=7'">
+        <button class="interview-del" onclick="event.stopPropagation();delInterview(this)">&times;</button>
+        <div class="interview-title">蚂蚁 AI 应用开发二面</div>
+        <div class="interview-desc">深挖项目架构和技术决策。核心问题：NL2SQL实现方案（Text-to-SQL + Schema链接 + 校验）、RAG三层架构（检索层/生成层/任务层）、准确率收敛策略（评测集+badcase分析+针对性优化）、模型选型（GPT-4o vs Claude vs 开源模型权衡）、Agent工程落地（部署、监控、灰度发布）、HDFS数据管道。重点考察系统设计能力和技术决策的权衡思维</div>
+        <div class="interview-tags"><span class="interview-tag">蚂蚁</span><span class="interview-tag">NL2SQL</span><span class="interview-tag">RAG</span><span class="interview-tag">模型选型</span><span class="interview-tag">系统设计</span></div>
+        <div class="interview-date-badge" style="background:var(--teal)">2026-06-11</div>
+      </div>
+
+      <div class="interview-card" onclick="window.location.href='interview.html?id=8'">
+        <button class="interview-del" onclick="event.stopPropagation();delInterview(this)">&times;</button>
+        <div class="interview-title">Agent Skill 过多？4 招提升命中</div>
+        <div class="interview-desc">Agent注册几十个工具后命中率大幅下降的解决方案。4招：①技能描述优化——写清楚适用场景、不适用场景、参数示例，让LLM能正确判断何时调用；②技能分组路由——先做意图分类，只在相关分组中选择工具，缩小选择范围；③动态技能列表——根据上下文只传入当前可能用到的工具子集；④向量检索匹配——用embedding检索最相关的Top-K工具。核心思路：减少每次LLM需要判断的工具数量</div>
+        <div class="interview-tags"><span class="interview-tag">Skill</span><span class="interview-tag">命中率</span><span class="interview-tag">路由</span><span class="interview-tag">向量检索</span></div>
+        <div class="interview-date-badge" style="background:var(--teal)">2026-06-11</div>
+      </div>
+
+      <div class="interview-card" onclick="window.location.href='interview.html?id=9'">
+        <button class="interview-del" onclick="event.stopPropagation();delInterview(this)">&times;</button>
+        <div class="interview-title">RAG 评估四维度</div>
+        <div class="interview-desc">面试官问RAG评估千万别只说准确率！生产级RAG评估从四个维度拆解：①检索层——看"找不找得到"，指标：召回率、精确率、MRR；②生成层——看"答不答得对"，指标：忠实度（是否基于检索文档）、相关性、完整性；③任务层——看"任务完没完成"，指标：任务成功率、步骤效率；④系统层——看"跑不跑得动"，指标：延迟、吞吐量、成本。面试回答模板：先给四维度框架，再展开每个维度的核心指标</div>
+        <div class="interview-tags"><span class="interview-tag">RAG评估</span><span class="interview-tag">检索层</span><span class="interview-tag">生成层</span><span class="interview-tag">任务层</span><span class="interview-tag">系统层</span></div>
+        <div class="interview-date-badge" style="background:var(--teal)">2026-06-11</div>
+      </div>
+
+      <div class="interview-card" onclick="window.location.href='interview.html?id=10'">
+        <button class="interview-del" onclick="event.stopPropagation();delInterview(this)">&times;</button>
+        <div class="interview-title">RAG 高并发优化 — 800 QPS</div>
+        <div class="interview-desc">经典题：RAG服务白天200QPS顺，活动峰值冲到800QPS就崩。①定位瓶颈——LLM推理是最大瓶颈（GPU利用率>90%），检索层次之；②LLM层优化——分层路由（简单问题→小模型，复杂问题→大模型），量化（AWQ/GPTQ INT4），Continuous Batching；③检索层优化——HNSW索引参数调优、分片、读写分离；④三级缓存体系——语义缓存（相似Query直接返回）→精确缓存（相同Query命中）→结果缓存（热点文档预计算）；⑤限流熔断降级——令牌桶限流+熔断降级+队列缓冲</div>
+        <div class="interview-tags"><span class="interview-tag">高并发</span><span class="interview-tag">800QPS</span><span class="interview-tag">缓存</span><span class="interview-tag">限流</span><span class="interview-tag">分层路由</span></div>
+        <div class="interview-date-badge" style="background:var(--teal)">2026-06-11</div>
+      </div>
+
+      <div class="interview-card" onclick="window.location.href='interview.html?id=11'">
+        <button class="interview-del" onclick="event.stopPropagation();delInterview(this)">&times;</button>
+        <div class="interview-title">Agent 工程师面试题资源索引</div>
+        <div class="interview-desc">Agent工程师9大知识模块全覆盖+复习路线：①LLM基础（Token/Embedding/幻觉）→ ②Prompt工程（CoT/Few-shot/结构化输出）→ ③RAG（全流程/召回优化/评估）→ ④Agent原理（ReAct/Plan-Execute/工具调用）→ ⑤Agent框架（LangChain/LangGraph/CrewAI）→ ⑥Tool&MCP（Function Calling/MCP协议）→ ⑦Agent记忆（短期/长期/上下文管理）→ ⑧系统设计（部署/多租户/可观测性）→ ⑨评估（RAGAS/性能量化）。建议按顺序系统复习</div>
+        <div class="interview-tags"><span class="interview-tag">资源索引</span><span class="interview-tag">复习路线</span><span class="interview-tag">9大模块</span></div>
+        <div class="interview-date-badge" style="background:var(--teal)">2026-06-11</div>
+      </div>
+
+      <div class="interview-card" onclick="window.location.href='interview.html?id=12'">
+        <button class="interview-del" onclick="event.stopPropagation();delInterview(this)">&times;</button>
+        <div class="interview-title">AI Agent 性能评估面试题</div>
+        <div class="interview-desc">Agent评估核心考题。三个层面的量化指标：①任务级——成功率/完成率/错误率，核心问题"Agent能不能完成任务"；②轨迹级——步骤效率（最少步骤比）、工具调用准确率、推理合理性，核心问题"Agent走没走最优路径"；③系统级——延迟/P50/P99、成本/单次请求费用、吞吐量/QPS。评测手段：人工评测（黄金标准但贵）、LLM-as-Judge（便宜但不够准）、自动评测框架（RAGAS/BenchCLAUDE）。关键：评估要建立闭环，badcase回流驱动优化</div>
+        <div class="interview-tags"><span class="interview-tag">Agent评估</span><span class="interview-tag">性能量化</span><span class="interview-tag">轨迹评估</span><span class="interview-tag">RAGAS</span></div>
+        <div class="interview-date-badge" style="background:var(--blue)">2026-06-07</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== TAB 3: 知识点 ==================== -->
+  <div class="tab-panel" id="tab-knowledge">
+    <div class="kp-grid">
+      <div class="kp-card"><div class="kp-top"><span class="kp-icon c1">01</span><div><div class="kp-name">LLM</div><div class="kp-count">8 篇</div></div></div><div class="kp-items"><div class="kp-item">什么是大语言模型</div><div class="kp-item">Transformer架构详解</div><div class="kp-item">Token与Tokenization</div><div class="kp-item">Embedding原理</div><div class="kp-item">Context Window</div><div class="kp-item">推理机制</div><div class="kp-item">采样策略</div><div class="kp-item">大模型幻觉问题</div></div></div>
+      <div class="kp-card"><div class="kp-top"><span class="kp-icon c2">02</span><div><div class="kp-name">微调</div><div class="kp-count">8 篇</div></div></div><div class="kp-items"><div class="kp-item">什么是微调</div><div class="kp-item">微调技术发展与演进</div><div class="kp-item">提示微调</div><div class="kp-item">SFT监督微调</div><div class="kp-item">RLHF</div><div class="kp-item">LoRA微调</div><div class="kp-item">QLoRA</div><div class="kp-item">AdaLoRA</div></div></div>
+      <div class="kp-card"><div class="kp-top"><span class="kp-icon c3">03</span><div><div class="kp-name">Prompt</div><div class="kp-count">6 篇</div></div></div><div class="kp-items"><div class="kp-item">什么是Prompt Engineering</div><div class="kp-item">Prompt技术范式</div><div class="kp-item">Agent Prompt技术</div><div class="kp-item">Prompt模板设计</div><div class="kp-item">Prompt安全</div><div class="kp-item">结构化输出</div></div></div>
+      <div class="kp-card"><div class="kp-top"><span class="kp-icon c4">04</span><div><div class="kp-name">RAG</div><div class="kp-count">10 篇</div></div></div><div class="kp-items"><div class="kp-item">RAG基础</div><div class="kp-item">RAG架构</div><div class="kp-item">向量数据库</div><div class="kp-item">文档处理</div><div class="kp-item">RAG召回优化</div><div class="kp-item">RAG进阶</div><div class="kp-item">高级RAG</div><div class="kp-item">RAGAS评估</div><div class="kp-item">RAG评估体系</div><div class="kp-item">RAG高并发优化</div></div></div>
+      <div class="kp-card"><div class="kp-top"><span class="kp-icon c5">05</span><div><div class="kp-name">Agent</div><div class="kp-count">7 篇</div></div></div><div class="kp-items"><div class="kp-item">什么是AI Agent</div><div class="kp-item">Agent架构</div><div class="kp-item">Tool Use</div><div class="kp-item">Function Calling</div><div class="kp-item">Agent推理模式</div><div class="kp-item">Skills</div><div class="kp-item">Harness</div></div></div>
+      <div class="kp-card"><div class="kp-top"><span class="kp-icon c6">06</span><div><div class="kp-name">框架</div><div class="kp-count">4 篇</div></div></div><div class="kp-items"><div class="kp-item">LangChain</div><div class="kp-item">LangGraph</div><div class="kp-item">AutoGPT</div><div class="kp-item">CrewAI</div></div></div>
+      <div class="kp-card"><div class="kp-top"><span class="kp-icon c7">07</span><div><div class="kp-name">Tool / MCP</div><div class="kp-count">6 篇</div></div></div><div class="kp-items"><div class="kp-item">Tool Calling</div><div class="kp-item">Function Calling</div><div class="kp-item">MCP协议</div><div class="kp-item">MCP Server设计</div><div class="kp-item">Skill vs Tool vs Function</div><div class="kp-item">Skill命中率优化</div></div></div>
+      <div class="kp-card"><div class="kp-top"><span class="kp-icon c8">08</span><div><div class="kp-name">记忆</div><div class="kp-count">5 篇</div></div></div><div class="kp-items"><div class="kp-item">为什么Agent需要Memory</div><div class="kp-item">短期记忆</div><div class="kp-item">长期记忆</div><div class="kp-item">Memory架构</div><div class="kp-item">上下文管理</div></div></div>
+      <div class="kp-card"><div class="kp-top"><span class="kp-icon c9">09</span><div><div class="kp-name">系统设计</div><div class="kp-count">4 篇</div></div></div><div class="kp-items"><div class="kp-item">Agent系统架构</div><div class="kp-item">Agent可观测性</div><div class="kp-item">成本控制</div><div class="kp-item">稳定性设计</div></div></div>
+      <div class="kp-card"><div class="kp-top"><span class="kp-icon c10">10</span><div><div class="kp-name">MultiAgent</div><div class="kp-count">4 篇</div></div></div><div class="kp-items"><div class="kp-item">什么是MultiAgent</div><div class="kp-item">MultiAgent架构</div><div class="kp-item">Agent通信</div><div class="kp-item">Agent协作模式</div></div></div>
+      <div class="kp-card"><div class="kp-top"><span class="kp-icon c11">11</span><div><div class="kp-name">评估</div><div class="kp-count">4 篇</div></div></div><div class="kp-items"><div class="kp-item">Agent如何评估</div><div class="kp-item">Agent核心指标</div><div class="kp-item">自动评测</div><div class="kp-item">A/B Test</div></div></div>
+      <div class="kp-card"><div class="kp-top"><span class="kp-icon c12">12</span><div><div class="kp-name">工程实践</div><div class="kp-count">5 篇</div></div></div><div class="kp-items"><div class="kp-item">并发Agent系统设计</div><div class="kp-item">Agent成本优化</div><div class="kp-item">Token优化策略</div><div class="kp-item">推理加速</div><div class="kp-item">Hermes Agent</div></div></div>
+      <div class="kp-card"><div class="kp-top"><span class="kp-icon c13">13</span><div><div class="kp-name">AI工具</div><div class="kp-count">8 篇</div></div></div><div class="kp-items"><div class="kp-item">Claude Code是什么</div><div class="kp-item">项目目录结构</div><div class="kp-item">交互模式</div><div class="kp-item">CLAUDE.md怎么写</div><div class="kp-item">上下文管理</div><div class="kp-item">记忆系统</div><div class="kp-item">Skill</div><div class="kp-item">实战</div></div></div>
+      <div class="kp-card"><div class="kp-top"><span class="kp-icon c1">14</span><div><div class="kp-name">后端基础</div><div class="kp-count">2 篇</div></div></div><div class="kp-items"><div class="kp-item">OmniAgent</div><div class="kp-item">智能客服Agent</div></div></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span class="footer-text">AI 题库 & <span>面经</span> — 14 分类 · 46 题 · 12 篇面经</span>
+    <span class="footer-text">主页 → AI 题库 & 面经</span>
+  </div>
+</main>
+
+<!-- ADD INTERVIEW MODAL -->
+<div class="modal-overlay" id="addInterviewModal">
+  <div class="modal">
+    <div class="modal-title"><span class="modal-badge">NEW</span>增加面经<button class="modal-close" id="closeInterviewModal">&times;</button></div>
+    <div class="form-group">
+      <label class="form-label">面经标题</label>
+      <input class="form-input" id="interviewTitle" placeholder="例如：字节 AI Agent 一面" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">简要描述</label>
+      <textarea class="form-textarea" id="interviewDesc" placeholder="涵盖哪些核心考点"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">标签（逗号分隔）</label>
+      <input class="form-input" id="interviewTags" placeholder="例如：Agent, RAG, Prompt" />
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" id="submitInterview" type="button">添加面经</button>
+      <button class="btn btn-secondary" id="cancelInterview" type="button">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">🗑️</div>
+    <div class="confirm-msg" id="confirmMsg">确认删除？</div>
+    <div class="confirm-sub" id="confirmSub">删除后无法恢复</div>
+    <div class="confirm-actions">
+      <button class="btn btn-primary" id="confirmYes" style="background:var(--pink);border-color:var(--pink)">确认删除</button>
+      <button class="btn btn-secondary" id="confirmNo">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== TAB SWITCHER ===== */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ===== DELETE INTERVIEW ===== */
+let pendingDelete=null;
+function delInterview(btn){
+  const card=btn.closest('.interview-card');
+  const title=card.querySelector('.interview-title').textContent;
+  document.getElementById('confirmMsg').textContent='确认删除这条面经？';
+  document.getElementById('confirmSub').textContent='"'+title+'" 删除后无法恢复';
+  document.getElementById('confirmOverlay').classList.add('show');
+  pendingDelete=card;
+}
+document.getElementById('confirmYes').addEventListener('click',()=>{
+  document.getElementById('confirmOverlay').classList.remove('show');
+  if(pendingDelete){
+    pendingDelete.style.transition='all .25s';
+    pendingDelete.style.opacity='0';
+    pendingDelete.style.transform='scale(.9)';
+    const card=pendingDelete;
+    pendingDelete=null;
+    setTimeout(()=>{
+      card.remove();
+      const countEl=document.querySelector('.tab-btn[data-tab="interviews"] .tab-count');
+      const grid=document.getElementById('interviewGrid');
+      countEl.textContent=grid.querySelectorAll('.interview-card').length;
+      showToast('面经已删除');
+    },250);
+  }
+});
+document.getElementById('confirmNo').addEventListener('click',()=>{
+  document.getElementById('confirmOverlay').classList.remove('show');
+  pendingDelete=null;
+});
+document.getElementById('confirmOverlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('confirmOverlay')){
+    document.getElementById('confirmOverlay').classList.remove('show');
+    pendingDelete=null;
+  }
+});
+
+/* ===== TOAST ===== */
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+/* ===== ADD INTERVIEW ===== */
+const addInterviewModal=document.getElementById('addInterviewModal');
+document.getElementById('addInterviewBtn').addEventListener('click',()=>{addInterviewModal.classList.add('show')});
+function closeInterviewModal(){addInterviewModal.classList.remove('show')}
+document.getElementById('closeInterviewModal').addEventListener('click',closeInterviewModal);
+document.getElementById('cancelInterview').addEventListener('click',closeInterviewModal);
+addInterviewModal.addEventListener('click',e=>{if(e.target===addInterviewModal)closeInterviewModal()});
+
+document.getElementById('submitInterview').addEventListener('click',()=>{
+  const title=document.getElementById('interviewTitle').value.trim();
+  const desc=document.getElementById('interviewDesc').value.trim();
+  const tagsRaw=document.getElementById('interviewTags').value.trim();
+  if(!title){showToast('请输入面经标题');return}
+  const tags=tagsRaw?tagsRaw.split(/[,，]/).map(t=>t.trim()).filter(Boolean):[];
+  const tagsHtml=tags.map(t=>'<span class="interview-tag">'+t+'</span>').join('');
+  const today=new Date();
+  const dateStr=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  const card=document.createElement('div');
+  card.className='interview-card';
+  card.style.animation='popIn .3s ease';
+  card.innerHTML='<button class="interview-del" onclick="event.stopPropagation();delInterview(this)">&times;</button><div class="interview-title">'+title+'</div><div class="interview-desc">'+(desc||'暂无描述')+'</div><div class="interview-tags">'+tagsHtml+'</div><div class="interview-date-badge" style="background:var(--teal)">'+dateStr+'</div>';
+  card.setAttribute('onclick',"window.location.href='interview.html?id=new'");
+  document.getElementById('interviewGrid').appendChild(card);
+  const countEl=document.querySelector('.tab-btn[data-tab="interviews"] .tab-count');
+  countEl.textContent=parseInt(countEl.textContent)+1;
+  document.getElementById('interviewTitle').value='';
+  document.getElementById('interviewDesc').value='';
+  document.getElementById('interviewTags').value='';
+  closeInterviewModal();
+  showToast('面经已添加');
+});
+</script>
+</body>
+</html>

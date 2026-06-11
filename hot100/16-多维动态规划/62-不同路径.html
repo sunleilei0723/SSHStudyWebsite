@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>62. 不同路径 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.matrix-cell.sm{width:44px;height:44px;font-size:.78rem}
+.matrix-cell.path{background:var(--green);color:#fff}
+.matrix-cell.filling{background:var(--purple);color:#fff;transform:scale(1.08);box-shadow:3px 4px 0 var(--ink)}
+.demo-body{min-height:220px}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">动态规划</span>
+      <span class="hero-tag">多维DP</span>
+    </div>
+    <h1 class="hero-title">#62 <span class="accent">不同路径</span></h1>
+    <p class="hero-desc">一个机器人位于一个 <code>m x n</code> 网格的左上角，机器人每次只能向下或者向右移动一步。机器人试图达到网格的右下角，问总共有多少条不同的路径？</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">m = 3, n = 7</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">28</span></div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">m = 3, n = 2</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">3</span></div>
+      <div class="example-explain">从左上角到右下角有 3 条路径：右→下→下、下→右→下、下→下→右</div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">m×n 网格</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill done">只能右/下</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">到达右下角</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">路径总数</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>每次<strong>只能向右或向下</strong>走一步</li>
+        <li>起点 <code>(0,0)</code>，终点 <code>(m-1,n-1)</code></li>
+        <li>求的是<strong>路径数量</strong>，不是最短路径</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>状态定义：</strong><code>dp[i][j]</code> = 从起点到 <code>(i,j)</code> 的路径数</p>
+      <p><strong>转移方程：</strong>到达 <code>(i,j)</code> 只能从上方或左方来：</p>
+      <div class="step-flow">
+        <span class="step-pill">dp[i][j]</span>
+        <span class="step-arrow">=</span>
+        <span class="step-pill">dp[i-1][j]</span>
+        <span class="step-arrow">+</span>
+        <span class="step-pill">dp[i][j-1]</span>
+      </div>
+      <p><strong>边界：</strong>第一行和第一列都只有 1 条路径（一直右/一直下）</p>
+      <p><strong>时间 O(mn)，空间 O(mn)</strong>，可优化到 O(n)</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">uniquePaths</span>(m, n):</span>
+<span class="line">    dp = [[<span class="num">1</span>]*n <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(m)]  <span class="cmt"># 第一行/列全为1</span></span>
+<span class="line">    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, m):</span>
+<span class="line">        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, n):</span>
+<span class="line hl">            dp[i][j] = dp[i-<span class="num">1</span>][j] + dp[i][j-<span class="num">1</span>]</span>
+<span class="line">    <span class="kw">return</span> dp[m-<span class="num">1</span>][n-<span class="num">1</span>]</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public</span> <span class="kw">int</span> <span class="fn">uniquePaths</span>(<span class="kw">int</span> m, <span class="kw">int</span> n) {</span>
+<span class="line">    <span class="kw">int</span>[][] dp = <span class="kw">new</span> <span class="kw">int</span>[m][n];</span>
+<span class="line">    <span class="fn">Arrays</span>.<span class="fn">fill</span>(dp[<span class="num">0</span>], <span class="num">1</span>);</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; m; i++) dp[i][<span class="num">0</span>] = <span class="num">1</span>;</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">1</span>; i &lt; m; i++)</span>
+<span class="line">        <span class="kw">for</span> (<span class="kw">int</span> j = <span class="num">1</span>; j &lt; n; j++)</span>
+<span class="line hl">            dp[i][j] = dp[i-<span class="num">1</span>][j] + dp[i][j-<span class="num">1</span>];</span>
+<span class="line">    <span class="kw">return</span> dp[m-<span class="num">1</span>][n-<span class="num">1</span>];</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">int</span> <span class="fn">uniquePaths</span>(<span class="kw">int</span> m, <span class="kw">int</span> n) {</span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">int</span>&gt; dp(n, <span class="num">1</span>);  <span class="cmt">// 滚动数组优化</span></span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">1</span>; i &lt; m; i++)</span>
+<span class="line">        <span class="kw">for</span> (<span class="kw">int</span> j = <span class="num">1</span>; j &lt; n; j++)</span>
+<span class="line hl">            dp[j] += dp[j-<span class="num">1</span>];</span>
+<span class="line">    <span class="kw">return</span> dp[n-<span class="num">1</span>];</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">3×7 网格逐步填充</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 0</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div id="demoGrid" style="display:flex;justify-content:center"></div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步填充</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>边界初始化</strong>
+        <p>第一行和第一列的 dp 值都是 1，因为只有一种走法（一直右或一直下）。忘记初始化会导致错误。</p>
+      </article>
+      <article class="note">
+        <strong>遍历顺序</strong>
+        <p>必须从左到右、从上到下遍历，保证计算 <code>dp[i][j]</code> 时 <code>dp[i-1][j]</code> 和 <code>dp[i][j-1]</code> 已经算好。</p>
+      </article>
+      <article class="note">
+        <strong>空间优化</strong>
+        <p>可以用一维数组 <code>dp[j] += dp[j-1]</code> 代替二维，空间 O(n)。但初学建议先写二维版本。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>有障碍物</strong>：LeetCode 63 题，遇到障碍 <code>dp[i][j]=0</code>，其余不变</li>
+        <li><strong>组合数学</strong>：答案 = C(m+n-2, m-1)，从 m+n-2 步中选 m-1 步向下</li>
+        <li><strong>最小路径和</strong>：本题的变体，把计数换成求最小和</li>
+        <li><strong>大数取模</strong>：路径数可能很大，注意题目是否要求取模</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="64-最小路径和.html"><span class="num">#64</span>最小路径和</a>
+      <a class="related-chip" href="5-最长回文子串.html"><span class="num">#5</span>最长回文子串</a>
+      <a class="related-chip" href="1143-最长公共子序列.html"><span class="num">#1143</span>最长公共子序列</a>
+      <a class="related-chip" href="72-编辑距离.html"><span class="num">#72</span>编辑距离</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#62 不同路径</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const M=3,N=7;
+// Precompute dp
+const dp=Array.from({length:M},()=>Array(N).fill(0));
+for(let j=0;j<N;j++) dp[0][j]=1;
+for(let i=0;i<M;i++) dp[i][0]=1;
+for(let i=1;i<M;i++) for(let j=1;j<N;j++) dp[i][j]=dp[i-1][j]+dp[i][j-1];
+
+// Build steps: fill order row by row
+const steps=[];
+for(let i=0;i<M;i++){
+  for(let j=0;j<N;j++){
+    steps.push({i,j,val:dp[i][j],msg:`dp[${i}][${j}] = ${i===0||j===0?1:`dp[${i-1}][${j}] + dp[${i}][${j-1}] = ${dp[i-1][j]} + ${dp[i][j-1]}`} = <strong>${dp[i][j]}</strong>`});
+  }
+}
+
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:steps[step];
+  const grid=document.getElementById('demoGrid');
+  grid.innerHTML='';
+  const table=document.createElement('div');
+  table.className='matrix-grid';
+  table.style.gridTemplateColumns=`repeat(${N},44px)`;
+  for(let i=0;i<M;i++){
+    for(let j=0;j<N;j++){
+      const cell=document.createElement('div');
+      cell.className='matrix-cell sm';
+      let filled=step<0?false:steps.slice(0,step+1).some(st=>st.i===i&&st.j===j);
+      if(s&&s.i===i&&s.j===j) cell.classList.add('filling');
+      else if(filled) cell.classList.add('visited');
+      cell.textContent=filled?dp[i][j]:'';
+      table.appendChild(cell);
+    }
+  }
+  grid.appendChild(table);
+  document.getElementById('demoInfo').innerHTML=s?s.msg:'点击 ▶ 开始逐步填充';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+steps.length;
+}
+
+function nextStep(){if(step<steps.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<steps.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },400);
+}
+render();
+</script>
+</body>
+</html>

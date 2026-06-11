@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>72. 编辑距离 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.matrix-cell.sm{width:42px;height:42px;font-size:.78rem;border-width:3px;box-shadow:1px 2px 0 var(--ink)}
+.matrix-cell.filling{background:var(--purple);color:#fff;transform:scale(1.08);box-shadow:3px 4px 0 var(--ink)}
+.matrix-cell.op-insert{background:var(--blue-soft);border-color:var(--blue)}
+.matrix-cell.op-delete{background:var(--pink-soft);border-color:var(--pink)}
+.matrix-cell.op-replace{background:var(--yellow-soft);border-color:var(--yellow)}
+.matrix-cell.op-match{background:var(--green-soft);border-color:var(--green)}
+.header-cell{width:42px;height:32px;display:grid;place-items:center;font-family:"Roboto Mono",monospace;font-size:.85rem;font-weight:700;color:var(--purple);border:3px solid var(--ink);border-radius:6px;background:var(--purple-soft)}
+.op-legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:.6rem}
+.op-tag{padding:2px 8px;border:3px solid var(--ink);border-radius:6px;font-size:.65rem;font-weight:700;font-family:"Roboto Mono",monospace;box-shadow:1px 2px 0 var(--ink)}
+.demo-body{min-height:280px}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">动态规划</span>
+      <span class="hero-tag">多维DP</span>
+    </div>
+    <h1 class="hero-title">#72 <span class="accent">编辑距离</span></h1>
+    <p class="hero-desc">给定两个单词 <code>word1</code> 和 <code>word2</code>，返回将 <code>word1</code> 转换成 <code>word2</code> 所使用的最少操作数。你可以对一个单词进行三种操作：插入一个字符、删除一个字符、替换一个字符。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">word1 = "horse", word2 = "ros"</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">3</span></div>
+      <div class="example-explain">horse → rorse (替换 h→r) → rorse → rose (删除 r) → rose → ros (删除 e)</div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">word1 = "intention", word2 = "execution"</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">5</span></div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">word1</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill done">三种操作</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">最少操作数</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">变 word2</span>
+      </div>
+      <p><strong>三种操作：</strong></p>
+      <ul>
+        <li><strong>插入</strong>：在 word1 中插入一个字符</li>
+        <li><strong>删除</strong>：删除 word1 中的一个字符</li>
+        <li><strong>替换</strong>：替换 word1 中的一个字符</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>状态定义：</strong><code>dp[i][j]</code> = <code>word1[0..i-1]</code> 变成 <code>word2[0..j-1]</code> 的最少操作数</p>
+      <p><strong>转移方程：</strong></p>
+      <div class="step-flow">
+        <span class="step-pill">若 w1[i-1]==w2[j-1]</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">dp[i][j] = dp[i-1][j-1]</span>
+      </div>
+      <div class="step-flow">
+        <span class="step-pill">若不等</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">min(插入, 删除, 替换) + 1</span>
+      </div>
+      <p><strong>三种操作对应：</strong></p>
+      <ul>
+        <li>插入：<code>dp[i][j-1] + 1</code>（word2 多匹配一个）</li>
+        <li>删除：<code>dp[i-1][j] + 1</code>（word1 删一个）</li>
+        <li>替换：<code>dp[i-1][j-1] + 1</code>（换一个字符）</li>
+      </ul>
+      <p><strong>边界：</strong><code>dp[i][0]=i</code>（删 i 次），<code>dp[0][j]=j</code>（插 j 次）</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">minDistance</span>(word1, word2):</span>
+<span class="line">    m, n = <span class="fn">len</span>(word1), <span class="fn">len</span>(word2)</span>
+<span class="line">    dp = [[<span class="num">0</span>]*(n+<span class="num">1</span>) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(m+<span class="num">1</span>)]</span>
+<span class="line">    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(m+<span class="num">1</span>): dp[i][<span class="num">0</span>] = i</span>
+<span class="line">    <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(n+<span class="num">1</span>): dp[<span class="num">0</span>][j] = j</span>
+<span class="line">    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, m+<span class="num">1</span>):</span>
+<span class="line">        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, n+<span class="num">1</span>):</span>
+<span class="line hl">            <span class="kw">if</span> word1[i-<span class="num">1</span>] == word2[j-<span class="num">1</span>]:</span>
+<span class="line hl">                dp[i][j] = dp[i-<span class="num">1</span>][j-<span class="num">1</span>]</span>
+<span class="line hl">            <span class="kw">else</span>:</span>
+<span class="line hl">                dp[i][j] = <span class="fn">min</span>(dp[i-<span class="num">1</span>][j], dp[i][j-<span class="num">1</span>], dp[i-<span class="num">1</span>][j-<span class="num">1</span>]) + <span class="num">1</span></span>
+<span class="line">    <span class="kw">return</span> dp[m][n]</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public</span> <span class="kw">int</span> <span class="fn">minDistance</span>(<span class="kw">String</span> word1, <span class="kw">String</span> word2) {</span>
+<span class="line">    <span class="kw">int</span> m = word1.length(), n = word2.length();</span>
+<span class="line">    <span class="kw">int</span>[][] dp = <span class="kw">new</span> <span class="kw">int</span>[m+<span class="num">1</span>][n+<span class="num">1</span>];</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt;= m; i++) dp[i][<span class="num">0</span>] = i;</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> j = <span class="num">0</span>; j &lt;= n; j++) dp[<span class="num">0</span>][j] = j;</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">1</span>; i &lt;= m; i++)</span>
+<span class="line">        <span class="kw">for</span> (<span class="kw">int</span> j = <span class="num">1</span>; j &lt;= n; j++)</span>
+<span class="line hl">            <span class="kw">if</span> (word1.<span class="fn">charAt</span>(i-<span class="num">1</span>) == word2.<span class="fn">charAt</span>(j-<span class="num">1</span>))</span>
+<span class="line hl">                dp[i][j] = dp[i-<span class="num">1</span>][j-<span class="num">1</span>];</span>
+<span class="line hl">            <span class="kw">else</span></span>
+<span class="line hl">                dp[i][j] = <span class="fn">Math</span>.<span class="fn">min</span>(dp[i-<span class="num">1</span>][j], <span class="fn">Math</span>.<span class="fn">min</span>(dp[i][j-<span class="num">1</span>], dp[i-<span class="num">1</span>][j-<span class="num">1</span>])) + <span class="num">1</span>;</span>
+<span class="line">    <span class="kw">return</span> dp[m][n];</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">int</span> <span class="fn">minDistance</span>(<span class="kw">string</span> word1, <span class="kw">string</span> word2) {</span>
+<span class="line">    <span class="kw">int</span> m = word1.size(), n = word2.size();</span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">int</span>&gt; dp(n+<span class="num">1</span>);</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> j = <span class="num">0</span>; j &lt;= n; j++) dp[j] = j;</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">1</span>; i &lt;= m; i++) {</span>
+<span class="line">        <span class="kw">int</span> prev = dp[<span class="num">0</span>]; dp[<span class="num">0</span>] = i;</span>
+<span class="line">        <span class="kw">for</span> (<span class="kw">int</span> j = <span class="num">1</span>; j &lt;= n; j++) {</span>
+<span class="line">            <span class="kw">int</span> tmp = dp[j];</span>
+<span class="line hl">            <span class="kw">if</span> (word1[i-<span class="num">1</span>] == word2[j-<span class="num">1</span>]) dp[j] = prev;</span>
+<span class="line hl">            <span class="kw">else</span> dp[j] = <span class="fn">min</span>({dp[j], dp[j-<span class="num">1</span>], prev}) + <span class="num">1</span>;</span>
+<span class="line">            prev = tmp;</span>
+<span class="line">        }</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> dp[n];</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">2D dp 表 + 操作标注</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 0</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div id="demoGrid" style="display:flex;justify-content:center;overflow-x:auto"></div>
+        <div class="op-legend">
+          <span class="op-tag" style="background:var(--green-soft);border-color:var(--green)">匹配</span>
+          <span class="op-tag" style="background:var(--blue-soft);border-color:var(--blue)">插入</span>
+          <span class="op-tag" style="background:var(--pink-soft);border-color:var(--pink)">删除</span>
+          <span class="op-tag" style="background:var(--yellow-soft);border-color:var(--yellow)">替换</span>
+        </div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步填充</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>边界初始化</strong>
+        <p><code>dp[i][0]=i</code>（删 i 次），<code>dp[0][j]=j</code>（插 j 次）。忘记初始化会导致错误。</p>
+      </article>
+      <article class="note">
+        <strong>相等时直接继承</strong>
+        <p>字符相等时 <code>dp[i][j]=dp[i-1][j-1]</code>，不需要 +1，因为无需操作。</p>
+      </article>
+      <article class="note">
+        <strong>三种操作别混淆</strong>
+        <p>插入对应 <code>dp[i][j-1]+1</code>，删除对应 <code>dp[i-1][j]+1</code>，替换对应 <code>dp[i-1][j-1]+1</code>。方向别搞反。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>与 LCS 的关系</strong>：编辑距离是 LCS 的推广，LCS 只允许删除，编辑距离允许插入、删除、替换</li>
+        <li><strong>不同操作代价</strong>：如果插入/删除/替换代价不同，只需把 <code>+1</code> 改成对应代价</li>
+        <li><strong>只允许插入和删除</strong>：答案 = m + n - 2*LCS</li>
+        <li><strong>回文编辑距离</strong>：将字符串变成回文的最少操作数</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="1143-最长公共子序列.html"><span class="num">#1143</span>最长公共子序列</a>
+      <a class="related-chip" href="5-最长回文子串.html"><span class="num">#5</span>最长回文子串</a>
+      <a class="related-chip" href="62-不同路径.html"><span class="num">#62</span>不同路径</a>
+      <a class="related-chip" href="64-最小路径和.html"><span class="num">#64</span>最小路径和</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#72 编辑距离</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const W1='horse',W2='ros';
+const m=W1.length,n=W2.length;
+const dp=Array.from({length:m+1},()=>Array(n+1).fill(0));
+const op=Array.from({length:m+1},()=>Array(n+1).fill(''));
+for(let i=0;i<=m;i++){dp[i][0]=i;op[i][0]='del';}
+for(let j=0;j<=n;j++){dp[0][j]=j;op[0][j]='ins';}
+op[0][0]='';
+for(let i=1;i<=m;i++) for(let j=1;j<=n;j++){
+  if(W1[i-1]===W2[j-1]){dp[i][j]=dp[i-1][j-1];op[i][j]='match';}
+  else{
+    const ins=dp[i][j-1]+1,del=dp[i-1][j]+1,rep=dp[i-1][j-1]+1;
+    dp[i][j]=Math.min(ins,del,rep);
+    if(dp[i][j]===ins) op[i][j]='ins';
+    else if(dp[i][j]===del) op[i][j]='del';
+    else op[i][j]='rep';
+  }
+}
+
+// Build steps
+const steps=[];
+for(let i=1;i<=m;i++){
+  for(let j=1;j<=n;j++){
+    let msg;
+    if(W1[i-1]===W2[j-1]) msg=`w1[${i-1}]='${W1[i-1]}' == w2[${j-1}]='${W2[j-1]}' → 匹配，dp[${i}][${j}] = dp[${i-1}][${j-1}] = <strong>${dp[i][j]}</strong>`;
+    else{
+      const ins=dp[i][j-1]+1,del=dp[i-1][j]+1,rep=dp[i-1][j-1]+1;
+      const opName=op[i][j]==='ins'?'插入':op[i][j]==='del'?'删除':'替换';
+      msg=`w1[${i-1}]='${W1[i-1]}' ≠ w2[${j-1}]='${W2[j-1]}' → ${opName}，dp[${i}][${j}] = min(${ins},${del},${rep}) = <strong>${dp[i][j]}</strong>`;
+    }
+    steps.push({i,j,val:dp[i][j],msg,op:op[i][j]});
+  }
+}
+steps.push({i:-1,j:-1,msg:`编辑距离 = <strong>${dp[m][n]}</strong>，操作路径已标注`,showPath:true});
+
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:steps[step];
+  const grid=document.getElementById('demoGrid');
+  grid.innerHTML='';
+  const table=document.createElement('div');
+  table.className='matrix-grid';
+  table.style.gridTemplateColumns=`42px 42px repeat(${n},42px)`;
+  // Header
+  const e1=document.createElement('div');e1.className='header-cell';e1.textContent='';table.appendChild(e1);
+  const e2=document.createElement('div');e2.className='header-cell';e2.textContent='ε';table.appendChild(e2);
+  for(let j=0;j<n;j++){const h=document.createElement('div');h.className='header-cell';h.textContent=W2[j];table.appendChild(h);}
+  // Rows
+  for(let i=0;i<=m;i++){
+    const rl=document.createElement('div');rl.className='header-cell';rl.textContent=i===0?'ε':W1[i-1];table.appendChild(rl);
+    for(let j=0;j<=n;j++){
+      const cell=document.createElement('div');
+      cell.className='matrix-cell sm';
+      let filled=step<0?false:steps.slice(0,step+1).some(st=>(st.i===i&&st.j===j)||(st.showPath&&i>0&&j>0));
+      if(s&&s.i===i&&s.j===j) cell.classList.add('filling');
+      else if(i===0||j===0) cell.classList.add('visited');
+      else if(filled){
+        const o=op[i][j];
+        if(o==='match') cell.classList.add('op-match');
+        else if(o==='ins') cell.classList.add('op-insert');
+        else if(o==='del') cell.classList.add('op-delete');
+        else if(o==='rep') cell.classList.add('op-replace');
+        else cell.classList.add('visited');
+      }
+      cell.textContent=dp[i][j];
+      table.appendChild(cell);
+    }
+  }
+  grid.appendChild(table);
+  document.getElementById('demoInfo').innerHTML=s?s.msg:'点击 ▶ 开始逐步填充';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+steps.length;
+}
+
+function nextStep(){if(step<steps.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<steps.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },600);
+}
+render();
+</script>
+</body>
+</html>
