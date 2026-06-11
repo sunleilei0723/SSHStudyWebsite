@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>79. 单词搜索 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.card .highlight{display:inline;padding:1px 6px;border-radius:5px;background:var(--yellow-soft);font-weight:800}
+.demo-body{min-height:260px}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">回溯</span>
+      <span class="hero-tag">DFS</span>
+    </div>
+    <h1 class="hero-title">#79 <span class="accent">单词搜索</span></h1>
+    <p class="hero-desc">给定一个 <code>m x n</code> 二维字符网格 <code>board</code> 和字符串 <code>word</code>，如果 <code>word</code> 存在于网格中返回 <code>true</code>。单词必须按字母顺序通过<strong>相邻单元格</strong>的水平或垂直方向组成，同一单元格字母<strong>不能重复使用</strong>。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">board = [["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]], word = "ABCCED"</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">true</span></div>
+      <div class="example-explain">路径 A(0,0)→B(0,1)→C(0,2)→C(1,2)→E(1,3)...→D(2,1)</div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">board = [["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]], word = "SEE"</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">true</span></div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 3</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">board = [["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]], word = "ABCB"</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">false</span></div>
+      <div class="example-explain">B 不能重复使用</div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">二维字符网格</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill done">目标单词</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">上下左右搜索</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">找到返回 true</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>只能<strong>水平或垂直</strong>移动，不能对角线</li>
+        <li>同一格子<strong>不能重复使用</strong> → 需要 visited 标记</li>
+        <li>可以从<strong>任意起点</strong>开始搜索</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>DFS + 回溯</strong>：遍历每个格子作为起点，若格子字符匹配 word[0]，则向四个方向 DFS 搜索剩余字符。</p>
+      <div class="step-flow">
+        <span class="step-pill">遍历起点</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">匹配 word[i]?</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">标记 visited</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">四方向 DFS</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">撤销 visited</span>
+      </div>
+      <p><strong>优化</strong>：原地修改 board[i][j] 为特殊字符（如 '#'）代替 visited 数组，节省空间。</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">exist</span>(board, word):</span>
+<span class="line">    m, n = <span class="fn">len</span>(board), <span class="fn">len</span>(board[<span class="num">0</span>])</span>
+<span class="line"></span>
+<span class="line">    <span class="kw">def</span> <span class="fn">dfs</span>(i, j, k):</span>
+<span class="line hl">        <span class="kw">if</span> k == <span class="fn">len</span>(word):  <span class="cmt"># 匹配完成</span></span>
+<span class="line hl">            <span class="kw">return True</span></span>
+<span class="line hl">        <span class="kw">if</span> i&lt;<span class="num">0</span> <span class="kw">or</span> i>=m <span class="kw">or</span> j&lt;<span class="num">0</span> <span class="kw">or</span> j>=n <span class="kw">or</span> board[i][j]!=word[k]:</span>
+<span class="line hl">            <span class="kw">return False</span></span>
+<span class="line">        tmp = board[i][j]</span>
+<span class="line hl">        board[i][j] = <span class="str">'#'</span>  <span class="cmt"># 标记已访问</span></span>
+<span class="line">        res = (dfs(i+<span class="num">1</span>,j,k+<span class="num">1</span>) <span class="kw">or</span> dfs(i-<span class="num">1</span>,j,k+<span class="num">1</span>)</span>
+<span class="line">              <span class="kw">or</span> dfs(i,j+<span class="num">1</span>,k+<span class="num">1</span>) <span class="kw">or</span> dfs(i,j-<span class="num">1</span>,k+<span class="num">1</span>))</span>
+<span class="line hl">        board[i][j] = tmp  <span class="cmt"># 撤销标记</span></span>
+<span class="line">        <span class="kw">return</span> res</span>
+<span class="line"></span>
+<span class="line">    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(m):</span>
+<span class="line">        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(n):</span>
+<span class="line">            <span class="kw">if</span> dfs(i, j, <span class="num">0</span>): <span class="kw">return True</span></span>
+<span class="line">    <span class="kw">return False</span></span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public</span> <span class="kw">boolean</span> <span class="fn">exist</span>(<span class="kw">char</span>[][] board, String word) {</span>
+<span class="line">    <span class="kw">int</span> m = board.length, n = board[<span class="num">0</span>].length;</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; m; i++)</span>
+<span class="line">        <span class="kw">for</span> (<span class="kw">int</span> j = <span class="num">0</span>; j &lt; n; j++)</span>
+<span class="line">            <span class="kw">if</span> (dfs(board, word, i, j, <span class="num">0</span>)) <span class="kw">return true</span>;</span>
+<span class="line">    <span class="kw">return false</span>;</span>
+<span class="line">}</span>
+<span class="line"></span>
+<span class="line"><span class="kw">boolean</span> <span class="fn">dfs</span>(<span class="kw">char</span>[][] b, String w, <span class="kw">int</span> i, <span class="kw">int</span> j, <span class="kw">int</span> k) {</span>
+<span class="line hl">    <span class="kw">if</span> (k == w.length()) <span class="kw">return true</span>;</span>
+<span class="line hl">    <span class="kw">if</span> (i&lt;<span class="num">0</span>||i>=b.length||j&lt;<span class="num">0</span>||j>=b[<span class="num">0</span>].length||b[i][j]!=w.charAt(k)) <span class="kw">return false</span>;</span>
+<span class="line">    <span class="kw">char</span> tmp = b[i][j]; b[i][j] = <span class="str">'#'</span>;</span>
+<span class="line">    <span class="kw">boolean</span> res = dfs(b,w,i+<span class="num">1</span>,j,k+<span class="num">1</span>) || dfs(b,w,i-<span class="num">1</span>,j,k+<span class="num">1</span>)</span>
+<span class="line">              || dfs(b,w,i,j+<span class="num">1</span>,k+<span class="num">1</span>) || dfs(b,w,i,j-<span class="num">1</span>,k+<span class="num">1</span>);</span>
+<span class="line hl">    b[i][j] = tmp; <span class="kw">return</span> res;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">bool</span> <span class="fn">exist</span>(<span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">char</span>&gt;&gt;&amp; board, <span class="kw">string</span> word) {</span>
+<span class="line">    <span class="kw">int</span> m = board.size(), n = board[<span class="num">0</span>].size();</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; m; i++)</span>
+<span class="line">        <span class="kw">for</span> (<span class="kw">int</span> j = <span class="num">0</span>; j &lt; n; j++)</span>
+<span class="line">            <span class="kw">if</span> (dfs(board, word, i, j, <span class="num">0</span>)) <span class="kw">return true</span>;</span>
+<span class="line">    <span class="kw">return false</span>;</span>
+<span class="line">}</span>
+<span class="line"></span>
+<span class="line"><span class="kw">bool</span> <span class="fn">dfs</span>(<span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">char</span>&gt;&gt;&amp; b, <span class="kw">string</span>&amp; w, <span class="kw">int</span> i, <span class="kw">int</span> j, <span class="kw">int</span> k) {</span>
+<span class="line hl">    <span class="kw">if</span> (k == w.size()) <span class="kw">return true</span>;</span>
+<span class="line hl">    <span class="kw">if</span> (i&lt;<span class="num">0</span>||i>=b.size()||j&lt;<span class="num">0</span>||j>=b[<span class="num">0</span>].size()||b[i][j]!=w[k]) <span class="kw">return false</span>;</span>
+<span class="line">    <span class="kw">char</span> tmp = b[i][j]; b[i][j] = <span class="str">'#'</span>;</span>
+<span class="line">    <span class="kw">bool</span> res = dfs(b,w,i+<span class="num">1</span>,j,k+<span class="num">1</span>) || dfs(b,w,i-<span class="num">1</span>,j,k+<span class="num">1</span>)</span>
+<span class="line">            || dfs(b,w,i,j+<span class="num">1</span>,k+<span class="num">1</span>) || dfs(b,w,i,j-<span class="num">1</span>,k+<span class="num">1</span>);</span>
+<span class="line hl">    b[i][j] = tmp; <span class="kw">return</span> res;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">DFS 搜索路径逐步演示</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 6</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div id="demoGrid" style="display:flex;justify-content:center;margin-bottom:.8rem"></div>
+        <div id="demoWord" style="display:flex;gap:4px;justify-content:center;margin-bottom:.6rem"></div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>撤销标记别忘</strong>
+        <p>DFS 返回后必须恢复 <code>board[i][j] = tmp</code>，否则其他起点的搜索路径会被错误阻断。</p>
+      </article>
+      <article class="note">
+        <strong>边界检查顺序</strong>
+        <p>先检查越界，再检查字符匹配。如果先访问 <code>board[i][j]</code> 再检查越界，会数组越界报错。</p>
+      </article>
+      <article class="note">
+        <strong>原地修改 vs visited</strong>
+        <p>原地修改 <code>board[i][j]='#'</code> 省空间，但会修改原数组。如果要求不修改，用 <code>visited</code> 数组。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>#212 单词搜索 II</strong>：多个单词同时搜索，用 Trie + DFS 大幅优化</li>
+        <li><strong>剪枝优化</strong>：先统计 board 和 word 的字符频率，若 word 有 board 没有的字符直接返回 false</li>
+        <li><strong>搜索方向</strong>：从 word 首尾中较少出现的字符端开始搜索，可减少无效搜索</li>
+        <li><strong>时间复杂度</strong>：O(m·n·4^L)，L 为 word 长度，实际远小于此因为剪枝</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="46-全排列.html"><span class="num">#46</span>全排列</a>
+      <a class="related-chip" href="51-N皇后.html"><span class="num">#51</span>N皇后</a>
+      <a class="related-chip" href="131-分割回文串.html"><span class="num">#131</span>分割回文串</a>
+      <a class="related-chip" href="22-括号生成.html"><span class="num">#22</span>括号生成</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#79 单词搜索</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const BOARD=[['A','B','C','E'],['S','F','C','S'],['A','D','E','E']];
+const WORD='ABCCED';
+const PATH=[[0,0],[0,1],[0,2],[1,2],[2,2],[2,1]]; // A→B→C→C→E→D
+const STEPS=[
+  {k:0,pos:[0,0],msg:'起点 (0,0) 匹配 A ✓ → 标记已访问'},
+  {k:1,pos:[0,1],msg:'右移 (0,1) 匹配 B ✓ → 标记已访问'},
+  {k:2,pos:[0,2],msg:'右移 (0,2) 匹配 C ✓ → 标记已访问'},
+  {k:3,pos:[1,2],msg:'下移 (1,2) 匹配 C ✓ → 标记已访问'},
+  {k:4,pos:[2,2],msg:'下移 (2,2) 匹配 E ✓ → 标记已访问'},
+  {k:5,pos:[2,1],msg:'左移 (2,1) 匹配 D ✓ → 全部匹配！返回 true',done:true},
+];
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  const gridEl=document.getElementById('demoGrid');
+  const wordEl=document.getElementById('demoWord');
+  const info=document.getElementById('demoInfo');
+  gridEl.innerHTML='';wordEl.innerHTML='';
+  if(s){
+    // grid
+    const tbl=document.createElement('div');tbl.className='matrix-grid';tbl.style.gridTemplateColumns='repeat(4,50px)';
+    BOARD.forEach((row,ri)=>{
+      row.forEach((ch,ci)=>{
+        const cell=document.createElement('div');cell.className='matrix-cell sm';cell.textContent=ch;
+        // check if this cell is in path up to current step
+        for(let i=0;i<=step;i++){
+          const p=STEPS[i].pos;
+          if(p[0]===ri&&p[1]===ci){
+            if(i===step) cell.classList.add('current');
+            else cell.classList.add('visited');
+          }
+        }
+        tbl.appendChild(cell);
+      });
+    });
+    gridEl.appendChild(tbl);
+    // word
+    WORD.split('').forEach((ch,i)=>{
+      const sp=document.createElement('span');sp.className='paren-cell '+(i<s.k?'done':i===s.k?'left current':'');
+      if(i>s.k) sp.style.opacity='.4';
+      sp.textContent=ch;wordEl.appendChild(sp);
+    });
+    info.innerHTML=s.msg;
+  }else{
+    info.innerHTML='点击 ▶ 开始逐步演示';
+  }
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1200);
+}
+render();
+</script>
+</body>
+</html>

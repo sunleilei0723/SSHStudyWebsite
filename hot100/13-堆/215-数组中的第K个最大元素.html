@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>215. 数组中的第K个最大元素 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.demo-body{min-height:280px}
+.heap-vis{display:flex;flex-direction:column;align-items:center;gap:4px;margin:.6rem 0}
+.heap-row{display:flex;justify-content:center;gap:8px}
+.heap-node{width:48px;height:42px;display:grid;place-items:center;border:3px solid var(--ink);border-radius:8px;font-family:"Roboto Mono",monospace;font-size:.92rem;font-weight:700;background:#fff;box-shadow:2px 3px 0 var(--ink);transition:all .3s;animation:popIn .3s ease}
+.heap-node.current{background:var(--purple);color:#fff;transform:scale(1.1);box-shadow:4px 5px 0 var(--ink)}
+.heap-node.swapping{background:var(--yellow);color:var(--ink);transform:scale(1.1)}
+.heap-node.done{background:var(--green);color:#fff}
+.heap-node.eliminated{background:#f0f0f0;color:#ccc;border-color:#ddd}
+.heap-edges{position:relative;height:20px;display:flex;justify-content:center}
+.heap-edge{width:2px;height:20px;background:var(--ink);margin:0 24px}
+.demo-arr-row{display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-bottom:.6rem}
+.demo-arr-label{font-family:"Baloo 2",sans-serif;font-size:.78rem;font-weight:800;color:var(--pink);margin-right:4px}
+.demo-arr-cell{width:44px;height:40px;display:grid;place-items:center;border:3px solid var(--ink);border-radius:6px;font-family:"Roboto Mono",monospace;font-size:.92rem;font-weight:700;background:#fff;box-shadow:2px 2px 0 var(--ink);transition:all .3s}
+.demo-arr-cell.pivot{background:var(--purple);color:#fff;transform:translateY(-3px);box-shadow:3px 5px 0 var(--ink)}
+.demo-arr-cell.left{background:var(--blue-soft);color:var(--blue)}
+.demo-arr-cell.right{background:var(--pink-soft);color:var(--pink)}
+.demo-arr-cell.done{background:var(--green);color:#fff}
+.demo-arr-cell.idx{height:22px;border:none;background:none;box-shadow:none;font-size:.6rem;color:var(--muted);transform:none}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">堆</span>
+      <span class="hero-tag">快速选择</span>
+      <span class="hero-tag">分治</span>
+    </div>
+    <h1 class="hero-title">#215 <span class="accent">数组中的第K个最大元素</span></h1>
+    <p class="hero-desc">给定整数数组 <code>nums</code> 和整数 <code>k</code>，请返回数组中第 <code>k</code> 个最大的元素。请注意，你需要找的是数组排序后的第 <code>k</code> 个最大的元素，而不是第 <code>k</code> 个不同的元素。你必须设计并实现时间复杂度为 <strong>O(n)</strong> 的算法解决此问题。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [3,2,1,5,6,4], k = 2</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">5</span></div>
+      <div class="example-explain">排序后 [1,2,3,4,5,6]，第2大的是 5</div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">无序数组</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">找第K大</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">不需要完全排序</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">堆/快速选择</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>要求 <strong>O(n)</strong> 时间复杂度，排序 O(nlogn) 不满足</li>
+        <li>第 K 大 = 排序后倒数第 K 个</li>
+        <li>可能有重复元素，K 是按位置不是按不同值</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>方法一：小顶堆 O(nlogk)</strong></p>
+      <p>维护大小为 k 的小顶堆，堆顶就是第 k 大元素。遍历时，比堆顶大就替换。</p>
+      <p><strong>方法二：快速选择 O(n) 平均</strong></p>
+      <div class="step-flow">
+        <span class="step-pill">随机选pivot</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">partition分区</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">pivot位置=target?</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">递归一侧</span>
+      </div>
+      <p>第 K 大 = 第 (n-K) 小，用快速选择找第 (n-K) 小的元素。</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">import</span> heapq</span>
+<span class="line"></span>
+<span class="line"><span class="kw">def</span> <span class="fn">findKthLargest</span>(nums, k):</span>
+<span class="line">    <span class="cmt"># 方法一：小顶堆</span></span>
+<span class="line hl">    heap = []</span>
+<span class="line hl">    <span class="kw">for</span> num <span class="kw">in</span> nums:</span>
+<span class="line hl">        heapq.heappush(heap, num)</span>
+<span class="line hl">        <span class="kw">if</span> <span class="fn">len</span>(heap) > k:</span>
+<span class="line hl">            heapq.heappop(heap)  <span class="cmt"># 弹出最小的，保留k个最大的</span></span>
+<span class="line">    <span class="kw">return</span> heap[<span class="num">0</span>]  <span class="cmt"># 堆顶即第k大</span></span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public int</span> <span class="fn">findKthLargest</span>(<span class="kw">int</span>[] nums, <span class="kw">int</span> k) {</span>
+<span class="line">    <span class="cmt">// 方法二：快速选择</span></span>
+<span class="line">    <span class="kw">int</span> target = nums.length - k; <span class="cmt">// 第k大 = 第(n-k)小</span></span>
+<span class="line">    <span class="kw">return</span> <span class="fn">quickSelect</span>(nums, <span class="num">0</span>, nums.length - <span class="num">1</span>, target);</span>
+<span class="line">}</span>
+<span class="line"><span class="kw">int</span> <span class="fn">quickSelect</span>(<span class="kw">int</span>[] nums, <span class="kw">int</span> lo, <span class="kw">int</span> hi, <span class="kw">int</span> target) {</span>
+<span class="line hl">    <span class="kw">int</span> pivot = nums[hi], p = lo;</span>
+<span class="line hl">    <span class="kw">for</span> (<span class="kw">int</span> i = lo; i &lt; hi; i++)</span>
+<span class="line hl">        <span class="kw">if</span> (nums[i] &lt;= pivot) <span class="fn">swap</span>(nums, p++, i);</span>
+<span class="line hl">    <span class="fn">swap</span>(nums, p, hi);</span>
+<span class="line hl">    <span class="kw">if</span> (p == target) <span class="kw">return</span> nums[p];</span>
+<span class="line hl">    <span class="kw">return</span> p &lt; target ? <span class="fn">quickSelect</span>(nums, p+<span class="num">1</span>, hi, target)</span>
+<span class="line hl">                      : <span class="fn">quickSelect</span>(nums, lo, p-<span class="num">1</span>, target);</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">int</span> <span class="fn">findKthLargest</span>(<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;& nums, <span class="kw">int</span> k) {</span>
+<span class="line">    <span class="cmt">// 小顶堆</span></span>
+<span class="line">    <span class="kw">priority_queue</span>&lt;<span class="kw">int</span>,<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;,greater&lt;<span class="kw">int</span>&gt;&gt; pq;</span>
+<span class="line hl">    <span class="kw">for</span> (<span class="kw">int</span> num : nums) {</span>
+<span class="line hl">        pq.push(num);</span>
+<span class="line hl">        <span class="kw">if</span> (pq.size() > k) pq.pop();</span>
+<span class="line hl">    }</span>
+<span class="line">    <span class="kw">return</span> pq.top();</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">逐步演示：小顶堆 k=2</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 6</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="demo-arr-row">
+          <span class="demo-arr-label">nums：</span>
+          <div id="demoArr" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+        </div>
+        <div style="font-family:'Baloo 2',sans-serif;font-size:.82rem;font-weight:800;color:var(--purple);margin:.4rem 0">小顶堆（大小≤2）：</div>
+        <div class="heap-vis" id="demoHeap"></div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>小顶堆不是大顶堆</strong>
+        <p>求第 K 大用<strong>小顶堆</strong>（堆顶最小），维护 k 个最大元素，堆顶就是答案。大顶堆需要全部入堆再弹出 k-1 次。</p>
+      </article>
+      <article class="note">
+        <strong>快速选择最坏 O(n²)</strong>
+        <p>如果每次 pivot 选到极端值，快速选择退化为 O(n²)。随机化 pivot 可以期望 O(n)，但最坏仍可能超时。</p>
+      </article>
+      <article class="note">
+        <strong>第K大 vs 第K小</strong>
+        <p>第 K 大 = 排序后倒数第 K 个 = 第 (n-K+1) 小。快速选择时注意转换：target = n - k。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>BFPRT算法</strong>：中位数的中位数选 pivot，保证最坏 O(n)，但常数大，实际不一定更快</li>
+        <li><strong>流式数据</strong>：数据量极大无法全部加载时，堆方法更实用（只需维护 k 大小的堆）</li>
+        <li><strong>前K个高频元素</strong>：LeetCode #347，先用哈希统计频率，再用堆取 TopK</li>
+        <li><strong>中位数</strong>：LeetCode #295，用大小堆各维护一半，实现动态中位数</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="347-前K个高频元素.html"><span class="num">#347</span>前K个高频元素</a>
+      <a class="related-chip" href="../12-栈/739-每日温度.html"><span class="num">#739</span>每日温度</a>
+      <a class="related-chip" href="../12-栈/84-柱状图中最大的矩形.html"><span class="num">#84</span>柱状图中最大的矩形</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#215 数组中的第K个最大元素</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const NUMS=[3,2,1,5,6,4];
+const K=2;
+const STEPS=[
+  {i:-1,heap:[],msg:'准备开始，小顶堆为空'},
+  {i:0,heap:[3],msg:'num=3 → 入堆，堆大小=1 ≤ k=2'},
+  {i:1,heap:[2,3],msg:'num=2 → 入堆，堆大小=2 ≤ k=2。堆顶=2'},
+  {i:2,heap:[2,3],msg:'num=1 → 入堆后大小=3 > k → 弹出堆顶1，堆=[2,3]'},
+  {i:3,heap:[3,5],msg:'num=5 → 入堆后大小=3 > k → 弹出堆顶2，堆=[3,5]'},
+  {i:4,heap:[5,6],msg:'num=6 → 入堆后大小=3 > k → 弹出堆顶3，堆=[5,6]'},
+  {i:5,heap:[5,6],msg:'num=4 → 入堆后大小=3 > k → 弹出堆顶4，堆=[5,6]。遍历结束，堆顶=<strong>5</strong>'},
+];
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  // array
+  const arrEl=document.getElementById('demoArr');
+  arrEl.innerHTML='';
+  NUMS.forEach((v,i)=>{
+    const d=document.createElement('div');
+    d.className='demo-arr-cell';
+    if(s&&i===s.i) d.classList.add('pivot');
+    if(s&&i<s.i) d.classList.add('done');
+    d.textContent=v;arrEl.appendChild(d);
+  });
+  // heap visualization
+  const heapEl=document.getElementById('demoHeap');
+  heapEl.innerHTML='';
+  if(s&&s.heap.length>0){
+    // simple row display for heap
+    const row=document.createElement('div');
+    row.className='heap-row';
+    s.heap.forEach((v,i)=>{
+      const node=document.createElement('div');
+      node.className='heap-node';
+      if(i===0) node.classList.add('current');
+      node.textContent=v;
+      row.appendChild(node);
+    });
+    heapEl.appendChild(row);
+    // label
+    const lbl=document.createElement('div');
+    lbl.style.cssText='font-family:"Baloo 2",sans-serif;font-size:.72rem;font-weight:800;color:var(--muted);margin-top:4px';
+    lbl.textContent='堆顶(最小)='+s.heap[0];
+    heapEl.appendChild(lbl);
+  }
+  // info
+  document.getElementById('demoInfo').innerHTML=s?s.msg:'点击 ▶ 开始逐步演示';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1200);
+}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>46. 全排列 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.card .highlight{display:inline;padding:1px 6px;border-radius:5px;background:var(--yellow-soft);font-weight:800}
+.demo-body{min-height:220px}
+.tree-node.choosing{background:var(--yellow);color:var(--ink)}
+.tree-node.backtrack{background:var(--pink-soft);color:var(--pink);opacity:.6}
+.path-item{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border:3px solid var(--ink);border-radius:8px;background:var(--purple-soft);font-family:"Roboto Mono",monospace;font-size:.72rem;font-weight:700;box-shadow:2px 3px 0 var(--ink);animation:popIn .3s ease}
+.path-arrow{font-size:.9rem;font-weight:900;color:var(--pink);margin:0 2px}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">回溯</span>
+      <span class="hero-tag">排列</span>
+    </div>
+    <h1 class="hero-title">#46 <span class="accent">全排列</span></h1>
+    <p class="hero-desc">给定一个<strong>不含重复数字</strong>的数组 <code>nums</code>，返回其所有可能的全排列。你可以按任意顺序返回答案。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [1,2,3]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">[[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]</span></div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [0,1]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">[[0,1],[1,0]]</span></div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 3</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [1]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">[[1]]</span></div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">不含重复的数组</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">枚举所有排列</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">返回全部结果</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>数组<strong>不含重复数字</strong>，无需去重</li>
+        <li>排列<strong>有序</strong>：[1,2,3] 和 [1,3,2] 是不同排列</li>
+        <li>每个元素<strong>恰好使用一次</strong> → 需要 used 标记</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>回溯法</strong>：在每一层决策中，枚举所有尚未使用的数字，选一个加入当前路径，递归进入下一层，返回后撤销选择（回溯）。</p>
+      <div class="step-flow">
+        <span class="step-pill">选一个未用数字</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">加入路径，标记已用</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">递归下一层</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">撤销选择，回溯</span>
+      </div>
+      <p>终止条件：路径长度 == nums.length，收集一个完整排列。</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">permute</span>(nums):</span>
+<span class="line">    res = []</span>
+<span class="line">    used = [<span class="num">0</span>] * <span class="fn">len</span>(nums)</span>
+<span class="line"></span>
+<span class="line">    <span class="kw">def</span> <span class="fn">backtrack</span>(path):</span>
+<span class="line hl">        <span class="kw">if</span> <span class="fn">len</span>(path) == <span class="fn">len</span>(nums):  <span class="cmt"># 终止条件</span></span>
+<span class="line hl">            res.append(path[:])  <span class="cmt"># 收集结果（拷贝）</span></span>
+<span class="line hl">            <span class="kw">return</span></span>
+<span class="line">        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(nums)):</span>
+<span class="line hl">            <span class="kw">if</span> used[i]:  <span class="cmt"># 跳过已用</span></span>
+<span class="line hl">                <span class="kw">continue</span></span>
+<span class="line">            path.append(nums[i])  <span class="cmt"># 选择</span></span>
+<span class="line">            used[i] = <span class="num">1</span></span>
+<span class="line">            backtrack(path)  <span class="cmt"># 递归</span></span>
+<span class="line">            path.pop()  <span class="cmt"># 撤销选择</span></span>
+<span class="line">            used[i] = <span class="num">0</span></span>
+<span class="line"></span>
+<span class="line">    backtrack([])</span>
+<span class="line">    <span class="kw">return</span> res</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public</span> List&lt;List&lt;Integer&gt;&gt; <span class="fn">permute</span>(<span class="kw">int</span>[] nums) {</span>
+<span class="line">    List&lt;List&lt;Integer&gt;&gt; res = <span class="kw">new</span> ArrayList&lt;&gt;();</span>
+<span class="line">    <span class="kw">boolean</span>[] used = <span class="kw">new boolean</span>[nums.length];</span>
+<span class="line">    backtrack(nums, used, <span class="kw">new</span> ArrayList&lt;&gt;(), res);</span>
+<span class="line">    <span class="kw">return</span> res;</span>
+<span class="line">}</span>
+<span class="line"></span>
+<span class="line"><span class="kw">void</span> <span class="fn">backtrack</span>(<span class="kw">int</span>[] nums, <span class="kw">boolean</span>[] used,</span>
+<span class="line">               List&lt;Integer&gt; path, List&lt;List&lt;Integer&gt;&gt; res) {</span>
+<span class="line hl">    <span class="kw">if</span> (path.size() == nums.length) {</span>
+<span class="line hl">        res.add(<span class="kw">new</span> ArrayList&lt;&gt;(path)); <span class="cmt">// 拷贝</span></span>
+<span class="line hl">        <span class="kw">return</span>;</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; nums.length; i++) {</span>
+<span class="line hl">        <span class="kw">if</span> (used[i]) <span class="kw">continue</span>;</span>
+<span class="line">        path.add(nums[i]);</span>
+<span class="line">        used[i] = <span class="kw">true</span>;</span>
+<span class="line">        backtrack(nums, used, path, res);</span>
+<span class="line">        path.remove(path.size() - <span class="num">1</span>);</span>
+<span class="line">        used[i] = <span class="kw">false</span>;</span>
+<span class="line">    }</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&gt; <span class="fn">permute</span>(<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&amp; nums) {</span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&gt; res;</span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">int</span>&gt; path;</span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">bool</span>&gt; used(nums.size(), <span class="kw">false</span>);</span>
+<span class="line">    backtrack(nums, used, path, res);</span>
+<span class="line">    <span class="kw">return</span> res;</span>
+<span class="line">}</span>
+<span class="line"></span>
+<span class="line"><span class="kw">void</span> <span class="fn">backtrack</span>(<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&amp; nums, <span class="kw">vector</span>&lt;<span class="kw">bool</span>&gt;&amp; used,</span>
+<span class="line">               <span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&amp; path, <span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&gt;&amp; res) {</span>
+<span class="line hl">    <span class="kw">if</span> (path.size() == nums.size()) {</span>
+<span class="line hl">        res.push_back(path);</span>
+<span class="line hl">        <span class="kw">return</span>;</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; nums.size(); i++) {</span>
+<span class="line hl">        <span class="kw">if</span> (used[i]) <span class="kw">continue</span>;</span>
+<span class="line">        path.push_back(nums[i]);</span>
+<span class="line">        used[i] = <span class="kw">true</span>;</span>
+<span class="line">        backtrack(nums, used, path, res);</span>
+<span class="line">        path.pop_back();</span>
+<span class="line">        used[i] = <span class="kw">false</span>;</span>
+<span class="line">    }</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">回溯树逐步展开</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 9</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div id="demoPath" style="margin-bottom:.6rem"></div>
+        <div id="demoTree" style="display:flex;flex-direction:column;align-items:center;gap:4px"></div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>收集结果要拷贝</strong>
+        <p>Python 中 <code>res.append(path[:])</code>，不能直接 <code>res.append(path)</code>，因为 path 后续会被修改，最终所有结果都变成空列表。</p>
+      </article>
+      <article class="note">
+        <strong>used 数组别忘还原</strong>
+        <p>递归返回后必须 <code>used[i] = False</code>，否则后续分支无法选择该元素，导致结果缺失。</p>
+      </article>
+      <article class="note">
+        <strong>path.pop() 配对</strong>
+        <p><code>path.append()</code> 和 <code>path.pop()</code> 必须成对出现。如果提前 return，也要先 pop 再 return，或确保终止条件在 append 之前判断。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>含重复元素</strong>：#47 全排列 II，需要排序 + 剪枝 <code>if i>0 and nums[i]==nums[i-1] and not used[i-1]: continue</code></li>
+        <li><strong>交换法</strong>：原地交换元素实现排列，不需要 used 数组，空间更优</li>
+        <li><strong>排列的字典序</strong>：next_permutation 算法可按字典序生成排列</li>
+        <li><strong>时间复杂度</strong>：O(n·n!)，n! 个排列，每个排列 O(n) 拷贝</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="78-子集.html"><span class="num">#78</span>子集</a>
+      <a class="related-chip" href="39-组合总和.html"><span class="num">#39</span>组合总和</a>
+      <a class="related-chip" href="22-括号生成.html"><span class="num">#22</span>括号生成</a>
+      <a class="related-chip" href="51-N皇后.html"><span class="num">#51</span>N皇后</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#46 全排列</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO — 回溯树 =====
+const STEPS=[
+  {path:[],msg:'开始：path=[]，从空路径出发'},
+  {path:[1],msg:'选择 1 → path=[1]，标记 1 已用'},
+  {path:[1,2],msg:'选择 2 → path=[1,2]，标记 2 已用'},
+  {path:[1,2,3],msg:'选择 3 → path=[1,2,3] ✓ 长度=3，收集！',done:true},
+  {path:[1,3],msg:'回溯：撤销 3 → path=[1,3]'},
+  {path:[1,3,2],msg:'选择 2 → path=[1,3,2] ✓ 收集！',done:true},
+  {path:[2],msg:'回溯到根 → 选择 2 → path=[2]'},
+  {path:[2,1],msg:'选择 1 → path=[2,1]'},
+  {path:[2,1,3],msg:'选择 3 → path=[2,1,3] ✓ 收集！',done:true},
+];
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  const pathEl=document.getElementById('demoPath');
+  const treeEl=document.getElementById('demoTree');
+  const info=document.getElementById('demoInfo');
+  pathEl.innerHTML='';
+  treeEl.innerHTML='';
+  if(s){
+    // path display
+    s.path.forEach((v,i)=>{
+      if(i>0){const ar=document.createElement('span');ar.className='path-arrow';ar.textContent='→';pathEl.appendChild(ar)}
+      const sp=document.createElement('span');sp.className='path-item';sp.textContent=v;pathEl.appendChild(sp);
+    });
+    if(s.done){
+      const tag=document.createElement('span');tag.className='path-item';tag.style.background='var(--green-soft)';tag.style.color='var(--green)';tag.textContent='✓ 收集';pathEl.appendChild(tag);
+    }
+    // mini tree visualization
+    const rows=[
+      ['[]'],
+      ['[1]','[2]','[3]'],
+      ['[1,2]','[1,3]','[2,1]','[2,3]','[3,1]','[3,2]'],
+      ['[1,2,3]','[1,3,2]','[2,1,3]','[2,3,1]','[3,1,2]','[3,2,1]']
+    ];
+    const pathStr='['+s.path.join(',')+']';
+    rows.forEach((row,ri)=>{
+      const rowEl=document.createElement('div');rowEl.style.cssText='display:flex;gap:8px;justify-content:center;flex-wrap:wrap';
+      row.forEach(label=>{
+        const nd=document.createElement('span');nd.className='tree-node';nd.textContent=label;
+        nd.style.width='auto';nd.style.minWidth='44px';nd.style.borderRadius='10px';nd.style.fontSize='.68rem';nd.style.padding='0 8px';
+        if(label===pathStr){nd.classList.add('current')}
+        else if(s.done&&label===pathStr){nd.classList.add('found')}
+        rowEl.appendChild(nd);
+      });
+      treeEl.appendChild(rowEl);
+    });
+    info.innerHTML=s.msg;
+  }else{
+    info.innerHTML='点击 ▶ 开始逐步演示';
+  }
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1500);
+}
+render();
+</script>
+</body>
+</html>

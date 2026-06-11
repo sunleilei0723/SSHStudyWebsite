@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>207. 课程表 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.graph-vis{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:flex-start;margin:1rem 0;min-height:160px}
+.g-node{width:60px;height:60px;display:grid;place-items:center;border:4px solid var(--ink);border-radius:50%;font-family:"Roboto Mono",monospace;font-size:1rem;font-weight:700;background:#fff;box-shadow:2px 3px 0 var(--ink);transition:all .3s;position:relative}
+.g-node.indeg0{background:var(--green);color:#fff;transform:scale(1.1);box-shadow:3px 4px 0 var(--ink)}
+.g-node.removed{background:#e8ecf0;color:#bbb;border-style:dashed;transform:scale(.85);opacity:.5}
+.g-node.cycle{background:var(--pink);color:#fff;box-shadow:3px 4px 0 var(--ink)}
+.g-node .indeg-badge{position:absolute;top:-8px;right:-8px;min-width:22px;height:22px;display:grid;place-items:center;border:3px solid var(--ink);border-radius:50%;background:var(--yellow);font-size:.55rem;font-weight:900;padding:0 3px}
+.g-edge{display:flex;align-items:center;gap:2px;font-size:.8rem;font-weight:900;color:var(--muted)}
+.g-edge .arrow{color:var(--pink);font-size:1.1rem}
+.demo-body{min-height:260px}
+.queue-display{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:.6rem}
+.queue-label{font-family:"Baloo 2",sans-serif;font-size:.8rem;font-weight:800;color:var(--pink)}
+.queue-item{padding:3px 10px;border:3px solid var(--ink);border-radius:8px;background:var(--green-soft);font-family:"Roboto Mono",monospace;font-size:.72rem;font-weight:700;box-shadow:2px 3px 0 var(--ink);animation:popIn .3s ease}
+.result-display{margin-top:.6rem;padding:4px 14px;border:3px solid var(--ink);border-radius:8px;background:var(--yellow-soft);font-family:"Baloo 2",sans-serif;font-size:.9rem;font-weight:800;box-shadow:2px 3px 0 var(--ink)}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">拓扑排序</span>
+      <span class="hero-tag">BFS</span>
+      <span class="hero-tag">图</span>
+    </div>
+    <h1 class="hero-title">#207 <span class="accent">课程表</span></h1>
+    <p class="hero-desc">你这个学期必须选修 <code>numCourses</code> 门课程，记为 <code>0</code> 到 <code>numCourses-1</code>。在选修某些课程之前需要一些先修课程，<code>prerequisites[i] = [a, b]</code> 表示要学习课程 <code>a</code> 必须先学习课程 <code>b</code>。判断是否可能完成所有课程的学习？</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">numCourses = 2, prerequisites = [[1,0]]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">true</span></div>
+      <div class="example-explain">先修课程0，再修课程1，可以完成</div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">numCourses = 2, prerequisites = [[1,0],[0,1]]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">false</span></div>
+      <div class="example-explain">课程0和1互相依赖，形成环，不可能完成</div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">课程 = 节点</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill done">先修 = 有向边</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">判断有向图有无环</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">无环→true</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>问题等价于判断<strong>有向图是否有环</strong></li>
+        <li>无环 ⇨ 可以拓扑排序 ⇨ 能修完所有课</li>
+        <li>有环 ⇨ 存在循环依赖 ⇨ 不可能修完</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>BFS 拓扑排序（Kahn算法）O(V+E)</strong>：不断删除入度为0的节点，若能删完所有节点则无环。</p>
+      <div class="step-flow">
+        <span class="step-pill">建图+计算入度</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">入度0入队</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">BFS删除节点</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">删完→true / 剩余→false</span>
+      </div>
+      <p><strong>DFS 染色法</strong>：0=未访问，1=访问中，2=已完成。遇到1说明有环。</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">canFinish</span>(numCourses, prerequisites):</span>
+<span class="line">    adj = [[] <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(numCourses)]</span>
+<span class="line">    indeg = [<span class="num">0</span>] * numCourses</span>
+<span class="line hl">    <span class="kw">for</span> a, b <span class="kw">in</span> prerequisites:</span>
+<span class="line hl">        adj[b].append(a)  <span class="cmt"># b → a</span></span>
+<span class="line hl">        indeg[a] += <span class="num">1</span></span>
+<span class="line">    q = <span class="fn">deque</span>([i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(numCourses) <span class="kw">if</span> indeg[i]==<span class="num">0</span>])</span>
+<span class="line hl">    cnt = <span class="num">0</span></span>
+<span class="line hl">    <span class="kw">while</span> q:</span>
+<span class="line hl">        node = q.popleft()</span>
+<span class="line hl">        cnt += <span class="num">1</span></span>
+<span class="line hl">        <span class="kw">for</span> nxt <span class="kw">in</span> adj[node]:</span>
+<span class="line hl">            indeg[nxt] -= <span class="num">1</span></span>
+<span class="line hl">            <span class="kw">if</span> indeg[nxt] == <span class="num">0</span>: q.append(nxt)</span>
+<span class="line">    <span class="kw">return</span> cnt == numCourses</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public</span> <span class="kw">boolean</span> <span class="fn">canFinish</span>(<span class="kw">int</span> n, <span class="kw">int</span>[][] pre) {</span>
+<span class="line">    List&lt;List&lt;Integer&gt;&gt; adj = <span class="kw">new</span> ArrayList&lt;&gt;();</span>
+<span class="line">    <span class="kw">int</span>[] indeg = <span class="kw">new int</span>[n];</span>
+<span class="line">    <span class="kw">for</span>(<span class="kw">int</span> i=<span class="num">0</span>;i&lt;n;i++) adj.add(<span class="kw">new</span> ArrayList&lt;&gt;());</span>
+<span class="line hl">    <span class="kw">for</span>(<span class="kw">int</span>[] p:pre){adj.get(p[<span class="num">1</span>]).add(p[<span class="num">0</span>]);indeg[p[<span class="num">0</span>]]++;}</span>
+<span class="line">    Queue&lt;Integer&gt; q = <span class="kw">new</span> LinkedList&lt;&gt;();</span>
+<span class="line">    <span class="kw">for</span>(<span class="kw">int</span> i=<span class="num">0</span>;i&lt;n;i++) <span class="kw">if</span>(indeg[i]==<span class="num">0</span>) q.add(i);</span>
+<span class="line hl">    <span class="kw">int</span> cnt=<span class="num">0</span>;</span>
+<span class="line hl">    <span class="kw">while</span>(!q.isEmpty()){</span>
+<span class="line hl">      <span class="kw">int</span> cur=q.poll(); cnt++;</span>
+<span class="line hl">      <span class="kw">for</span>(<span class="kw">int</span> nxt:adj.get(cur)){</span>
+<span class="line hl">        <span class="kw">if</span>(--indeg[nxt]==<span class="num">0</span>) q.add(nxt);</span>
+<span class="line">      }</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> cnt==n;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">bool</span> <span class="fn">canFinish</span>(<span class="kw">int</span> n, <span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&gt;&amp; pre) {</span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&gt; adj(n);</span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">int</span>&gt; indeg(n,<span class="num">0</span>);</span>
+<span class="line hl">    <span class="kw">for</span>(<span class="kw">auto</span>&amp; p:pre){adj[p[<span class="num">1</span>]].push_back(p[<span class="num">0</span>]);indeg[p[<span class="num">0</span>]]++;}</span>
+<span class="line">    queue&lt;<span class="kw">int</span>&gt; q;</span>
+<span class="line">    <span class="kw">for</span>(<span class="kw">int</span> i=<span class="num">0</span>;i&lt;n;i++) <span class="kw">if</span>(!indeg[i]) q.push(i);</span>
+<span class="line hl">    <span class="kw">int</span> cnt=<span class="num">0</span>;</span>
+<span class="line hl">    <span class="kw">while</span>(!q.empty()){</span>
+<span class="line hl">      <span class="kw">int</span> cur=q.front();q.pop();cnt++;</span>
+<span class="line hl">      <span class="kw">for</span>(<span class="kw">int</span> nxt:adj[cur])</span>
+<span class="line hl">        <span class="kw">if</span>(--indeg[nxt]==<span class="num">0</span>) q.push(nxt);</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> cnt==n;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">拓扑排序逐步删除</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 6</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="graph-vis" id="graphVis"></div>
+        <div class="queue-display">
+          <span class="queue-label">队列：</span>
+          <div id="queueItems" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+        </div>
+        <div class="result-display" id="resultDisplay">等待开始...</div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示（示例2：有环）</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>边的方向</strong>
+        <p><code>[a, b]</code> 表示 b→a（先修b才能修a），建图时 <code>adj[b].add(a)</code>，方向别搞反。</p>
+      </article>
+      <article class="note">
+        <strong>入度为0才入队</strong>
+        <p>只有入度减到0的节点才能入队。不能一减就入队，必须 <code>if (--indeg[nxt] == 0)</code>。</p>
+      </article>
+      <article class="note">
+        <strong>判断条件</strong>
+        <p>最终判断 <code>cnt == numCourses</code>，不是 <code>q.empty()</code>。cnt 记录了成功删除的节点数。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>课程表 II</strong>：不仅判断能否完成，还要输出修课顺序（拓扑序列）</li>
+        <li><strong>DFS 染色法</strong>：三色标记法也可判环，且能同时获取逆拓扑序</li>
+        <li><strong>并行课程</strong>：求最少学期数，按拓扑层计算</li>
+        <li><strong>多依赖关系</strong>：实际工程中的编译依赖、任务调度都是拓扑排序的应用</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="200-岛屿数量.html"><span class="num">#200</span>岛屿数量</a>
+      <a class="related-chip" href="994-腐烂的橘子.html"><span class="num">#994</span>腐烂的橘子</a>
+      <a class="related-chip" href="208-实现Trie(前缀树).html"><span class="num">#208</span>实现Trie(前缀树)</a>
+      <a class="related-chip" href="../10-回溯/210-课程表II.html"><span class="num">#210</span>课程表II</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#207 课程表</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+// Example 2: numCourses=2, prerequisites=[[1,0],[0,1]] → cycle
+// Also show Example 1: numCourses=4, prerequisites=[[1,0],[2,0],[3,1],[3,2]] → no cycle
+// We'll demo the cycle case (example 2) as it's more interesting
+const N=4;
+const EDGES=[[1,0],[2,0],[3,1],[3,2]]; // Example: 4 courses, no cycle
+
+function buildSteps(){
+  const adj=Array.from({length:N},()=>[]);
+  const indeg=new Array(N).fill(0);
+  for(const[a,b] of EDGES){adj[b].push(a);indeg[a]++;}
+  const steps=[];
+  const curIndeg=[...indeg];
+  const removed=new Set();
+  const queue=[];
+  for(let i=0;i<N;i++) if(curIndeg[i]===0) queue.push(i);
+  steps.push({indeg:[...curIndeg],removed:new Set(),queue:[...queue],msg:'初始状态：建图完成，入度0的节点入队：['+queue.join(',')+']'});
+  let cnt=0;
+  while(queue.length>0){
+    const node=queue.shift();
+    removed.add(node);
+    cnt++;
+    const newQueue=[];
+    for(const nxt of adj[node]){
+      curIndeg[nxt]--;
+      if(curIndeg[nxt]===0) newQueue.push(nxt);
+    }
+    queue.push(...newQueue);
+    steps.push({indeg:[...curIndeg],removed:new Set(removed),queue:[...queue],msg:`删除节点 ${node}，其邻居入度-1，新入度0：[${newQueue.join(',')}]，已删除 ${cnt}/${N}`});
+  }
+  if(cnt===N){
+    steps.push({indeg:[...curIndeg],removed:new Set(removed),queue:[],msg:`全部 ${N} 个节点删除完毕，无环 → 返回 true`});
+  }else{
+    steps.push({indeg:[...curIndeg],removed:new Set(removed),queue:[],msg:`仅删除 ${cnt}/${N} 个节点，剩余节点形成环 → 返回 false`});
+  }
+  return steps;
+}
+const STEPS=buildSteps();
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  const vis=document.getElementById('graphVis');
+  vis.innerHTML='';
+  // Draw nodes in a row
+  const row=document.createElement('div');
+  row.style.cssText='display:flex;gap:16px;justify-content:center;flex-wrap:wrap';
+  for(let i=0;i<N;i++){
+    const node=document.createElement('div');
+    node.className='g-node';
+    const isRemoved=s&&s.removed.has(i);
+    const isQueue=s&&s.queue.includes(i);
+    if(isRemoved) node.classList.add('removed');
+    else if(isQueue) node.classList.add('indeg0');
+    node.textContent=i;
+    // indeg badge
+    const badge=document.createElement('span');
+    badge.className='indeg-badge';
+    badge.textContent=s?s.indeg[i]:EDGES.filter(e=>e[0]===i).length;
+    node.appendChild(badge);
+    row.appendChild(node);
+  }
+  vis.appendChild(row);
+  // Draw edges below
+  const edgeRow=document.createElement('div');
+  edgeRow.style.cssText='display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:8px';
+  for(const[a,b] of EDGES){
+    const e=document.createElement('span');
+    e.className='g-edge';
+    e.innerHTML=`<span>${b}</span><span class="arrow">→</span><span>${a}</span>`;
+    edgeRow.appendChild(e);
+  }
+  vis.appendChild(edgeRow);
+  // Queue display
+  const qi=document.getElementById('queueItems');
+  qi.innerHTML='';
+  if(s){
+    for(const v of s.queue){
+      const item=document.createElement('span');
+      item.className='queue-item';
+      item.textContent=v;
+      qi.appendChild(item);
+    }
+  }
+  // Result
+  document.getElementById('resultDisplay').textContent=s?`已删除：${s.removed.size}/${N}`:'等待开始...';
+  document.getElementById('demoInfo').innerHTML=s?s.msg:'点击 ▶ 开始逐步演示（4门课程，无环）';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1500);
+}
+render();
+</script>
+</body>
+</html>

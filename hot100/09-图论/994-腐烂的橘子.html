@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>994. 腐烂的橘子 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.grid-vis{display:inline-grid;gap:5px;margin:0 auto 1rem;padding:1rem;border:4px solid var(--ink);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow-sm)}
+.g-cell{width:56px;height:56px;display:grid;place-items:center;border:4px solid var(--ink);border-radius:8px;font-family:"Roboto Mono",monospace;font-size:1.1rem;font-weight:700;background:#fff;box-shadow:2px 3px 0 var(--ink);transition:all .3s}
+.g-cell.fresh{background:var(--yellow-soft);color:#b8860b}
+.g-cell.rotten{background:var(--pink-soft);color:var(--pink)}
+.g-cell.empty{background:#e8ecf0;color:#9aa0aa}
+.g-cell.new-rotten{background:var(--pink);color:#fff;transform:scale(1.08);box-shadow:3px 4px 0 var(--ink)}
+.g-cell.just-rotten{background:var(--pink-soft);color:var(--pink);animation:popIn .3s ease}
+.demo-body{min-height:280px;display:flex;flex-direction:column;align-items:center}
+.minute-counter{margin-top:.6rem;padding:4px 14px;border:3px solid var(--ink);border-radius:8px;background:var(--blue-soft);font-family:"Baloo 2",sans-serif;font-size:.9rem;font-weight:800;box-shadow:2px 3px 0 var(--ink)}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">BFS</span>
+      <span class="hero-tag">矩阵</span>
+    </div>
+    <h1 class="hero-title">#994 <span class="accent">腐烂的橘子</span></h1>
+    <p class="hero-desc">在给定的 <code>m x n</code> 网格中，每个单元格可以有三个值之一：值 <code>0</code> 代表空单元格，值 <code>1</code> 代表新鲜橘子，值 <code>2</code> 代表腐烂的橘子。每分钟，腐烂的橘子会向上下左右四个方向传播腐烂。返回直到单元格中没有新鲜橘子为止所必须经过的最小分钟数。如果不可能，返回 <code>-1</code>。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">grid = [[2,1,1],[1,1,0],[0,1,1]]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">4</span></div>
+      <div class="example-explain">第0分钟左上角腐烂，4分钟后所有橘子腐烂</div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">grid = [[2,1,1],[0,1,1],[1,0,1]]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">-1</span></div>
+      <div class="example-explain">左下角橘子被0隔开，永远不会腐烂</div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">初始腐烂橘子</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill done">每分钟向四周扩散</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">BFS 逐轮扩散</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">统计分钟数</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>多源 BFS：所有初始腐烂橘子<strong>同时开始</strong>扩散</li>
+        <li>如果存在新鲜橘子永远无法被感染，返回 <code>-1</code></li>
+        <li>每轮扩散 = 1 分钟，需要<strong>逐层</strong>BFS</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>多源 BFS O(m×n)</strong>：先将所有腐烂橘子入队，然后逐层 BFS 扩散。每处理完一层，分钟数 +1。最后检查是否还有新鲜橘子。</p>
+      <div class="step-flow">
+        <span class="step-pill">所有腐烂橘子入队</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">逐层BFS扩散</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">感染相邻新鲜橘子</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">检查剩余新鲜橘子</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">orangesRotting</span>(grid):</span>
+<span class="line">    m, n = <span class="fn">len</span>(grid), <span class="fn">len</span>(grid[<span class="num">0</span>])</span>
+<span class="line">    q = <span class="fn">deque</span>()</span>
+<span class="line">    fresh = <span class="num">0</span></span>
+<span class="line hl">    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(m):</span>
+<span class="line hl">        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(n):</span>
+<span class="line hl">            <span class="kw">if</span> grid[i][j] == <span class="num">2</span>: q.append((i,j))</span>
+<span class="line hl">            <span class="kw">elif</span> grid[i][j] == <span class="num">1</span>: fresh += <span class="num">1</span></span>
+<span class="line">    mins = <span class="num">0</span></span>
+<span class="line hl">    <span class="kw">while</span> q <span class="kw">and</span> fresh:</span>
+<span class="line hl">        <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(q)):  <span class="cmt"># 逐层</span></span>
+<span class="line hl">            x,y = q.popleft()</span>
+<span class="line hl">            <span class="kw">for</span> dx,dy <span class="kw">in</span> [(<span class="num">1</span>,<span class="num">0</span>),(-<span class="num">1</span>,<span class="num">0</span>),(<span class="num">0</span>,<span class="num">1</span>),(<span class="num">0</span>,-<span class="num">1</span>)]:</span>
+<span class="line hl">                nx,ny = x+dx, y+dy</span>
+<span class="line hl">                <span class="kw">if</span> <span class="num">0</span>&lt;=nx&lt;m <span class="kw">and</span> <span class="num">0</span>&lt;=ny&lt;n <span class="kw">and</span> grid[nx][ny]==<span class="num">1</span>:</span>
+<span class="line hl">                    grid[nx][ny] = <span class="num">2</span></span>
+<span class="line hl">                    fresh -= <span class="num">1</span></span>
+<span class="line hl">                    q.append((nx,ny))</span>
+<span class="line">        mins += <span class="num">1</span></span>
+<span class="line">    <span class="kw">return</span> mins <span class="kw">if</span> fresh == <span class="num">0</span> <span class="kw">else</span> -<span class="num">1</span></span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public</span> <span class="kw">int</span> <span class="fn">orangesRotting</span>(<span class="kw">int</span>[][] grid) {</span>
+<span class="line">    <span class="kw">int</span> m=grid.length, n=grid[<span class="num">0</span>].length;</span>
+<span class="line">    Queue&lt;<span class="kw">int</span>[]&gt; q = <span class="kw">new</span> LinkedList&lt;&gt;();</span>
+<span class="line">    <span class="kw">int</span> fresh = <span class="num">0</span>;</span>
+<span class="line hl">    <span class="kw">for</span>(<span class="kw">int</span> i=<span class="num">0</span>;i&lt;m;i++)</span>
+<span class="line hl">      <span class="kw">for</span>(<span class="kw">int</span> j=<span class="num">0</span>;j&lt;n;j++){</span>
+<span class="line hl">        <span class="kw">if</span>(grid[i][j]==<span class="num">2</span>) q.add(<span class="kw">new</span> <span class="kw">int</span>[]{i,j});</span>
+<span class="line hl">        <span class="kw">if</span>(grid[i][j]==<span class="num">1</span>) fresh++;</span>
+<span class="line">      }</span>
+<span class="line">    <span class="kw">int</span> mins = <span class="num">0</span>;</span>
+<span class="line hl">    <span class="kw">while</span>(!q.isEmpty() && fresh&gt;<span class="num">0</span>){</span>
+<span class="line hl">      <span class="kw">int</span> sz = q.size();</span>
+<span class="line hl">      <span class="kw">for</span>(<span class="kw">int</span> k=<span class="num">0</span>;k&lt;sz;k++){</span>
+<span class="line hl">        <span class="kw">int</span>[] p=q.poll();</span>
+<span class="line hl">        <span class="kw">for</span>(<span class="kw">int</span>[] d:<span class="kw">new</span> <span class="kw">int</span>[][]{{<span class="num">1</span>,<span class="num">0</span>},{-<span class="num">1</span>,<span class="num">0</span>},{<span class="num">0</span>,<span class="num">1</span>},{<span class="num">0</span>,-<span class="num">1</span>}}){</span>
+<span class="line hl">          <span class="kw">int</span> x=p[<span class="num">0</span>]+d[<span class="num">0</span>], y=p[<span class="num">1</span>]+d[<span class="num">1</span>];</span>
+<span class="line hl">          <span class="kw">if</span>(x&gt;=<span class="num">0</span>&&x&lt;m&&y&gt;=<span class="num">0</span>&&y&lt;n&&grid[x][y]==<span class="num">1</span>){</span>
+<span class="line hl">            grid[x][y]=<span class="num">2</span>; fresh--; q.add(<span class="kw">new</span> <span class="kw">int</span>[]{x,y});</span>
+<span class="line">          }</span>
+<span class="line">        }</span>
+<span class="line">      }</span>
+<span class="line">      mins++;</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> fresh==<span class="num">0</span>?mins:-<span class="num">1</span>;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">int</span> <span class="fn">orangesRotting</span>(<span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&gt;&amp; g) {</span>
+<span class="line">    <span class="kw">int</span> m=g.size(),n=g[<span class="num">0</span>].size(),fresh=<span class="num">0</span>,mins=<span class="num">0</span>;</span>
+<span class="line">    queue&lt;pair&lt;<span class="kw">int</span>,<span class="kw">int</span>&gt;&gt; q;</span>
+<span class="line hl">    <span class="kw">for</span>(<span class="kw">int</span> i=<span class="num">0</span>;i&lt;m;i++)</span>
+<span class="line hl">      <span class="kw">for</span>(<span class="kw">int</span> j=<span class="num">0</span>;j&lt;n;j++){</span>
+<span class="line hl">        <span class="kw">if</span>(g[i][j]==<span class="num">2</span>) q.push({i,j});</span>
+<span class="line hl">        <span class="kw">if</span>(g[i][j]==<span class="num">1</span>) fresh++;</span>
+<span class="line">      }</span>
+<span class="line hl">    <span class="kw">while</span>(!q.empty()&&fresh){</span>
+<span class="line hl">      <span class="kw">int</span> sz=q.size();</span>
+<span class="line hl">      <span class="kw">while</span>(sz--){</span>
+<span class="line hl">        <span class="kw">auto</span> [x,y]=q.front();q.pop();</span>
+<span class="line hl">        <span class="kw">for</span>(<span class="kw">auto</span>&amp; [dx,dy]:<span class="kw">vector</span>&lt;pair&lt;<span class="kw">int</span>,<span class="kw">int</span>&gt;&gt;{{<span class="num">1</span>,<span class="num">0</span>},{-<span class="num">1</span>,<span class="num">0</span>},{<span class="num">0</span>,<span class="num">1</span>},{<span class="num">0</span>,-<span class="num">1</span>}}){</span>
+<span class="line hl">          <span class="kw">int</span> nx=x+dx,ny=y+dy;</span>
+<span class="line hl">          <span class="kw">if</span>(nx&gt;=<span class="num">0</span>&&nx&lt;m&&ny&gt;=<span class="num">0</span>&&ny&lt;n&&g[nx][ny]==<span class="num">1</span>){</span>
+<span class="line hl">            g[nx][ny]=<span class="num">2</span>;fresh--;q.push({nx,ny});</span>
+<span class="line">          }</span>
+<span class="line">        }</span>
+<span class="line">      }</span>
+<span class="line">      mins++;</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> fresh?<span class="num">-1</span>:mins;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">BFS 逐轮腐烂扩散</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 6</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="grid-vis" id="gridVis" style="grid-template-columns:repeat(3,56px)"></div>
+        <div class="minute-counter" id="minuteCounter">经过分钟：0</div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>多源BFS</strong>
+        <p>必须将<strong>所有</strong>初始腐烂橘子同时入队，不是逐个处理。否则时间计算错误。</p>
+      </article>
+      <article class="note">
+        <strong>逐层计时</strong>
+        <p>每处理完一整层（<code>for _ in range(len(q))</code>）才 +1 分钟，不是每感染一个就 +1。</p>
+      </article>
+      <article class="note">
+        <strong>不可能的情况</strong>
+        <p>BFS 结束后如果还有 <code>fresh > 0</code>，说明有橘子被空格隔开，返回 <code>-1</code>。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>01矩阵</strong>：求每个格子到最近0的距离，同样是多源BFS</li>
+        <li><strong>地图分析</strong>：求离陆地最远的海洋格，多源BFS从所有陆地出发</li>
+        <li><strong>墙壁与门</strong>：每个房间到最近门的距离，多源BFS</li>
+        <li><strong>如果腐烂有延迟</strong>：不同橘子腐烂速度不同，需要优先队列（Dijkstra）</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="200-岛屿数量.html"><span class="num">#200</span>岛屿数量</a>
+      <a class="related-chip" href="207-课程表.html"><span class="num">#207</span>课程表</a>
+      <a class="related-chip" href="208-实现Trie(前缀树).html"><span class="num">#208</span>实现Trie(前缀树)</a>
+      <a class="related-chip" href="../05-普通数组/73-矩阵置零.html"><span class="num">#73</span>矩阵置零</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#994 腐烂的橘子</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const INIT_GRID=[[2,1,1],[1,1,0],[0,1,1]];
+const ROWS=3,COLS=3;
+
+function buildSteps(){
+  const g=INIT_GRID.map(r=>[...r]);
+  const steps=[];
+  steps.push({grid:g.map(r=>[...r]),newRotten:[],mins:0,msg:'初始状态：1个腐烂橘子(2)，6个新鲜橘子(1)，2个空格(0)'});
+  const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
+  let mins=0;
+  while(true){
+    const newRotten=[];
+    const toRot=[];
+    for(let i=0;i<ROWS;i++)
+      for(let j=0;j<COLS;j++)
+        if(g[i][j]===2) toRot.push([i,j]);
+    for(const[x,y] of toRot){
+      for(const[dx,dy] of dirs){
+        const nx=x+dx,ny=y+dy;
+        if(nx>=0&&nx<ROWS&&ny>=0&&ny<COLS&&g[nx][ny]===1){
+          g[nx][ny]=2;
+          newRotten.push([nx,ny]);
+        }
+      }
+    }
+    if(newRotten.length===0) break;
+    mins++;
+    steps.push({grid:g.map(r=>[...r]),newRotten:[...newRotten],mins:mins,msg:`第 ${mins} 分钟：${newRotten.map(p=>'('+p[0]+','+p[1]+')').join('、')} 被感染腐烂`});
+  }
+  const fresh=g.flat().filter(v=>v===1).length;
+  steps.push({grid:g.map(r=>[...r]),newRotten:[],mins:mins,msg:fresh===0?`全部腐烂！共经过 ${mins} 分钟`:`仍有 ${fresh} 个新鲜橘子无法被感染，返回 -1`});
+  return steps;
+}
+const STEPS=buildSteps();
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  const vis=document.getElementById('gridVis');
+  vis.innerHTML='';
+  const displayGrid=s?s.grid:INIT_GRID;
+  const newSet=s?new Set(s.newRotten.map(p=>p[0]+','+p[1])):new Set();
+  for(let i=0;i<ROWS;i++){
+    for(let j=0;j<COLS;j++){
+      const d=document.createElement('div');
+      d.className='g-cell';
+      const key=i+','+j;
+      if(displayGrid[i][j]===2){
+        d.classList.add(newSet.has(key)?'new-rotten':'rotten');
+        d.textContent='2';
+      }else if(displayGrid[i][j]===1){
+        d.classList.add('fresh');
+        d.textContent='1';
+      }else{
+        d.classList.add('empty');
+        d.textContent='0';
+      }
+      vis.appendChild(d);
+    }
+  }
+  document.getElementById('minuteCounter').textContent='经过分钟：'+(s?s.mins:0);
+  document.getElementById('demoInfo').innerHTML=s?s.msg:'点击 ▶ 开始逐步演示';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1500);
+}
+render();
+</script>
+</body>
+</html>

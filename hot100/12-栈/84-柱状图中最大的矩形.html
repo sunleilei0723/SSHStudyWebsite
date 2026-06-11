@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>84. 柱状图中最大的矩形 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.demo-body{min-height:340px}
+.bar-chart{position:relative;width:100%;height:240px;margin-bottom:.5rem;padding:0 8px}
+.bar-col{position:absolute;bottom:24px;width:50px;display:flex;flex-direction:column-reverse;align-items:center}
+.bar{width:100%;border-radius:4px 4px 0 0;background:var(--pink);border:3px solid var(--ink);transition:all .3s;min-height:2px}
+.bar.current{background:var(--purple);border-color:var(--purple)}
+.bar.in-stack{background:var(--blue-soft);border-color:var(--blue)}
+.bar.popped{background:var(--green-soft);border-color:var(--green);opacity:.6}
+.bar.max-area{background:var(--green);border-color:var(--green)}
+.bar-label{font-family:"Roboto Mono",monospace;font-size:.55rem;font-weight:700;color:var(--muted);text-align:center;position:absolute;bottom:-20px;width:100%}
+.bar-value{font-family:"Roboto Mono",monospace;font-size:.65rem;font-weight:700;color:var(--ink);text-align:center;position:absolute;top:-18px;width:100%}
+.area-rect{position:absolute;background:rgba(36,194,160,0.15);border:2px dashed var(--green);border-radius:4px;transition:all .3s;z-index:1;pointer-events:none}
+.area-label{position:absolute;font-family:"Baloo 2",sans-serif;font-size:.85rem;font-weight:800;color:var(--green);text-align:center;z-index:2;pointer-events:none}
+.demo-stack-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:.4rem}
+.demo-stack-label{font-family:"Baloo 2",sans-serif;font-size:.78rem;font-weight:800;color:var(--pink)}
+.demo-stack-item{padding:3px 10px;border:3px solid var(--ink);border-radius:8px;background:var(--blue-soft);font-family:"Roboto Mono",monospace;font-size:.72rem;font-weight:700;box-shadow:2px 3px 0 var(--ink);animation:popIn .3s ease}
+.demo-max-area{margin-top:.4rem;padding:.4rem .8rem;border:3px solid var(--green);border-radius:8px;background:var(--green-soft);font-family:"Baloo 2",sans-serif;font-size:.88rem;font-weight:800;color:var(--green)}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge hard">Hard</span>
+      <span class="hero-tag">单调栈</span>
+      <span class="hero-tag">数组</span>
+    </div>
+    <h1 class="hero-title">#84 <span class="accent">柱状图中最大的矩形</span></h1>
+    <p class="hero-desc">给定 <code>n</code> 个非负整数，用来表示柱状图中各个柱子的高度。每个柱子彼此相邻，且宽度为 <code>1</code> 。求在该柱状图中，能够勾勒出来的<strong>最大矩形面积</strong>。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">heights = [2,1,5,6,2,3]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">10</span></div>
+      <div class="example-explain">最大矩形面积为 10，由高度 5 和 6 的两个柱子组成（宽度2×高度5）</div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">每根柱子为高</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">找左右边界</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">计算面积=高×宽</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">取最大值</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>矩形高度由<strong>最矮的柱子</strong>决定</li>
+        <li>对每根柱子，需要找<strong>左右第一个比它矮的</strong>位置，确定宽度</li>
+        <li>暴力 O(n²) 太慢，单调栈 O(n)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>单调栈</strong>：维护<strong>从栈底到栈顶递增</strong>的栈。当当前柱子比栈顶矮时，栈顶柱子的右边界确定了，左边界是栈顶下一个元素。</p>
+      <div class="step-flow">
+        <span class="step-pill">遍历 heights</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">h[i] < h[栈顶]?</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">弹出，计算面积</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">宽=右边界-左边界-1</span>
+      </div>
+      <p>技巧：首尾加 <code>0</code>（哨兵），确保所有柱子都能被弹出计算。</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">largestRectangleArea</span>(heights):</span>
+<span class="line">    heights = [<span class="num">0</span>] + heights + [<span class="num">0</span>]  <span class="cmt"># 前后加哨兵</span></span>
+<span class="line">    stack = []</span>
+<span class="line">    max_area = <span class="num">0</span></span>
+<span class="line">    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(heights)):</span>
+<span class="line hl">        <span class="kw">while</span> stack <span class="kw">and</span> heights[i] < heights[stack[-1]]:</span>
+<span class="line hl">            h = heights[stack.pop()]  <span class="cmt"># 弹出柱子的高度</span></span>
+<span class="line hl">            w = i - stack[-1] - <span class="num">1</span>   <span class="cmt"># 宽度 = 右边界 - 左边界 - 1</span></span>
+<span class="line hl">            max_area = <span class="fn">max</span>(max_area, h * w)</span>
+<span class="line hl">        stack.append(i)</span>
+<span class="line">    <span class="kw">return</span> max_area</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public int</span> <span class="fn">largestRectangleArea</span>(<span class="kw">int</span>[] heights) {</span>
+<span class="line">    <span class="kw">int</span>[] h = <span class="kw">new int</span>[heights.length + <span class="num">2</span>];</span>
+<span class="line">    System.arraycopy(heights, <span class="num">0</span>, h, <span class="num">1</span>, heights.length); <span class="cmt">// 前后哨兵0</span></span>
+<span class="line">    Deque&lt;Integer&gt; stack = <span class="kw">new</span> ArrayDeque&lt;&gt;();</span>
+<span class="line">    <span class="kw">int</span> maxArea = <span class="num">0</span>;</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; h.length; i++) {</span>
+<span class="line hl">        <span class="kw">while</span> (!stack.isEmpty() && h[i] &lt; h[stack.peek()]) {</span>
+<span class="line hl">            <span class="kw">int</span> height = h[stack.pop()];</span>
+<span class="line hl">            <span class="kw">int</span> width = i - stack.peek() - <span class="num">1</span>;</span>
+<span class="line hl">            maxArea = Math.max(maxArea, height * width);</span>
+<span class="line hl">        }</span>
+<span class="line">        stack.push(i);</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> maxArea;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">int</span> <span class="fn">largestRectangleArea</span>(<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;& heights) {</span>
+<span class="line">    heights.insert(heights.begin(), <span class="num">0</span>);</span>
+<span class="line">    heights.push_back(<span class="num">0</span>);  <span class="cmt">// 前后哨兵</span></span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">int</span>&gt; stk;</span>
+<span class="line">    <span class="kw">int</span> maxArea = <span class="num">0</span>;</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; heights.size(); i++) {</span>
+<span class="line hl">        <span class="kw">while</span> (!stk.empty() && heights[i] &lt; heights[stk.back()]) {</span>
+<span class="line hl">            <span class="kw">int</span> h = heights[stk.back()]; stk.pop_back();</span>
+<span class="line hl">            <span class="kw">int</span> w = i - stk.back() - <span class="num">1</span>;</span>
+<span class="line hl">            maxArea = <span class="fn">max</span>(maxArea, h * w);</span>
+<span class="line hl">        }</span>
+<span class="line">        stk.push_back(i);</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> maxArea;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">逐步演示：单调栈求最大矩形</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 8</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="bar-chart" id="barChart"></div>
+        <div class="demo-stack-row">
+          <span class="demo-stack-label">栈(下标)：</span>
+          <div id="demoStack" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+        </div>
+        <div class="demo-max-area" id="demoMaxArea">当前最大面积：0</div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>哨兵必须加</strong>
+        <p>首尾加 <code>0</code> 确保所有柱子都能被弹出计算。不加哨兵，最后的递增序列不会被处理，导致漏算。</p>
+      </article>
+      <article class="note">
+        <strong>宽度计算</strong>
+        <p><code>w = i - stack[-1] - 1</code>，不是 <code>i - popped</code>。左边界是弹出后新的栈顶，不是被弹出元素本身。</p>
+      </article>
+      <article class="note">
+        <strong>栈存下标</strong>
+        <p>和每日温度一样，栈存下标不存值。弹出后需要用 <code>stack[-1]</code> 作为左边界，只有存下标才能做到。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>接雨水</strong>：LeetCode #42，也是单调栈，但求的是凹槽蓄水量，方向相反</li>
+        <li><strong>最大矩形</strong>：LeetCode #85，二维版本，逐行转化为柱状图问题</li>
+        <li><strong>不含重复字符的最长子串</strong>：滑动窗口而非单调栈，但思想类似</li>
+        <li><strong>前后缀分解</strong>：也可以预处理每个位置的左右边界，O(n) 但需要额外空间</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="739-每日温度.html"><span class="num">#739</span>每日温度</a>
+      <a class="related-chip" href="20-有效的括号.html"><span class="num">#20</span>有效的括号</a>
+      <a class="related-chip" href="155-最小栈.html"><span class="num">#155</span>最小栈</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#84 柱状图中最大的矩形</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+// heights with sentinels: [0,2,1,5,6,2,3,0]
+const H=[0,2,1,5,6,2,3,0];
+const STEPS=[
+  {i:0,stack:[0],maxArea:0,popped:null,msg:'i=0, h=0(哨兵) → 入栈'},
+  {i:1,stack:[0,1],maxArea:0,popped:null,msg:'i=1, h=2 > h[0]=0 → 入栈'},
+  {i:2,stack:[0,2],maxArea:2,popped:{idx:1,h:2,w:1},msg:'i=2, h=1 < h[1]=2 → 弹出1, 面积=2×1=2; h=1 > h[0]=0 → 入栈'},
+  {i:3,stack:[0,2,3],maxArea:2,popped:null,msg:'i=3, h=5 > h[2]=1 → 入栈'},
+  {i:4,stack:[0,2,3,4],maxArea:2,popped:null,msg:'i=4, h=6 > h[3]=5 → 入栈'},
+  {i:5,stack:[0,2,5],maxArea:10,popped:{idx:4,h:6,w:1},msg:'i=5, h=2 < h[4]=6 → 弹出4, 面积=6×1=6; < h[3]=5 → 弹出3, 面积=5×2=10; > h[2]=1 → 入栈'},
+  {i:6,stack:[0,2,6],maxArea:10,popped:null,msg:'i=6, h=3 > h[5]=2 → 入栈'},
+  {i:7,stack:[0],maxArea:10,popped:{idx:6,h:3,w:1},msg:'i=7, h=0(哨兵) → 弹出6, 面积=3×1=3; 弹出5, 面积=2×4=8; 弹出2, 面积=1×6=6; 弹出0结束'},
+];
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  const chart=document.getElementById('barChart');
+  chart.innerHTML='';
+  const barW=65;const maxH=7;
+  // draw bars (skip sentinel 0 at index 0 and last)
+  for(let i=1;i<H.length-1;i++){
+    const col=document.createElement('div');
+    col.className='bar-col';
+    col.style.left=((i-1)*barW+10)+'px';
+    const bar=document.createElement('div');
+    bar.className='bar';
+    if(s){
+      // map real index: stack stores indices in H array
+      if(s.stack&&s.stack.includes(i)) bar.classList.add('in-stack');
+      if(s.i===i) bar.classList.add('current');
+      if(s.popped&&s.popped.idx===i) bar.classList.add('popped');
+    }
+    bar.style.height=(H[i]/maxH*180)+'px';
+    const val=document.createElement('div');
+    val.className='bar-value';val.textContent=H[i];
+    const lbl=document.createElement('div');
+    lbl.className='bar-label';lbl.textContent='i='+(i-1);
+    col.appendChild(val);col.appendChild(bar);col.appendChild(lbl);
+    chart.appendChild(col);
+  }
+  // stack display (convert to original indices)
+  const stackEl=document.getElementById('demoStack');
+  stackEl.innerHTML='';
+  if(s){
+    s.stack.forEach(idx=>{
+      if(idx===0) return; // skip sentinel
+      const d=document.createElement('span');
+      d.className='demo-stack-item';
+      d.textContent=(idx-1)+'(h='+H[idx]+')';
+      stackEl.appendChild(d);
+    });
+  }
+  // max area
+  document.getElementById('demoMaxArea').textContent='当前最大面积：'+(s?s.maxArea:0);
+  // info
+  document.getElementById('demoInfo').innerHTML=s?s.msg:'点击 ▶ 开始逐步演示';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1800);
+}
+render();
+</script>
+</body>
+</html>

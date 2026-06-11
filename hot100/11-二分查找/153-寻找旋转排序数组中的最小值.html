@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>153. 寻找旋转排序数组中的最小值 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.card .highlight{display:inline;padding:1px 6px;border-radius:5px;background:var(--yellow-soft);font-weight:800}
+.demo-body{min-height:240px}
+.ptr-row{display:flex;gap:4px;margin-bottom:4px;flex-wrap:wrap;align-items:flex-end}
+.ptr-label{width:48px;height:22px;display:grid;place-items:center;font-family:"Roboto Mono",monospace;font-size:.55rem;font-weight:700;border-radius:4px;padding:1px 2px}
+.ptr-label.left{color:var(--purple);background:var(--purple-soft)}
+.ptr-label.right{color:var(--green);background:var(--green-soft)}
+.ptr-label.mid{color:var(--pink);background:var(--pink-soft)}
+.demo-cell.eliminated{background:#f0f0f0;color:#ccc;box-shadow:1px 1px 0 #999}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">二分查找</span>
+      <span class="hero-tag">数组</span>
+    </div>
+    <h1 class="hero-title">#153 <span class="accent">寻找旋转排序数组中的最小值</span></h1>
+    <p class="hero-desc">已知一个长度为 <code>n</code> 的数组，预先按照升序排列，经由 1 到 n 次<strong>旋转</strong>后，得到输入数组。请找出数组中的<strong>最小元素</strong>。要求时间复杂度 <code>O(log n)</code>。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [3,4,5,1,2]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">1</span></div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [4,5,6,7,0,1,2]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">0</span></div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 3</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [11,13,15,17]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">11</span></div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">旋转排序数组</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill done">最小值在旋转点</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">二分找旋转点</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">返回最小值</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>数组由<strong>两段升序</strong>拼接，最小值就在旋转点</li>
+        <li>元素<strong>互不相同</strong>，不存在等于边界的情况</li>
+        <li>可能没有旋转（即旋转 n 次），此时最小值就是 <code>nums[0]</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>核心思想：</strong>用 <code>nums[mid]</code> 与 <code>nums[right]</code> 比较。若 <code>nums[mid] > nums[right]</code>，说明最小值在 mid 右边；否则最小值在 mid 及其左边。</p>
+      <div class="step-flow">
+        <span class="step-pill">取 mid</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">nums[mid] > nums[right]?</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">是 → left=mid+1</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">否 → right=mid</span>
+      </div>
+      <p><strong>为什么和 nums[right] 比？</strong>右边界是「当前搜索区间」的最大值，如果 mid 比它大，说明 mid 还在左半段（大段），最小值一定在右边。</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">findMin</span>(nums):</span>
+<span class="line">    left, right = <span class="num">0</span>, <span class="fn">len</span>(nums) - <span class="num">1</span></span>
+<span class="line">    <span class="kw">while</span> left < right:  <span class="cmt"># 注意：left < right，不是 <=</span></span>
+<span class="line hl">        mid = (left + right) // <span class="num">2</span></span>
+<span class="line hl">        <span class="kw">if</span> nums[mid] > nums[right]:</span>
+<span class="line hl">            left = mid + <span class="num">1</span>  <span class="cmt"># 最小值在右半</span></span>
+<span class="line hl">        <span class="kw">else</span>:</span>
+<span class="line hl">            right = mid  <span class="cmt"># 最小值在 mid 或左半</span></span>
+<span class="line">    <span class="kw">return</span> nums[left]</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public int</span> <span class="fn">findMin</span>(<span class="kw">int</span>[] nums) {</span>
+<span class="line">    <span class="kw">int</span> left = <span class="num">0</span>, right = nums.length - <span class="num">1</span>;</span>
+<span class="line">    <span class="kw">while</span> (left < right) {</span>
+<span class="line hl">        <span class="kw">int</span> mid = left + (right - left) / <span class="num">2</span>;</span>
+<span class="line hl">        <span class="kw">if</span> (nums[mid] > nums[right]) {</span>
+<span class="line hl">            left = mid + <span class="num">1</span>;</span>
+<span class="line hl">        } <span class="kw">else</span> {</span>
+<span class="line hl">            right = mid;</span>
+<span class="line">        }</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> nums[left];</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">int</span> <span class="fn">findMin</span>(<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&amp; nums) {</span>
+<span class="line">    <span class="kw">int</span> left = <span class="num">0</span>, right = nums.size() - <span class="num">1</span>;</span>
+<span class="line">    <span class="kw">while</span> (left < right) {</span>
+<span class="line hl">        <span class="kw">int</span> mid = left + (right - left) / <span class="num">2</span>;</span>
+<span class="line hl">        <span class="kw">if</span> (nums[mid] > nums[right]) {</span>
+<span class="line hl">            left = mid + <span class="num">1</span>;</span>
+<span class="line hl">        } <span class="kw">else</span> {</span>
+<span class="line hl">            right = mid;</span>
+<span class="line">        }</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> nums[left];</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">逐步演示 — nums = [3,4,5,1,2]</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 4</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div id="demoPtrs"></div>
+        <div class="demo-arr" id="demoArr"></div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>循环条件 left < right</strong>
+        <p>本题用 <code>left < right</code>，不是 <code>left <= right</code>。当 <code>left == right</code> 时已经找到最小值，不需要再循环。且 <code>right = mid</code> 配合 <code><</code> 才能终止。</p>
+      </article>
+      <article class="note">
+        <strong>right = mid 不是 mid-1</strong>
+        <p>当 <code>nums[mid] <= nums[right]</code> 时，mid 本身可能就是最小值，所以 <code>right = mid</code>，不能跳过 mid。</p>
+      </article>
+      <article class="note">
+        <strong>和 nums[right] 比而非 nums[left]</strong>
+        <p>和 <code>nums[left]</code> 比无法区分「未旋转」和「mid 在左半」两种情况。和 <code>nums[right]</code> 比逻辑更清晰。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>154. 寻找旋转排序数组中的最小值 II</strong>：允许重复元素，<code>nums[mid]==nums[right]</code> 时只能 <code>right--</code>，最坏 O(n)</li>
+        <li><strong>找旋转点 = 找最小值</strong>：旋转点就是最小值所在位置，找到最小值就找到了旋转点</li>
+        <li><strong>结合 #33</strong>：先找旋转点，再在对应半边做标准二分，是另一种解 #33 的思路</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="33-搜索旋转排序数组.html"><span class="num">#33</span>搜索旋转排序数组</a>
+      <a class="related-chip" href="35-搜索插入位置.html"><span class="num">#35</span>搜索插入位置</a>
+      <a class="related-chip" href="34-在排序数组中查找元素的第一个和最后一个位置.html"><span class="num">#34</span>查找首末位置</a>
+      <a class="related-chip" href="4-寻找两个正序数组的中位数.html"><span class="num">#4</span>寻找中位数</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#153 寻找旋转最小值</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const NUMS=[3,4,5,1,2];
+const STEPS=[
+  {l:0,r:4,m:2,msg:'left=0, right=4, mid=2 → nums[2]=5 > nums[4]=2 → 最小值在右半 → left=3'},
+  {l:3,r:4,m:3,msg:'left=3, right=4, mid=3 → nums[3]=1 ≤ nums[4]=2 → 最小值在 mid 或左半 → right=3'},
+  {l:3,r:3,msg:'left=3 == right=3，循环结束 → 最小值 = nums[3] = 1',found:3},
+];
+
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  const arrEl=document.getElementById('demoArr');
+  const ptrsEl=document.getElementById('demoPtrs');
+  arrEl.innerHTML='';
+  ptrsEl.innerHTML='';
+
+  if(s){
+    const leftRow=document.createElement('div');leftRow.className='ptr-row';
+    NUMS.forEach((_,idx)=>{const d=document.createElement('div');d.className='ptr-label left';d.textContent=idx===s.l?'L':'';d.style.width='48px';leftRow.appendChild(d)});
+    ptrsEl.appendChild(leftRow);
+    const rightRow=document.createElement('div');rightRow.className='ptr-row';
+    NUMS.forEach((_,idx)=>{const d=document.createElement('div');d.className='ptr-label right';d.textContent=idx===s.r?'R':'';d.style.width='48px';rightRow.appendChild(d)});
+    ptrsEl.appendChild(rightRow);
+    if(s.m!==undefined){
+      const midRow=document.createElement('div');midRow.className='ptr-row';
+      NUMS.forEach((_,idx)=>{const d=document.createElement('div');d.className='ptr-label mid';d.textContent=idx===s.m?'M':'';d.style.width='48px';midRow.appendChild(d)});
+      ptrsEl.appendChild(midRow);
+    }
+  }
+
+  NUMS.forEach((_,idx)=>{const d=document.createElement('div');d.className='demo-cell idx';d.textContent=idx;arrEl.appendChild(d)});
+  arrEl.appendChild(document.createElement('br'));
+  NUMS.forEach((v,idx)=>{
+    const d=document.createElement('div');d.className='demo-cell';
+    if(s){
+      if(s.found!==undefined && idx===s.found) d.classList.add('found');
+      else if(s.m!==undefined && idx===s.m) d.classList.add('current');
+    }
+    d.textContent=v;arrEl.appendChild(d);
+  });
+
+  document.getElementById('demoInfo').innerHTML=s?s.msg:'点击 ▶ 开始逐步演示';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1500);
+}
+render();
+</script>
+</body>
+</html>

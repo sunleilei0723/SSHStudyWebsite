@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>347. 前K个高频元素 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.demo-body{min-height:300px}
+.freq-bar{display:flex;align-items:flex-end;gap:10px;margin:.6rem 0;height:120px;padding:0 8px}
+.freq-col{display:flex;flex-direction:column;align-items:center;gap:2px}
+.freq-bar-inner{width:48px;border-radius:4px 4px 0 0;background:var(--pink);border:3px solid var(--ink);transition:all .3s;min-height:4px}
+.freq-bar-inner.in-heap{background:var(--purple);border-color:var(--purple)}
+.freq-bar-inner.done{background:var(--green);border-color:var(--green)}
+.freq-val{font-family:"Roboto Mono",monospace;font-size:.68rem;font-weight:700;color:var(--ink)}
+.freq-key{font-family:"Roboto Mono",monospace;font-size:.72rem;font-weight:700;color:var(--muted)}
+.heap-vis{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:.6rem 0}
+.heap-label{font-family:"Baloo 2",sans-serif;font-size:.78rem;font-weight:800;color:var(--pink)}
+.heap-item{padding:4px 12px;border:3px solid var(--ink);border-radius:8px;background:var(--purple-soft);font-family:"Roboto Mono",monospace;font-size:.78rem;font-weight:700;box-shadow:2px 3px 0 var(--ink);animation:popIn .3s ease}
+.heap-item.top{background:var(--yellow-soft);border-color:var(--yellow);color:#b8860b}
+.result-box{margin-top:.5rem;padding:.5rem .8rem;border:3px solid var(--green);border-radius:8px;background:var(--green-soft);font-family:"Roboto Mono",monospace;font-size:.88rem;font-weight:700;color:var(--green)}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">堆</span>
+      <span class="hero-tag">哈希表</span>
+      <span class="hero-tag">排序</span>
+    </div>
+    <h1 class="hero-title">#347 <span class="accent">前K个高频元素</span></h1>
+    <p class="hero-desc">给你一个整数数组 <code>nums</code> 和一个整数 <code>k</code> ，请你返回其中出现频率前 <code>k</code> 高的元素。你可以按<strong>任意顺序</strong>返回答案。你的算法时间复杂度必须优于 <code>O(n log n)</code>。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [1,1,1,2,2,3], k = 2</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">[1,2]</span></div>
+      <div class="example-explain">1出现3次，2出现2次，3出现1次。前2高频是1和2</div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">统计频率</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">取前K高频</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">小顶堆维护</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">返回堆中元素</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>时间复杂度优于 O(nlogn)，不能直接排序</li>
+        <li>返回的是<strong>元素值</strong>，不是频率</li>
+        <li>答案顺序任意</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>两步走</strong>：先用哈希表统计频率，再用小顶堆取 TopK。</p>
+      <div class="step-flow">
+        <span class="step-pill">遍历统计频率</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">建小顶堆(大小k)</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">频率>堆顶→替换</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">堆中元素即答案</span>
+      </div>
+      <p>时间复杂度：O(n) 统计 + O(nlogk) 堆操作 = O(nlogk)，优于 O(nlogn)。</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">import</span> heapq</span>
+<span class="line"><span class="kw">from</span> collections <span class="kw">import</span> Counter</span>
+<span class="line"></span>
+<span class="line"><span class="kw">def</span> <span class="fn">topKFrequent</span>(nums, k):</span>
+<span class="line">    freq = <span class="fn">Counter</span>(nums)  <span class="cmt"># 统计频率</span></span>
+<span class="line hl">    heap = []</span>
+<span class="line hl">    <span class="kw">for</span> num, cnt <span class="kw">in</span> freq.items():</span>
+<span class="line hl">        heapq.heappush(heap, (cnt, num))</span>
+<span class="line hl">        <span class="kw">if</span> <span class="fn">len</span>(heap) > k:</span>
+<span class="line hl">            heapq.heappop(heap)  <span class="cmt"># 弹出频率最低的</span></span>
+<span class="line">    <span class="kw">return</span> [num <span class="kw">for</span> _, num <span class="kw">in</span> heap]</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public int</span>[] <span class="fn">topKFrequent</span>(<span class="kw">int</span>[] nums, <span class="kw">int</span> k) {</span>
+<span class="line">    Map&lt;Integer, Integer&gt; freq = <span class="kw">new</span> HashMap&lt;&gt;();</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> num : nums) freq.merge(num, <span class="num">1</span>, Integer::sum);</span>
+<span class="line hl">    PriorityQueue&lt;Integer&gt; pq = <span class="kw">new</span> PriorityQueue&lt;&gt;(</span>
+<span class="line hl">        (a, b) -> freq.get(a) - freq.get(b));  <span class="cmt">// 按频率小顶堆</span></span>
+<span class="line hl">    <span class="kw">for</span> (<span class="kw">int</span> num : freq.keySet()) {</span>
+<span class="line hl">        pq.offer(num);</span>
+<span class="line hl">        <span class="kw">if</span> (pq.size() > k) pq.poll();</span>
+<span class="line hl">    }</span>
+<span class="line">    <span class="kw">return</span> pq.stream().mapToInt(i -> i).toArray();</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">vector</span>&lt;<span class="kw">int</span>&gt; <span class="fn">topKFrequent</span>(<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;& nums, <span class="kw">int</span> k) {</span>
+<span class="line">    <span class="kw">unordered_map</span>&lt;<span class="kw">int</span>,<span class="kw">int</span>&gt; freq;</span>
+<span class="line">    <span class="kw">for</span>(<span class="kw">int</span> n:nums) freq[n]++;</span>
+<span class="line hl">    <span class="kw">priority_queue</span>&lt;<span class="kw">pair</span>&lt;<span class="kw">int</span>,<span class="kw">int</span>&gt;,<span class="kw">vector</span>&lt;<span class="kw">pair</span>&lt;<span class="kw">int</span>,<span class="kw">int</span>&gt;&gt;,greater&lt;&gt;&gt; pq;</span>
+<span class="line hl">    <span class="kw">for</span>(<span class="kw">auto</span>& [num,cnt]:freq){</span>
+<span class="line hl">        pq.push({cnt,num});</span>
+<span class="line hl">        <span class="kw">if</span>(pq.size()>(<span class="kw">size_t</span>)k) pq.pop();</span>
+<span class="line hl">    }</span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">int</span>&gt; res;</span>
+<span class="line">    <span class="kw">while</span>(!pq.empty()){res.push_back(pq.top().second);pq.pop();}</span>
+<span class="line">    <span class="kw">return</span> res;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">逐步演示：频率统计+小顶堆</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 5</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div style="font-family:'Baloo 2',sans-serif;font-size:.82rem;font-weight:800;color:var(--purple);margin-bottom:.4rem">频率统计</div>
+        <div class="freq-bar" id="freqBar"></div>
+        <div class="heap-vis">
+          <span class="heap-label">小顶堆(k=2)：</span>
+          <div id="demoHeap" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+        </div>
+        <div class="result-box" id="demoResult">结果：—</div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>堆的比较依据</strong>
+        <p>堆按<strong>频率</strong>排序，不是按元素值。Python 中存 <code>(cnt, num)</code>，Java 中比较器用 <code>freq.get(a)</code>。</p>
+      </article>
+      <article class="note">
+        <strong>先统计再入堆</strong>
+        <p>必须先统计完频率，再逐个入堆。不能边遍历原数组边入堆，因为同一元素会出现多次。</p>
+      </article>
+      <article class="note">
+        <strong>小顶堆维护TopK</strong>
+        <p>堆大小超过 k 时弹出堆顶（频率最低的），保留的是频率最高的 k 个。堆顶是这 k 个中频率最低的。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>桶排序</strong>：频率范围有限（1~n），可以用桶排序 O(n)，按频率分桶再从高到低取</li>
+        <li><strong>快速选择</strong>：对频率数组用快速选择找第 k 大频率，O(n) 平均</li>
+        <li><strong>数据流TopK</strong>：如果数据是流式的，堆方法天然支持在线处理</li>
+        <li><strong>海量数据</strong>：MapReduce 分片统计 + 合并，或用 Count-Min Sketch 近似</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="215-数组中的第K个最大元素.html"><span class="num">#215</span>数组中的第K个最大元素</a>
+      <a class="related-chip" href="../01-哈希/01-两数之和.html"><span class="num">#1</span>两数之和</a>
+      <a class="related-chip" href="../01-哈希/49-字母异位词分组.html"><span class="num">#49</span>字母异位词分组</a>
+      <a class="related-chip" href="../12-栈/739-每日温度.html"><span class="num">#739</span>每日温度</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#347 前K个高频元素</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const FREQ={1:3,2:2,3:1}; // frequency map
+const K=2;
+const STEPS=[
+  {phase:'freq',heap:[],msg:'第1步：统计频率 → 1出现3次，2出现2次，3出现1次'},
+  {phase:'heap',heap:[{num:1,cnt:3}],inHeap:[1],msg:'入堆 (3,1)，堆大小=1 ≤ k=2'},
+  {phase:'heap',heap:[{num:1,cnt:3},{num:2,cnt:2}],inHeap:[1,2],msg:'入堆 (2,2)，堆大小=2 ≤ k=2。堆顶=(2,2)'},
+  {phase:'heap',heap:[{num:1,cnt:3},{num:2,cnt:2}],inHeap:[1,2],msg:'入堆 (1,3)，堆大小=3 > k → 弹出堆顶(1,3)，堆保留[(2,2),(3,1)]'},
+  {phase:'done',heap:[{num:1,cnt:3},{num:2,cnt:2}],inHeap:[1,2],msg:'遍历结束！堆中元素为 [1, 2]，即前2高频元素'},
+];
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  // freq bars
+  const barEl=document.getElementById('freqBar');
+  barEl.innerHTML='';
+  const maxCnt=3;
+  Object.entries(FREQ).forEach(([num,cnt])=>{
+    const col=document.createElement('div');
+    col.className='freq-col';
+    const val=document.createElement('div');
+    val.className='freq-val';val.textContent=cnt+'次';
+    const bar=document.createElement('div');
+    bar.className='freq-bar-inner';
+    if(s&&s.inHeap&&s.inHeap.includes(Number(num))) bar.classList.add('in-heap');
+    if(s&&s.phase==='done'&&s.inHeap&&s.inHeap.includes(Number(num))) bar.classList.add('done');
+    bar.style.height=(cnt/maxCnt*90)+'px';
+    const key=document.createElement('div');
+    key.className='freq-key';key.textContent=num;
+    col.appendChild(val);col.appendChild(bar);col.appendChild(key);
+    barEl.appendChild(col);
+  });
+  // heap
+  const heapEl=document.getElementById('demoHeap');
+  heapEl.innerHTML='';
+  if(s&&s.heap.length>0){
+    s.heap.forEach((item,i)=>{
+      const d=document.createElement('span');
+      d.className='heap-item';
+      if(i===0) d.classList.add('top');
+      d.textContent=item.num+'('+item.cnt+'次)';
+      heapEl.appendChild(d);
+    });
+  }
+  // result
+  if(s&&s.phase==='done'){
+    document.getElementById('demoResult').textContent='结果：['+s.heap.map(h=>h.num).join(', ')+']';
+  } else {
+    document.getElementById('demoResult').textContent='结果：—';
+  }
+  // info
+  document.getElementById('demoInfo').innerHTML=s?s.msg:'点击 ▶ 开始逐步演示';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1200);
+}
+render();
+</script>
+</body>
+</html>

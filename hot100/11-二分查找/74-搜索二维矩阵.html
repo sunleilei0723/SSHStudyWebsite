@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>74. 搜索二维矩阵 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.card .highlight{display:inline;padding:1px 6px;border-radius:5px;background:var(--yellow-soft);font-weight:800}
+.demo-body{min-height:260px}
+.ptr-row{display:flex;gap:6px;margin-bottom:2px;align-items:flex-end}
+.ptr-label{width:50px;height:20px;display:grid;place-items:center;font-family:"Roboto Mono",monospace;font-size:.5rem;font-weight:700;border-radius:4px;padding:1px 2px}
+.ptr-label.left{color:var(--purple);background:var(--purple-soft)}
+.ptr-label.right{color:var(--green);background:var(--green-soft)}
+.ptr-label.mid{color:var(--pink);background:var(--pink-soft)}
+.matrix-cell.eliminated{background:#f0f0f0;color:#ccc}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">二分查找</span>
+      <span class="hero-tag">矩阵</span>
+    </div>
+    <h1 class="hero-title">#74 <span class="accent">搜索二维矩阵</span></h1>
+    <p class="hero-desc">编写一个高效的算法来判断 <code>m x n</code> 矩阵中是否存在一个目标值。该矩阵具有如下特性：每行中的整数从左到右按升序排列；每行的第一个整数大于前一行的最后一个整数。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 3</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">true</span></div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 13</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">false</span></div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">行有序矩阵</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill done">展平为一维</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">二分查找</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">坐标映射回矩阵</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>每行<strong>从左到右递增</strong>，行首 > 上一行行尾 → 可视为一维有序数组</li>
+        <li>要求<strong>O(log(m×n))</strong>，不能逐行扫描</li>
+        <li>一维索引 <code>idx</code> → 二维坐标 <code>(idx/n, idx%n)</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>核心思想：</strong>将 m×n 矩阵视为长度为 m×n 的一维有序数组，直接二分查找。通过 <code>idx / n</code> 和 <code>idx % n</code> 在一维索引和二维坐标之间转换。</p>
+      <div class="step-flow">
+        <span class="step-pill">left=0, right=m×n-1</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">mid → (row, col)</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">比较 matrix[row][col]</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">缩小范围</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">searchMatrix</span>(matrix, target):</span>
+<span class="line">    m, n = <span class="fn">len</span>(matrix), <span class="fn">len</span>(matrix[<span class="num">0</span>])</span>
+<span class="line">    left, right = <span class="num">0</span>, m * n - <span class="num">1</span></span>
+<span class="line">    <span class="kw">while</span> left <= right:</span>
+<span class="line hl">        mid = (left + right) // <span class="num">2</span></span>
+<span class="line hl">        row, col = mid // n, mid % n</span>
+<span class="line hl">        <span class="kw">if</span> matrix[row][col] == target:</span>
+<span class="line hl">            <span class="kw">return</span> <span class="num">True</span></span>
+<span class="line hl">        <span class="kw">elif</span> matrix[row][col] < target:</span>
+<span class="line hl">            left = mid + <span class="num">1</span></span>
+<span class="line hl">        <span class="kw">else</span>:</span>
+<span class="line hl">            right = mid - <span class="num">1</span></span>
+<span class="line">    <span class="kw">return</span> <span class="num">False</span></span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public boolean</span> <span class="fn">searchMatrix</span>(<span class="kw">int</span>[][] matrix, <span class="kw">int</span> target) {</span>
+<span class="line">    <span class="kw">int</span> m = matrix.length, n = matrix[<span class="num">0</span>].length;</span>
+<span class="line">    <span class="kw">int</span> left = <span class="num">0</span>, right = m * n - <span class="num">1</span>;</span>
+<span class="line">    <span class="kw">while</span> (left <= right) {</span>
+<span class="line hl">        <span class="kw">int</span> mid = left + (right - left) / <span class="num">2</span>;</span>
+<span class="line hl">        <span class="kw">int</span> row = mid / n, col = mid % n;</span>
+<span class="line hl">        <span class="kw">if</span> (matrix[row][col] == target) <span class="kw">return true</span>;</span>
+<span class="line hl">        <span class="kw">else if</span> (matrix[row][col] < target) left = mid + <span class="num">1</span>;</span>
+<span class="line hl">        <span class="kw">else</span> right = mid - <span class="num">1</span>;</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return false</span>;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">bool</span> <span class="fn">searchMatrix</span>(<span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&gt;&amp; matrix, <span class="kw">int</span> target) {</span>
+<span class="line">    <span class="kw">int</span> m = matrix.size(), n = matrix[<span class="num">0</span>].size();</span>
+<span class="line">    <span class="kw">int</span> left = <span class="num">0</span>, right = m * n - <span class="num">1</span>;</span>
+<span class="line">    <span class="kw">while</span> (left <= right) {</span>
+<span class="line hl">        <span class="kw">int</span> mid = left + (right - left) / <span class="num">2</span>;</span>
+<span class="line hl">        <span class="kw">if</span> (matrix[mid/n][mid%n] == target) <span class="kw">return true</span>;</span>
+<span class="line hl">        <span class="kw">else if</span> (matrix[mid/n][mid%n] < target) left = mid + <span class="num">1</span>;</span>
+<span class="line hl">        <span class="kw">else</span> right = mid - <span class="num">1</span>;</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return false</span>;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">逐步演示 — target = 3</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 4</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div id="demoMatrix"></div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>坐标映射</strong>
+        <p>一维 <code>idx</code> → 二维 <code>(idx/n, idx%n)</code>，注意除的是列数 n，不是行数 m。搞反会越界。</p>
+      </article>
+      <article class="note">
+        <strong>矩阵特性判断</strong>
+        <p>本题能用一维二分是因为「行首 > 上一行行尾」。如果只保证行内有序、行间不一定，则不能这样展平。</p>
+      </article>
+      <article class="note">
+        <strong>边界处理</strong>
+        <p>空矩阵 <code>matrix=[]</code> 或 <code>matrix=[[]]</code> 需要特判，否则 <code>matrix[0]</code> 越界。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>行间不一定有序</strong>：用「从右上角开始搜索」的方法，O(m+n)</li>
+        <li><strong>240. 搜索二维矩阵 II</strong>：行和列分别有序，但行首不一定 > 上一行尾，需用右上角法</li>
+        <li><strong>多次查询</strong>：预处理每行首元素做二分定位行，再在行内二分，两次二分</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="35-搜索插入位置.html"><span class="num">#35</span>搜索插入位置</a>
+      <a class="related-chip" href="34-在排序数组中查找元素的第一个和最后一个位置.html"><span class="num">#34</span>查找首末位置</a>
+      <a class="related-chip" href="33-搜索旋转排序数组.html"><span class="num">#33</span>搜索旋转排序数组</a>
+      <a class="related-chip" href="153-寻找旋转排序数组中的最小值.html"><span class="num">#153</span>寻找旋转最小值</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#74 搜索二维矩阵</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const MATRIX=[[1,3,5,7],[10,11,16,20],[23,30,34,60]];
+const TARGET=3;
+const M=MATRIX.length, N=MATRIX[0].length;
+const STEPS=[
+  {l:0,r:11,mid:5,msg:'left=0, right=11, mid=5 → (1,1)=11 > 3 → right=4',elim:[]},
+  {l:0,r:4,mid:2,msg:'left=0, right=4, mid=2 → (0,2)=5 > 3 → right=1',elim:[5,6,7,8,9,10,11]},
+  {l:0,r:1,mid:0,msg:'left=0, right=1, mid=0 → (0,0)=1 < 3 → left=1',elim:[2,3,4]},
+  {l:1,r:1,mid:1,msg:'left=1, right=1, mid=1 → (0,1)=3 == target → 找到！',elim:[],found:true},
+];
+
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  const el=document.getElementById('demoMatrix');
+  el.innerHTML='';
+
+  // build matrix grid
+  const grid=document.createElement('div');
+  grid.className='matrix-grid';
+  grid.style.gridTemplateColumns=`repeat(${N},50px)`;
+
+  for(let i=0;i<M;i++){
+    for(let j=0;j<N;j++){
+      const cell=document.createElement('div');
+      cell.className='matrix-cell sm';
+      cell.textContent=MATRIX[i][j];
+      if(s){
+        const idx=i*N+j;
+        if(s.found && idx===1) cell.classList.add('found');
+        else if(s.mid!==undefined && idx===s.mid) cell.classList.add('current');
+        else if(s.elim && s.elim.includes(idx)) cell.classList.add('eliminated');
+      }
+      grid.appendChild(cell);
+    }
+  }
+  el.appendChild(grid);
+
+  // ptr info
+  if(s){
+    const info2=document.createElement('div');
+    info2.style.cssText='margin-top:.6rem;font-family:"Roboto Mono",monospace;font-size:.72rem;font-weight:700;color:var(--muted)';
+    info2.innerHTML=`left=${s.l} right=${s.r}` + (s.mid!==undefined ? ` mid=${s.mid} → (${Math.floor(s.mid/N)},${s.mid%N})` : '');
+    el.appendChild(info2);
+  }
+
+  document.getElementById('demoInfo').innerHTML=s?s.msg:'点击 ▶ 开始逐步演示';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1500);
+}
+render();
+</script>
+</body>
+</html>

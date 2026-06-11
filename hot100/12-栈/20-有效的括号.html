@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>20. 有效的括号 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.demo-body{min-height:220px}
+.demo-stack{display:flex;flex-direction:column-reverse;gap:4px;min-width:50px;min-height:60px;padding:6px;border:3px dashed var(--ink);border-radius:8px;background:var(--purple-soft);align-items:center}
+.demo-stack-label{font-family:"Baloo 2",sans-serif;font-size:.75rem;font-weight:800;color:var(--pink);margin-bottom:4px;text-align:center}
+.demo-stack-item{width:40px;height:36px;display:grid;place-items:center;border:3px solid var(--ink);border-radius:6px;font-family:"Roboto Mono",monospace;font-size:1rem;font-weight:700;background:#fff;box-shadow:2px 2px 0 var(--ink);animation:popIn .3s ease}
+.demo-row-wrap{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+.demo-str-area{flex:1;min-width:200px}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge easy">Easy</span>
+      <span class="hero-tag">栈</span>
+      <span class="hero-tag">字符串</span>
+    </div>
+    <h1 class="hero-title">#20 <span class="accent">有效的括号</span></h1>
+    <p class="hero-desc">给定一个只包括 <code>'('</code>，<code>')'</code>，<code>'{'</code>，<code>'}'</code>，<code>'['</code>，<code>']'</code> 的字符串 <code>s</code> ，判断字符串是否有效。有效字符串需满足：左括号必须用<strong>相同类型</strong>的右括号闭合，左括号必须以<strong>正确的顺序</strong>闭合，每个右括号都有一个对应的相同类型的左括号。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">s = "()"</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">true</span></div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">s = "()[]{}"</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">true</span></div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 3</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">s = "(]"</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">false</span></div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">遍历字符串</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">左括号入栈</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">右括号匹配栈顶</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">栈空则有效</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>括号必须<strong>成对出现</strong>且<strong>嵌套正确</strong></li>
+        <li>遇到右括号时，栈顶必须是对应的左括号</li>
+        <li>最终栈必须为空，否则有多余左括号</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>栈的核心思想</strong>：最近遇到的左括号需要最先被匹配 → <strong>后进先出(LIFO)</strong>，天然适合栈！</p>
+      <div class="step-flow">
+        <span class="step-pill">遇到左括号</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">入栈等待匹配</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">遇到右括号</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">检查栈顶是否匹配</span>
+      </div>
+      <p>技巧：遇到左括号时，直接将<strong>对应的右括号</strong>入栈，这样匹配时只需比较栈顶和当前字符是否相等，省去映射表查找。</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">isValid</span>(s: str) -> bool:</span>
+<span class="line">    stack = []</span>
+<span class="line">    mapping = {<span class="str">'('</span>: <span class="str">')'</span>, <span class="str">'['</span>: <span class="str">']'</span>, <span class="str">'{'</span>: <span class="str">'}'</span>}</span>
+<span class="line">    <span class="kw">for</span> ch <span class="kw">in</span> s:</span>
+<span class="line hl">        <span class="kw">if</span> ch <span class="kw">in</span> mapping:  <span class="cmt"># 左括号 → 入栈对应的右括号</span></span>
+<span class="line hl">            stack.append(mapping[ch])</span>
+<span class="line hl">        <span class="kw">elif not</span> stack <span class="kw">or</span> stack.pop() != ch:  <span class="cmt"># 右括号 → 检查匹配</span></span>
+<span class="line hl">            <span class="kw">return False</span></span>
+<span class="line">    <span class="kw">return not</span> stack  <span class="cmt"># 栈空则有效</span></span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public boolean</span> <span class="fn">isValid</span>(String s) {</span>
+<span class="line">    Deque&lt;Character&gt; stack = <span class="kw">new</span> ArrayDeque&lt;&gt;();</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">char</span> ch : s.toCharArray()) {</span>
+<span class="line hl">        <span class="kw">if</span> (ch == <span class="str">'('</span>) stack.push(<span class="str">')'</span>);</span>
+<span class="line hl">        <span class="kw">else if</span> (ch == <span class="str">'['</span>) stack.push(<span class="str">']'</span>);</span>
+<span class="line hl">        <span class="kw">else if</span> (ch == <span class="str">'{'</span>) stack.push(<span class="str">'}'</span>);</span>
+<span class="line hl">        <span class="kw">else if</span> (stack.isEmpty() || stack.pop() != ch)</span>
+<span class="line hl">            <span class="kw">return false</span>;</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> stack.isEmpty();</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">bool</span> <span class="fn">isValid</span>(<span class="kw">string</span> s) {</span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">char</span>&gt; stk;</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">char</span> ch : s) {</span>
+<span class="line hl">        <span class="kw">if</span> (ch == <span class="str">'('</span>) stk.push_back(<span class="str">')'</span>);</span>
+<span class="line hl">        <span class="kw">else if</span> (ch == <span class="str">'['</span>) stk.push_back(<span class="str">']'</span>);</span>
+<span class="line hl">        <span class="kw">else if</span> (ch == <span class="str">'{'</span>) stk.push_back(<span class="str">'}'</span>);</span>
+<span class="line hl">        <span class="kw">else if</span> (stk.empty() || stk.back() != ch)</span>
+<span class="line hl">            <span class="kw">return false</span>;</span>
+<span class="line">        <span class="kw">else</span> stk.pop_back();</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> stk.empty();</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">逐步演示：s = "()[]{}"</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 6</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="demo-row-wrap">
+          <div class="demo-str-area">
+            <div class="demo-str-row">
+              <span class="demo-str-label">字符：</span>
+              <div id="demoChars" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+            </div>
+          </div>
+          <div>
+            <div class="demo-stack-label">栈 stack</div>
+            <div class="demo-stack" id="demoStack"></div>
+          </div>
+        </div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>空栈判断</strong>
+        <p>遇到右括号时，必须先检查栈是否为空。如果栈空说明没有对应的左括号，直接返回 <code>false</code>。</p>
+      </article>
+      <article class="note">
+        <strong>最终栈检查</strong>
+        <p>遍历结束后，栈必须为空。如果栈非空，说明有未匹配的左括号，如 <code>"(["</code> 应返回 <code>false</code>。</p>
+      </article>
+      <article class="note">
+        <strong>入栈右括号技巧</strong>
+        <p>遇到左括号时直接入栈对应的右括号，匹配时只需 <code>pop() != ch</code>，无需额外映射查找，代码更简洁。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>最长有效括号</strong>：LeetCode #32，在基础上求最长有效子串长度，需要记录下标</li>
+        <li><strong>括号生成</strong>：LeetCode #22，生成所有合法的括号组合，用回溯 + 剪枝</li>
+        <li><strong>删除无效括号</strong>：LeetCode #301，BFS 逐个删除判断有效性</li>
+        <li><strong>如果支持多种括号类型</strong>：只需扩展 mapping 字典即可，算法不变</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="155-最小栈.html"><span class="num">#155</span>最小栈</a>
+      <a class="related-chip" href="394-字符串解码.html"><span class="num">#394</span>字符串解码</a>
+      <a class="related-chip" href="739-每日温度.html"><span class="num">#739</span>每日温度</a>
+      <a class="related-chip" href="84-柱状图中最大的矩形.html"><span class="num">#84</span>柱状图中最大的矩形</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#20 有效的括号</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const S="()[]{}";
+const STEPS=[
+  {idx:-1,stack:[],msg:'准备开始遍历字符串'},
+  {idx:0,stack:[')'],msg:'ch=\'(\' → 左括号，入栈对应的右括号 \')\''},
+  {idx:1,stack:[],msg:'ch=\')\' → 右括号，栈顶 \')\' 匹配！弹出'},
+  {idx:2,stack:[']'],msg:'ch=\'[\' → 左括号，入栈对应的右括号 \']\''},
+  {idx:3,stack:[],msg:'ch=\']\' → 右括号，栈顶 \']\' 匹配！弹出'},
+  {idx:4,stack:['}'],msg:'ch=\'{\' → 左括号，入栈对应的右括号 \'}\''},
+  {idx:5,stack:[],msg:'ch=\'}\' → 右括号，栈顶 \'}\' 匹配！弹出 → 遍历结束，栈空 → <strong>true</strong>'},
+];
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  // chars
+  const charsEl=document.getElementById('demoChars');
+  charsEl.innerHTML='';
+  S.split('').forEach((ch,i)=>{
+    const d=document.createElement('div');
+    d.className='demo-str-cell';
+    if(s&&i===s.idx) d.classList.add('current');
+    if(s&&i<s.idx) d.classList.add('sorted');
+    d.textContent=ch;
+    charsEl.appendChild(d);
+  });
+  // stack
+  const stackEl=document.getElementById('demoStack');
+  stackEl.innerHTML='';
+  if(s){
+    [...s.stack].forEach(v=>{
+      const d=document.createElement('div');
+      d.className='demo-stack-item';
+      d.textContent=v;
+      stackEl.appendChild(d);
+    });
+  }
+  // info
+  const info=document.getElementById('demoInfo');
+  info.innerHTML=s?s.msg:'点击 ▶ 开始逐步演示';
+  // label
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1200);
+}
+render();
+</script>
+</body>
+</html>

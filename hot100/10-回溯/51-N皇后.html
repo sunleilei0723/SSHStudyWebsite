@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>51. N皇后 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.card .highlight{display:inline;padding:1px 6px;border-radius:5px;background:var(--yellow-soft);font-weight:800}
+.demo-body{min-height:300px}
+.queen-cell{display:grid;place-items:center;width:44px;height:44px;border:3px solid var(--ink);border-radius:6px;font-family:"Roboto Mono",monospace;font-size:1rem;font-weight:700;background:#fff;box-shadow:2px 2px 0 var(--ink);transition:all .3s}
+.queen-cell.queen{background:var(--purple);color:#fff;transform:scale(1.05);box-shadow:3px 4px 0 var(--ink)}
+.queen-cell.attack{background:var(--pink-soft);color:var(--pink);opacity:.5}
+.queen-cell.current{background:var(--yellow);color:var(--ink);transform:scale(1.1);box-shadow:3px 4px 0 var(--ink)}
+.queen-cell.black{background:#f5f0e8}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge hard">Hard</span>
+      <span class="hero-tag">回溯</span>
+    </div>
+    <h1 class="hero-title">#51 <span class="accent">N皇后</span></h1>
+    <p class="hero-desc">按照国际象棋规则，皇后可以攻击同行、同列、同对角线上的棋子。给定整数 <code>n</code>，返回所有不同的 <strong>n 皇后问题</strong>的解决方案。每种方案包含一种不同的 n 皇后棋子放置方案，其中 <code>'Q'</code> 和 <code>'.'</code> 分别代表皇后和空位。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">n = 4</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">[[".Q..","...Q","Q...","..Q."],["..Q.","Q...","...Q",".Q.."]]</span></div>
+      <div class="example-explain">两种解法，4个皇后互不攻击</div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">n = 1</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">[["Q"]]</span></div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">n×n 棋盘</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">放 n 个皇后</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">互不攻击</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">返回所有方案</span>
+      </div>
+      <p><strong>冲突检测（皇后攻击范围）：</strong></p>
+      <ul>
+        <li><strong>同列</strong>：<code>cols</code> 集合记录已占列</li>
+        <li><strong>主对角线</strong>：行-列 = 常数 → <code>diag1</code> 集合记录 <code>row-col</code></li>
+        <li><strong>副对角线</strong>：行+列 = 常数 → <code>diag2</code> 集合记录 <code>row+col</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>逐行回溯</strong>：每行恰好放一个皇后，枚举该行的每一列，检查是否冲突，不冲突则放置并递归下一行。</p>
+      <div class="step-flow">
+        <span class="step-pill">处理第 row 行</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">枚举每列 col</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">检查冲突</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">放置皇后，递归</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">撤销，试下一列</span>
+      </div>
+      <p>终止条件：row == n，收集一个完整方案。</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">solveNQueens</span>(n):</span>
+<span class="line">    res = []</span>
+<span class="line">    cols, diag1, diag2 = <span class="fn">set</span>(), <span class="fn">set</span>(), <span class="fn">set</span>()</span>
+<span class="line"></span>
+<span class="line">    <span class="kw">def</span> <span class="fn">backtrack</span>(row, queens):</span>
+<span class="line hl">        <span class="kw">if</span> row == n:  <span class="cmt"># 放满 n 行</span></span>
+<span class="line hl">            board = []</span>
+<span class="line hl">            <span class="kw">for</span> q <span class="kw">in</span> queens:</span>
+<span class="line hl">                board.append(<span class="str">'.'</span>*q + <span class="str">'Q'</span> + <span class="str">'.'</span>*(n-q-<span class="num">1</span>))</span>
+<span class="line hl">            res.append(board)</span>
+<span class="line hl">            <span class="kw">return</span></span>
+<span class="line">        <span class="kw">for</span> col <span class="kw">in</span> <span class="fn">range</span>(n):</span>
+<span class="line hl">            <span class="kw">if</span> col <span class="kw">in</span> cols <span class="kw">or</span> row-col <span class="kw">in</span> diag1 <span class="kw">or</span> row+col <span class="kw">in</span> diag2:</span>
+<span class="line hl">                <span class="kw">continue</span>  <span class="cmt"># 冲突，跳过</span></span>
+<span class="line">            queens.append(col)</span>
+<span class="line">            cols.add(col); diag1.add(row-col); diag2.add(row+col)</span>
+<span class="line hl">            backtrack(row+<span class="num">1</span>, queens)</span>
+<span class="line">            queens.pop()</span>
+<span class="line">            cols.remove(col); diag1.remove(row-col); diag2.remove(row+col)</span>
+<span class="line"></span>
+<span class="line">    backtrack(<span class="num">0</span>, [])</span>
+<span class="line">    <span class="kw">return</span> res</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public</span> List&lt;List&lt;String&gt;&gt; <span class="fn">solveNQueens</span>(<span class="kw">int</span> n) {</span>
+<span class="line">    List&lt;List&lt;String&gt;&gt; res = <span class="kw">new</span> ArrayList&lt;&gt;();</span>
+<span class="line">    backtrack(n, <span class="num">0</span>, <span class="kw">new</span> ArrayList&lt;&gt;(),</span>
+<span class="line">             <span class="kw">new</span> HashSet&lt;&gt;(), <span class="kw">new</span> HashSet&lt;&gt;(), <span class="kw">new</span> HashSet&lt;&gt;(), res);</span>
+<span class="line">    <span class="kw">return</span> res;</span>
+<span class="line">}</span>
+<span class="line"></span>
+<span class="line"><span class="kw">void</span> <span class="fn">backtrack</span>(<span class="kw">int</span> n, <span class="kw">int</span> row, List&lt;Integer&gt; queens,</span>
+<span class="line">               Set&lt;Integer&gt; cols, Set&lt;Integer&gt; d1, Set&lt;Integer&gt; d2,</span>
+<span class="line">               List&lt;List&lt;String&gt;&gt; res) {</span>
+<span class="line hl">    <span class="kw">if</span> (row == n) {</span>
+<span class="line hl">        List&lt;String&gt; board = <span class="kw">new</span> ArrayList&lt;&gt;();</span>
+<span class="line hl">        <span class="kw">for</span> (<span class="kw">int</span> q : queens) {</span>
+<span class="line hl">            <span class="kw">char</span>[] row2 = <span class="kw">new char</span>[n]; Arrays.fill(row2, <span class="str">'.'</span>);</span>
+<span class="line hl">            row2[q] = <span class="str">'Q'</span>; board.add(<span class="kw">new</span> String(row2));</span>
+<span class="line hl">        }</span>
+<span class="line hl">        res.add(board); <span class="kw">return</span>;</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> col = <span class="num">0</span>; col &lt; n; col++) {</span>
+<span class="line hl">        <span class="kw">if</span> (cols.contains(col)||d1.contains(row-col)||d2.contains(row+col)) <span class="kw">continue</span>;</span>
+<span class="line">        queens.add(col); cols.add(col); d1.add(row-col); d2.add(row+col);</span>
+<span class="line hl">        backtrack(n, row+<span class="num">1</span>, queens, cols, d1, d2, res);</span>
+<span class="line">        queens.remove(queens.size()-<span class="num">1</span>);</span>
+<span class="line">        cols.remove(col); d1.remove(row-col); d2.remove(row+col);</span>
+<span class="line">    }</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">string</span>&gt;&gt; <span class="fn">solveNQueens</span>(<span class="kw">int</span> n) {</span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">string</span>&gt;&gt; res;</span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">int</span>&gt; queens;</span>
+<span class="line">    <span class="kw">unordered_set</span>&lt;<span class="kw">int</span>&gt; cols, d1, d2;</span>
+<span class="line">    backtrack(n, <span class="num">0</span>, queens, cols, d1, d2, res);</span>
+<span class="line">    <span class="kw">return</span> res;</span>
+<span class="line">}</span>
+<span class="line"></span>
+<span class="line"><span class="kw">void</span> <span class="fn">backtrack</span>(<span class="kw">int</span> n, <span class="kw">int</span> row, <span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&amp; queens,</span>
+<span class="line">               <span class="kw">unordered_set</span>&lt;<span class="kw">int</span>&gt;&amp; cols, <span class="kw">unordered_set</span>&lt;<span class="kw">int</span>&gt;&amp; d1,</span>
+<span class="line">               <span class="kw">unordered_set</span>&lt;<span class="kw">int</span>&gt;&amp; d2, <span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">string</span>&gt;&gt;&amp; res) {</span>
+<span class="line hl">    <span class="kw">if</span> (row == n) {</span>
+<span class="line hl">        <span class="kw">vector</span>&lt;<span class="kw">string</span>&gt; board;</span>
+<span class="line hl">        <span class="kw">for</span> (<span class="kw">int</span> q : queens) {</span>
+<span class="line hl">            <span class="kw">string</span> r(n, <span class="str">'.'</span>); r[q] = <span class="str">'Q'</span>; board.push_back(r);</span>
+<span class="line hl">        }</span>
+<span class="line hl">        res.push_back(board); <span class="kw">return</span>;</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> col = <span class="num">0</span>; col &lt; n; col++) {</span>
+<span class="line hl">        <span class="kw">if</span> (cols.count(col)||d1.count(row-col)||d2.count(row+col)) <span class="kw">continue</span>;</span>
+<span class="line">        queens.push_back(col); cols.insert(col);</span>
+<span class="line">        d1.insert(row-col); d2.insert(row+col);</span>
+<span class="line hl">        backtrack(n, row+<span class="num">1</span>, queens, cols, d1, d2, res);</span>
+<span class="line">        queens.pop_back(); cols.erase(col);</span>
+<span class="line">        d1.erase(row-col); d2.erase(row+col);</span>
+<span class="line">    }</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">N皇后逐步放置 (n=4)</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 8</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div id="demoBoard" style="display:flex;justify-content:center;margin-bottom:.6rem"></div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>对角线公式</strong>
+        <p>主对角线 <code>row - col</code>，副对角线 <code>row + col</code>。同一对角线上的格子计算值相同。别搞反了！</p>
+      </article>
+      <article class="note">
+        <strong>三个集合都要撤销</strong>
+        <p>回溯时 <code>cols</code>、<code>diag1</code>、<code>diag2</code> 三个集合都要 remove，漏掉任何一个都会导致后续判断错误。</p>
+      </article>
+      <article class="note">
+        <strong>输出格式</strong>
+        <p>题目要求输出字符串列表 <code>[".Q..","...Q"]</code>，不是坐标列表。别忘了把 queens 数组转成棋盘字符串。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>#52 N皇后 II</strong>：只求方案数，不需要构造棋盘，可以用位运算加速</li>
+        <li><strong>位运算优化</strong>：用整数的 bit 表示列和对角线占用，O(1) 判断冲突</li>
+        <li><strong>N皇后可解条件</strong>：n=2,3 无解，n≥4 都有解</li>
+        <li><strong>时间复杂度</strong>：O(n!)，每行选择受前面行约束，实际远小于 n!</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="46-全排列.html"><span class="num">#46</span>全排列</a>
+      <a class="related-chip" href="22-括号生成.html"><span class="num">#22</span>括号生成</a>
+      <a class="related-chip" href="79-单词搜索.html"><span class="num">#79</span>单词搜索</a>
+      <a class="related-chip" href="39-组合总和.html"><span class="num">#39</span>组合总和</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#51 N皇后</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const N=4;
+// Solution 1: [1,3,0,2] → row0:col1, row1:col3, row2:col0, row3:col2
+const STEPS=[
+  {queens:[1],row:0,msg:'row=0 → 尝试 col=1，无冲突 ✓ 放置皇后'},
+  {queens:[1,3],row:1,msg:'row=1 → col=0 冲突(对角线)，col=1 冲突(列)，col=2 冲突(对角线)，col=3 无冲突 ✓'},
+  {queens:[1,3,0],row:2,msg:'row=2 → col=0 无冲突 ✓ 放置皇后'},
+  {queens:[1,3,0,2],row:3,msg:'row=3 → col=2 无冲突 ✓ 收集方案一！',done:true},
+  {queens:[1,3,0],row:2,msg:'回溯 row=2 → col=1 冲突，col=2 冲突，col=3 冲突 → 无可用列'},
+  {queens:[1],row:1,msg:'回溯 row=1 → 已试完所有列'},
+  {queens:[0],row:0,msg:'回溯 row=0 → 尝试 col=0，无冲突 ✓'},
+  {queens:[0,2],row:1,msg:'row=1 → col=2 无冲突 ✓'},
+  {queens:[0,2,3],row:2,msg:'row=2 → col=3 无冲突 ✓ → 继续到方案二 [0,2,3,1]',done:true},
+];
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  const boardEl=document.getElementById('demoBoard');
+  const info=document.getElementById('demoInfo');
+  boardEl.innerHTML='';
+  if(s){
+    // build board
+    const grid=document.createElement('div');grid.className='matrix-grid';grid.style.gridTemplateColumns='repeat('+N+',44px)';
+    for(let r=0;r<N;r++){
+      for(let c=0;c<N;c++){
+        const cell=document.createElement('div');cell.className='queen-cell'+((r+c)%2===0?' black':'');
+        const qCol=s.queens[r];
+        if(qCol!==undefined&&qCol===c){
+          cell.classList.add('queen');cell.textContent='♛';
+        }else if(r===s.row&&qCol===undefined){
+          cell.classList.add('current');cell.textContent='?';
+        }else{
+          // check if attacked
+          let attacked=false;
+          for(let qr=0;qr<s.queens.length;qr++){
+            const qc=s.queens[qr];
+            if(c===qc||r-c===qr-qc||r+c===qr+qc){attacked=true;break}
+          }
+          if(attacked) cell.classList.add('attack');
+          cell.textContent='·';
+        }
+        grid.appendChild(cell);
+      }
+    }
+    boardEl.appendChild(grid);
+    info.innerHTML=s.msg;
+  }else{
+    info.innerHTML='点击 ▶ 开始逐步演示';
+  }
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1500);
+}
+render();
+</script>
+</body>
+</html>

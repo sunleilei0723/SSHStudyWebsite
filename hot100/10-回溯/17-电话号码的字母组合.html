@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>17. 电话号码的字母组合 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.card .highlight{display:inline;padding:1px 6px;border-radius:5px;background:var(--yellow-soft);font-weight:800}
+.demo-body{min-height:220px}
+.digit-btn{display:inline-grid;place-items:center;width:44px;height:44px;border:3px solid var(--ink);border-radius:10px;background:#fff;font-family:"Baloo 2",sans-serif;font-size:1rem;font-weight:800;box-shadow:2px 3px 0 var(--ink);transition:all .25s;cursor:default}
+.digit-btn.current{background:var(--purple);color:#fff;transform:translateY(-3px);box-shadow:4px 5px 0 var(--ink)}
+.digit-btn.done{background:var(--green-soft);color:var(--green)}
+.letter-btn{display:inline-grid;place-items:center;width:32px;height:32px;border:3px solid var(--ink);border-radius:6px;background:#fff;font-family:"Roboto Mono",monospace;font-size:.82rem;font-weight:700;box-shadow:1px 2px 0 var(--ink);transition:all .25s}
+.letter-btn.choosing{background:var(--yellow);color:var(--ink);transform:scale(1.1)}
+.letter-btn.chosen{background:var(--purple);color:#fff}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">回溯</span>
+      <span class="hero-tag">字符串</span>
+    </div>
+    <h1 class="hero-title">#17 <span class="accent">电话号码的字母组合</span></h1>
+    <p class="hero-desc">给定一个仅包含数字 <code>2-9</code> 的字符串，返回所有它能表示的字母组合。答案可以按任意顺序返回。数字到字母的映射与电话按键相同。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">digits = "23"</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">["ad","ae","af","bd","be","bf","cd","ce","cf"]</span></div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">digits = ""</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">[]</span></div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 3</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">digits = "2"</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">["a","b","c"]</span></div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">数字字符串</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill done">映射到字母</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">组合所有可能</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">返回结果</span>
+      </div>
+      <p><strong>映射表：</strong></p>
+      <ul>
+        <li>2→abc, 3→def, 4→ghi, 5→jkl, 6→mno</li>
+        <li>7→pqrs, 8→tuv, 9→wxyz</li>
+      </ul>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>空字符串返回<strong>空列表</strong>，不是 [""]</li>
+        <li>每个数字对应 <strong>3~4 个字母</strong>，组合数 = 各位字母数之积</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>回溯法</strong>：逐位处理数字字符串，对当前数字对应的所有字母枚举选择，递归处理下一位。</p>
+      <div class="step-flow">
+        <span class="step-pill">处理第 i 位数字</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">枚举该数字的每个字母</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">加入路径，递归 i+1</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">撤销，选下一个字母</span>
+      </div>
+      <p>终止条件：i == len(digits)，收集一个完整组合。</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">letterCombinations</span>(digits):</span>
+<span class="line">    <span class="kw">if not</span> digits: <span class="kw">return</span> []</span>
+<span class="line">    mapping = {</span>
+<span class="line">        <span class="str">'2'</span>:<span class="str">'abc'</span>,<span class="str">'3'</span>:<span class="str">'def'</span>,<span class="str">'4'</span>:<span class="str">'ghi'</span>,<span class="str">'5'</span>:<span class="str">'jkl'</span>,</span>
+<span class="line">        <span class="str">'6'</span>:<span class="str">'mno'</span>,<span class="str">'7'</span>:<span class="str">'pqrs'</span>,<span class="str">'8'</span>:<span class="str">'tuv'</span>,<span class="str">'9'</span>:<span class="str">'wxyz'</span></span>
+<span class="line">    }</span>
+<span class="line">    res = []</span>
+<span class="line"></span>
+<span class="line">    <span class="kw">def</span> <span class="fn">backtrack</span>(i, path):</span>
+<span class="line hl">        <span class="kw">if</span> i == <span class="fn">len</span>(digits):  <span class="cmt"># 终止</span></span>
+<span class="line hl">            res.append(<span class="str">''</span>.join(path))</span>
+<span class="line hl">            <span class="kw">return</span></span>
+<span class="line">        <span class="kw">for</span> ch <span class="kw">in</span> mapping[digits[i]]:</span>
+<span class="line">            path.append(ch)  <span class="cmt"># 选择</span></span>
+<span class="line hl">            backtrack(i + <span class="num">1</span>, path)  <span class="cmt"># 递归</span></span>
+<span class="line">            path.pop()  <span class="cmt"># 撤销</span></span>
+<span class="line"></span>
+<span class="line">    backtrack(<span class="num">0</span>, [])</span>
+<span class="line">    <span class="kw">return</span> res</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public</span> List&lt;String&gt; <span class="fn">letterCombinations</span>(String digits) {</span>
+<span class="line">    <span class="kw">if</span> (digits.isEmpty()) <span class="kw">return new</span> ArrayList&lt;&gt;();</span>
+<span class="line">    String[] map = {<span class="str">""</span>,<span class="str">""</span>,<span class="str">"abc"</span>,<span class="str">"def"</span>,<span class="str">"ghi"</span>,</span>
+<span class="line">                   <span class="str">"jkl"</span>,<span class="str">"mno"</span>,<span class="str">"pqrs"</span>,<span class="str">"tuv"</span>,<span class="str">"wxyz"</span>};</span>
+<span class="line">    List&lt;String&gt; res = <span class="kw">new</span> ArrayList&lt;&gt;();</span>
+<span class="line">    backtrack(digits, map, <span class="num">0</span>, <span class="kw">new</span> StringBuilder(), res);</span>
+<span class="line">    <span class="kw">return</span> res;</span>
+<span class="line">}</span>
+<span class="line"></span>
+<span class="line"><span class="kw">void</span> <span class="fn">backtrack</span>(String digits, String[] map,</span>
+<span class="line">               <span class="kw">int</span> idx, StringBuilder path, List&lt;String&gt; res) {</span>
+<span class="line hl">    <span class="kw">if</span> (idx == digits.length()) {</span>
+<span class="line hl">        res.add(path.toString());</span>
+<span class="line hl">        <span class="kw">return</span>;</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">char</span> c : map[digits.charAt(idx)-<span class="str">'0'</span>].toCharArray()) {</span>
+<span class="line">        path.append(c);</span>
+<span class="line hl">        backtrack(digits, map, idx+<span class="num">1</span>, path, res);</span>
+<span class="line">        path.deleteCharAt(path.length()-<span class="num">1</span>);</span>
+<span class="line">    }</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">vector</span>&lt;<span class="kw">string</span>&gt; <span class="fn">letterCombinations</span>(<span class="kw">string</span> digits) {</span>
+<span class="line">    <span class="kw">if</span> (digits.empty()) <span class="kw">return</span> {};</span>
+<span class="line">    <span class="kw">string</span> map[] = {<span class="str">""</span>,<span class="str">""</span>,<span class="str">"abc"</span>,<span class="str">"def"</span>,<span class="str">"ghi"</span>,</span>
+<span class="line">                   <span class="str">"jkl"</span>,<span class="str">"mno"</span>,<span class="str">"pqrs"</span>,<span class="str">"tuv"</span>,<span class="str">"wxyz"</span>};</span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">string</span>&gt; res;</span>
+<span class="line">    <span class="kw">string</span> path;</span>
+<span class="line">    backtrack(digits, map, <span class="num">0</span>, path, res);</span>
+<span class="line">    <span class="kw">return</span> res;</span>
+<span class="line">}</span>
+<span class="line"></span>
+<span class="line"><span class="kw">void</span> <span class="fn">backtrack</span>(<span class="kw">string</span>&amp; digits, <span class="kw">string</span> map[],</span>
+<span class="line">               <span class="kw">int</span> idx, <span class="kw">string</span>&amp; path, <span class="kw">vector</span>&lt;<span class="kw">string</span>&gt;&amp; res) {</span>
+<span class="line hl">    <span class="kw">if</span> (idx == digits.size()) {</span>
+<span class="line hl">        res.push_back(path);</span>
+<span class="line hl">        <span class="kw">return</span>;</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">char</span> c : map[digits[idx]-<span class="str">'0'</span>]) {</span>
+<span class="line">        path += c;</span>
+<span class="line hl">        backtrack(digits, map, idx+<span class="num">1</span>, path, res);</span>
+<span class="line">        path.pop_back();</span>
+<span class="line">    }</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">字母组合逐步生成</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 9</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div id="demoDigits" style="display:flex;gap:12px;align-items:flex-start;margin-bottom:.8rem"></div>
+        <div id="demoResults" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:.6rem"></div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>空字符串边界</strong>
+        <p><code>digits = ""</code> 应返回 <code>[]</code>，不是 <code>[""]</code>。必须在函数开头做特判。</p>
+      </article>
+      <article class="note">
+        <strong>映射表别漏 7 和 9</strong>
+        <p>7→pqrs 和 9→wxyz 是 4 个字母，其余是 3 个。映射表写错会导致结果不全。</p>
+      </article>
+      <article class="note">
+        <strong>字符串拼接效率</strong>
+        <p>Java 中用 <code>StringBuilder</code>，递归后 <code>deleteCharAt</code> 撤销。Python 用 list + join 更高效。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>迭代法</strong>：用队列实现，每次取出已有组合，追加当前数字的所有字母</li>
+        <li><strong>如果数字含 0/1</strong>：0 和 1 没有对应字母，需要特殊处理或跳过</li>
+        <li><strong>如果要求去重</strong>：用 Set 收集结果即可</li>
+        <li><strong>推广</strong>：任意多组选择做笛卡尔积，都可以用回溯</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="46-全排列.html"><span class="num">#46</span>全排列</a>
+      <a class="related-chip" href="78-子集.html"><span class="num">#78</span>子集</a>
+      <a class="related-chip" href="39-组合总和.html"><span class="num">#39</span>组合总和</a>
+      <a class="related-chip" href="22-括号生成.html"><span class="num">#22</span>括号生成</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#17 电话号码的字母组合</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const DIGITS='23';
+const MAP={'2':'abc','3':'def','4':'ghi','5':'jkl','6':'mno','7':'pqrs','8':'tuv','9':'wxyz'};
+const ALL=['ad','ae','af','bd','be','bf','cd','ce','cf'];
+const STEPS=[
+  {digit:0,letter:0,path:'a',msg:'数字2 → 选字母 a，path="a"'},
+  {digit:1,letter:0,path:'ad',msg:'数字3 → 选字母 d，path="ad" ✓ 收集',done:true},
+  {digit:1,letter:1,path:'ae',msg:'回溯 → 选字母 e，path="ae" ✓ 收集',done:true},
+  {digit:1,letter:2,path:'af',msg:'回溯 → 选字母 f，path="af" ✓ 收集',done:true},
+  {digit:0,letter:1,path:'b',msg:'回溯到数字2 → 选字母 b，path="b"'},
+  {digit:1,letter:0,path:'bd',msg:'数字3 → 选字母 d，path="bd" ✓ 收集',done:true},
+  {digit:1,letter:1,path:'be',msg:'回溯 → 选字母 e，path="be" ✓ 收集',done:true},
+  {digit:1,letter:2,path:'bf',msg:'回溯 → 选字母 f，path="bf" ✓ 收集',done:true},
+  {digit:0,letter:2,path:'c',msg:'回溯到数字2 → 选字母 c，path="c" → 继续组合...'},
+];
+let step=-1,autoId=null,results=[];
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  const digitsEl=document.getElementById('demoDigits');
+  const resEl=document.getElementById('demoResults');
+  const info=document.getElementById('demoInfo');
+  digitsEl.innerHTML='';
+  resEl.innerHTML='';
+  if(s){
+    // digit buttons
+    DIGITS.split('').forEach((d,di)=>{
+      const wrap=document.createElement('div');wrap.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px';
+      const btn=document.createElement('div');btn.className='digit-btn '+(di<s.digit?'done':di===s.digit?'current':'');btn.textContent=d;
+      wrap.appendChild(btn);
+      // letter buttons
+      const lrow=document.createElement('div');lrow.style.cssText='display:flex;gap:4px';
+      MAP[d].split('').forEach((l,li)=>{
+        const lb=document.createElement('div');lb.className='letter-btn';
+        if(di===s.digit&&li===s.letter)lb.classList.add('choosing');
+        else if(di<s.digit||(di===s.digit&&li<s.letter))lb.classList.add('chosen');
+        lb.textContent=l;lrow.appendChild(lb);
+      });
+      wrap.appendChild(lrow);
+      digitsEl.appendChild(wrap);
+    });
+    // results
+    const count=step<1?0:step<4?step-1:step<7?step-1:step-1;
+    ALL.slice(0,Math.min(count+1,ALL.length)).forEach(r=>{
+      const sp=document.createElement('span');sp.className='subset-item new';sp.textContent=r;resEl.appendChild(sp);
+    });
+    info.innerHTML=s.msg;
+  }else{
+    info.innerHTML='点击 ▶ 开始逐步演示';
+  }
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1200);
+}
+render();
+</script>
+</body>
+</html>

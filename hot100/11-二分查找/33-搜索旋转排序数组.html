@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>33. 搜索旋转排序数组 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.card .highlight{display:inline;padding:1px 6px;border-radius:5px;background:var(--yellow-soft);font-weight:800}
+.demo-body{min-height:260px}
+.ptr-row{display:flex;gap:4px;margin-bottom:4px;flex-wrap:wrap;align-items:flex-end}
+.ptr-label{width:48px;height:22px;display:grid;place-items:center;font-family:"Roboto Mono",monospace;font-size:.55rem;font-weight:700;border-radius:4px;padding:1px 2px}
+.ptr-label.left{color:var(--purple);background:var(--purple-soft)}
+.ptr-label.right{color:var(--green);background:var(--green-soft)}
+.ptr-label.mid{color:var(--pink);background:var(--pink-soft)}
+.demo-cell.eliminated{background:#f0f0f0;color:#ccc;box-shadow:1px 1px 0 #999}
+.demo-cell.sorted-half{background:var(--blue-soft);border-color:var(--blue)}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">二分查找</span>
+      <span class="hero-tag">数组</span>
+    </div>
+    <h1 class="hero-title">#33 <span class="accent">搜索旋转排序数组</span></h1>
+    <p class="hero-desc">整数数组 <code>nums</code> 按升序排列（值互不相同），在某个下标 <code>k</code> 处进行了旋转。给你旋转后的数组 <code>nums</code> 和目标值 <code>target</code>，如果 <code>target</code> 存在则返回其下标，否则返回 <code>-1</code>。算法时间复杂度 <code>O(log n)</code>。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [4,5,6,7,0,1,2], target = 0</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">4</span></div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">nums = [4,5,6,7,0,1,2], target = 3</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">-1</span></div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">旋转排序数组</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill done">两段各自有序</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">判断 mid 在哪段</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">在有序段中二分</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>数组由<strong>两段升序子数组</strong>拼接而成，旋转点处有断崖</li>
+        <li>元素<strong>互不相同</strong>，不存在重复干扰判断</li>
+        <li>必须 <strong>O(log n)</strong>，不能线性扫描</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>核心思想：</strong>二分时，mid 必将数组分成两半，其中一半一定是有序的。先判断哪半有序，再判断 target 是否在有序半边，决定搜索方向。</p>
+      <div class="step-flow">
+        <span class="step-pill">取 mid</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">nums[left] ≤ nums[mid]? 左半有序</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">target 在有序半?</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">收缩到对应半边</span>
+      </div>
+      <p><strong>判断逻辑：</strong></p>
+      <ul>
+        <li>若 <code>nums[left] <= nums[mid]</code>：左半有序 → 看 target 是否在 <code>[nums[left], nums[mid])</code> 中</li>
+        <li>否则：右半有序 → 看 target 是否在 <code>(nums[mid], nums[right]]</code> 中</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">search</span>(nums, target):</span>
+<span class="line">    left, right = <span class="num">0</span>, <span class="fn">len</span>(nums) - <span class="num">1</span></span>
+<span class="line">    <span class="kw">while</span> left <= right:</span>
+<span class="line hl">        mid = (left + right) // <span class="num">2</span></span>
+<span class="line hl">        <span class="kw">if</span> nums[mid] == target: <span class="kw">return</span> mid</span>
+<span class="line hl">        <span class="kw">if</span> nums[left] <= nums[mid]:  <span class="cmt"># 左半有序</span></span>
+<span class="line hl">            <span class="kw">if</span> nums[left] <= target < nums[mid]:</span>
+<span class="line hl">                right = mid - <span class="num">1</span></span>
+<span class="line hl">            <span class="kw">else</span>: left = mid + <span class="num">1</span></span>
+<span class="line hl">        <span class="kw">else</span>:  <span class="cmt"># 右半有序</span></span>
+<span class="line hl">            <span class="kw">if</span> nums[mid] < target <= nums[right]:</span>
+<span class="line hl">                left = mid + <span class="num">1</span></span>
+<span class="line hl">            <span class="kw">else</span>: right = mid - <span class="num">1</span></span>
+<span class="line">    <span class="kw">return</span> -<span class="num">1</span></span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public int</span> <span class="fn">search</span>(<span class="kw">int</span>[] nums, <span class="kw">int</span> target) {</span>
+<span class="line">    <span class="kw">int</span> left = <span class="num">0</span>, right = nums.length - <span class="num">1</span>;</span>
+<span class="line">    <span class="kw">while</span> (left <= right) {</span>
+<span class="line hl">        <span class="kw">int</span> mid = left + (right - left) / <span class="num">2</span>;</span>
+<span class="line hl">        <span class="kw">if</span> (nums[mid] == target) <span class="kw">return</span> mid;</span>
+<span class="line hl">        <span class="kw">if</span> (nums[left] <= nums[mid]) {</span>
+<span class="line hl">            <span class="kw">if</span> (nums[left] <= target && target < nums[mid]) right = mid - <span class="num">1</span>;</span>
+<span class="line hl">            <span class="kw">else</span> left = mid + <span class="num">1</span>;</span>
+<span class="line hl">        } <span class="kw">else</span> {</span>
+<span class="line hl">            <span class="kw">if</span> (nums[mid] < target && target <= nums[right]) left = mid + <span class="num">1</span>;</span>
+<span class="line hl">            <span class="kw">else</span> right = mid - <span class="num">1</span>;</span>
+<span class="line">        }</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> -<span class="num">1</span>;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">int</span> <span class="fn">search</span>(<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;&amp; nums, <span class="kw">int</span> target) {</span>
+<span class="line">    <span class="kw">int</span> left = <span class="num">0</span>, right = nums.size() - <span class="num">1</span>;</span>
+<span class="line">    <span class="kw">while</span> (left <= right) {</span>
+<span class="line hl">        <span class="kw">int</span> mid = left + (right - left) / <span class="num">2</span>;</span>
+<span class="line hl">        <span class="kw">if</span> (nums[mid] == target) <span class="kw">return</span> mid;</span>
+<span class="line hl">        <span class="kw">if</span> (nums[left] <= nums[mid]) {</span>
+<span class="line hl">            <span class="kw">if</span> (nums[left] <= target && target < nums[mid]) right = mid - <span class="num">1</span>;</span>
+<span class="line hl">            <span class="kw">else</span> left = mid + <span class="num">1</span>;</span>
+<span class="line hl">        } <span class="kw">else</span> {</span>
+<span class="line hl">            <span class="kw">if</span> (nums[mid] < target && target <= nums[right]) left = mid + <span class="num">1</span>;</span>
+<span class="line hl">            <span class="kw">else</span> right = mid - <span class="num">1</span>;</span>
+<span class="line">        }</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> -<span class="num">1</span>;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">逐步演示 — target = 0</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 5</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div id="demoPtrs"></div>
+        <div class="demo-arr" id="demoArr"></div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>nums[left] ≤ nums[mid] 用 ≤</strong>
+        <p>当 <code>left == mid</code> 时（只有两个元素），左半也算「有序」，必须用 <code>≤</code>。用 <code><</code> 会漏判。</p>
+      </article>
+      <article class="note">
+        <strong>先判有序半，再判 target</strong>
+        <p>必须先确定哪半有序，再判断 target 是否落在有序半中。顺序不能反，否则逻辑混乱。</p>
+      </article>
+      <article class="note">
+        <strong>有重复元素时失效</strong>
+        <p>当 <code>nums[left] == nums[mid]</code> 且 <code>left != mid</code> 时无法判断哪半有序，需要特殊处理（如 left++），见 #81。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>81. 搜索旋转排序数组 II</strong>：允许重复元素，<code>nums[left]==nums[mid]</code> 时无法判断，需 <code>left++</code> 退化</li>
+        <li><strong>先找旋转点再二分</strong>：也可先用二分找最小值位置（旋转点），再在对应半边做标准二分</li>
+        <li><strong>多次查询优化</strong>：先找旋转点 O(log n)，之后每次查询 O(log n)，适合批量查询</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="153-寻找旋转排序数组中的最小值.html"><span class="num">#153</span>寻找旋转最小值</a>
+      <a class="related-chip" href="35-搜索插入位置.html"><span class="num">#35</span>搜索插入位置</a>
+      <a class="related-chip" href="34-在排序数组中查找元素的第一个和最后一个位置.html"><span class="num">#34</span>查找首末位置</a>
+      <a class="related-chip" href="74-搜索二维矩阵.html"><span class="num">#74</span>搜索二维矩阵</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#33 搜索旋转排序数组</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const NUMS=[4,5,6,7,0,1,2];
+const TARGET=0;
+const STEPS=[
+  {l:0,r:6,m:3,msg:'left=0, right=6, mid=3 → nums[3]=7 ≠ 0。nums[0]=4 ≤ nums[3]=7 → 左半有序 [4,5,6,7]。0 不在 [4,7) 中 → left=4',sortedL:0,sortedR:3},
+  {l:4,r:6,m:5,msg:'left=4, right=6, mid=5 → nums[5]=1 ≠ 0。nums[4]=0 ≤ nums[5]=1 → 左半有序 [0,1]。0 在 [0,1) 中 → right=4',sortedL:4,sortedR:5},
+  {l:4,r:4,m:4,msg:'left=4, right=4, mid=4 → nums[4]=0 == target → 找到！返回 4',found:4},
+];
+
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  const arrEl=document.getElementById('demoArr');
+  const ptrsEl=document.getElementById('demoPtrs');
+  arrEl.innerHTML='';
+  ptrsEl.innerHTML='';
+
+  if(s){
+    const leftRow=document.createElement('div');leftRow.className='ptr-row';
+    NUMS.forEach((_,idx)=>{const d=document.createElement('div');d.className='ptr-label left';d.textContent=idx===s.l?'L':'';d.style.width='48px';leftRow.appendChild(d)});
+    ptrsEl.appendChild(leftRow);
+    const rightRow=document.createElement('div');rightRow.className='ptr-row';
+    NUMS.forEach((_,idx)=>{const d=document.createElement('div');d.className='ptr-label right';d.textContent=idx===s.r?'R':'';d.style.width='48px';rightRow.appendChild(d)});
+    ptrsEl.appendChild(rightRow);
+    if(s.m!==undefined){
+      const midRow=document.createElement('div');midRow.className='ptr-row';
+      NUMS.forEach((_,idx)=>{const d=document.createElement('div');d.className='ptr-label mid';d.textContent=idx===s.m?'M':'';d.style.width='48px';midRow.appendChild(d)});
+      ptrsEl.appendChild(midRow);
+    }
+  }
+
+  NUMS.forEach((_,idx)=>{const d=document.createElement('div');d.className='demo-cell idx';d.textContent=idx;arrEl.appendChild(d)});
+  arrEl.appendChild(document.createElement('br'));
+  NUMS.forEach((v,idx)=>{
+    const d=document.createElement('div');d.className='demo-cell';
+    if(s){
+      if(s.found!==undefined && idx===s.found) d.classList.add('found');
+      else if(s.m!==undefined && idx===s.m) d.classList.add('current');
+      else if(s.sortedL!==undefined && idx>=s.sortedL && idx<=s.sortedR && idx!==s.m) d.classList.add('sorted-half');
+    }
+    d.textContent=v;arrEl.appendChild(d);
+  });
+
+  document.getElementById('demoInfo').innerHTML=s?s.msg:'点击 ▶ 开始逐步演示';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1800);
+}
+render();
+</script>
+</body>
+</html>

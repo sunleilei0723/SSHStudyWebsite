@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>739. 每日温度 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.demo-body{min-height:300px}
+.bar-chart{position:relative;width:100%;height:220px;margin-bottom:.5rem;padding:0 8px}
+.bar-col{position:absolute;bottom:24px;width:44px;display:flex;flex-direction:column-reverse;align-items:center}
+.bar{width:100%;border-radius:4px 4px 0 0;background:var(--pink);border:3px solid var(--ink);transition:all .3s;min-height:2px}
+.bar.current{background:var(--purple);border-color:var(--purple)}
+.bar.warmer{background:var(--green);border-color:var(--green)}
+.bar.in-stack{background:var(--blue);border-color:var(--blue)}
+.bar.done{background:var(--green-soft);border-color:var(--green);opacity:.7}
+.bar-label{font-family:"Roboto Mono",monospace;font-size:.55rem;font-weight:700;color:var(--muted);text-align:center;position:absolute;bottom:-20px;width:100%}
+.bar-value{font-family:"Roboto Mono",monospace;font-size:.65rem;font-weight:700;color:var(--ink);text-align:center;position:absolute;top:-18px;width:100%}
+.bar-answer{font-family:"Roboto Mono",monospace;font-size:.6rem;font-weight:700;color:var(--blue);text-align:center;position:absolute;top:-32px;width:100%}
+.demo-stack-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:.4rem}
+.demo-stack-label{font-family:"Baloo 2",sans-serif;font-size:.78rem;font-weight:800;color:var(--pink)}
+.demo-stack-item{padding:3px 10px;border:3px solid var(--ink);border-radius:8px;background:var(--blue-soft);font-family:"Roboto Mono",monospace;font-size:.72rem;font-weight:700;box-shadow:2px 3px 0 var(--ink);animation:popIn .3s ease}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">单调栈</span>
+      <span class="hero-tag">数组</span>
+    </div>
+    <h1 class="hero-title">#739 <span class="accent">每日温度</span></h1>
+    <p class="hero-desc">给定一个整数数组 <code>temperatures</code> ，表示每天的温度，返回一个数组 <code>answer</code> ，其中 <code>answer[i]</code> 是指对于第 <code>i</code> 天，下一个更高温度出现在几天后。如果气温在这之后都不会升高，请在该位置用 <code>0</code> 来代替。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">temperatures = [73,74,75,71,69,72,76,73]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">[1,1,4,2,1,1,0,0]</span></div>
+      <div class="example-explain">第0天73°，第1天74°更高，1-0=1天；第2天75°，第6天76°更高，6-2=4天</div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">遍历温度数组</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">找下一个更高温度</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">计算天数差</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">无更高→0</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>要找的是<strong>下一个</strong>更高温度，不是全局最高</li>
+        <li>返回的是<strong>天数差</strong>（下标差），不是温度值</li>
+        <li>暴力法 O(n²) 太慢，需要 O(n)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>单调栈</strong>：维护一个<strong>从栈底到栈顶递减</strong>的栈（存下标）。当前温度比栈顶高时，弹出栈顶并计算天数差。</p>
+      <div class="step-flow">
+        <span class="step-pill">当前温度 T[i]</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">T[i] > T[栈顶]?</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">弹出，ans[栈顶]=i-栈顶</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">当前下标入栈</span>
+      </div>
+      <p>核心：栈中存的是<strong>还没找到答案的下标</strong>，栈保持递减意味着这些天温度依次降低，等待被"解救"。</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">dailyTemperatures</span>(temperatures):</span>
+<span class="line">    n = <span class="fn">len</span>(temperatures)</span>
+<span class="line">    ans = [<span class="num">0</span>] * n</span>
+<span class="line">    stack = []  <span class="cmt"># 单调递减栈，存下标</span></span>
+<span class="line">    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n):</span>
+<span class="line hl">        <span class="kw">while</span> stack <span class="kw">and</span> temperatures[i] > temperatures[stack[-1]]:</span>
+<span class="line hl">            prev = stack.pop()</span>
+<span class="line hl">            ans[prev] = i - prev  <span class="cmt"># 天数差</span></span>
+<span class="line hl">        stack.append(i)</span>
+<span class="line">    <span class="kw">return</span> ans  <span class="cmt"># 栈中剩余的默认为0</span></span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public int</span>[] <span class="fn">dailyTemperatures</span>(<span class="kw">int</span>[] temperatures) {</span>
+<span class="line">    <span class="kw">int</span> n = temperatures.length;</span>
+<span class="line">    <span class="kw">int</span>[] ans = <span class="kw">new int</span>[n];</span>
+<span class="line">    Deque&lt;Integer&gt; stack = <span class="kw">new</span> ArrayDeque&lt;&gt;();</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; n; i++) {</span>
+<span class="line hl">        <span class="kw">while</span> (!stack.isEmpty() && temperatures[i] > temperatures[stack.peek()]) {</span>
+<span class="line hl">            <span class="kw">int</span> prev = stack.pop();</span>
+<span class="line hl">            ans[prev] = i - prev;</span>
+<span class="line hl">        }</span>
+<span class="line">        stack.push(i);</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> ans;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">vector</span>&lt;<span class="kw">int</span>&gt; <span class="fn">dailyTemperatures</span>(<span class="kw">vector</span>&lt;<span class="kw">int</span>&gt;& T) {</span>
+<span class="line">    <span class="kw">int</span> n = T.size();</span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">int</span>&gt; ans(n, <span class="num">0</span>);</span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">int</span>&gt; stk;</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; n; i++) {</span>
+<span class="line hl">        <span class="kw">while</span> (!stk.empty() && T[i] > T[stk.back()]) {</span>
+<span class="line hl">            <span class="kw">int</span> prev = stk.back(); stk.pop_back();</span>
+<span class="line hl">            ans[prev] = i - prev;</span>
+<span class="line hl">        }</span>
+<span class="line">        stk.push_back(i);</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> ans;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">逐步演示：单调栈</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 8</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="bar-chart" id="barChart"></div>
+        <div class="demo-stack-row">
+          <span class="demo-stack-label">栈(下标)：</span>
+          <div id="demoStack" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+        </div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>栈存下标</strong>
+        <p>栈中存的是<strong>下标</strong>不是温度值。因为需要计算天数差 <code>i - prev</code>，只有存下标才能算。</p>
+      </article>
+      <article class="note">
+        <strong>while 不是 if</strong>
+        <p>当前温度可能比栈中多个元素都高，需要用 <code>while</code> 循环弹出所有比当前低的栈顶，不能只弹一次。</p>
+      </article>
+      <article class="note">
+        <strong>默认值为0</strong>
+        <p>初始化 <code>ans</code> 全为 0，栈中剩余元素不需要处理，它们后面没有更高温度，答案就是 0。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>柱状图中最大的矩形</strong>：LeetCode #84，也是单调栈，但求面积而非天数差</li>
+        <li><strong>接雨水</strong>：LeetCode #42，单调栈求左右边界，计算水量</li>
+        <li><strong>下一个更大元素 I/II</strong>：LeetCode #496/#503，完全相同的单调栈模板</li>
+        <li><strong>环形数组</strong>：取模遍历两遍数组，即可处理环形情况</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="84-柱状图中最大的矩形.html"><span class="num">#84</span>柱状图中最大的矩形</a>
+      <a class="related-chip" href="20-有效的括号.html"><span class="num">#20</span>有效的括号</a>
+      <a class="related-chip" href="155-最小栈.html"><span class="num">#155</span>最小栈</a>
+      <a class="related-chip" href="../13-堆/347-前K个高频元素.html"><span class="num">#347</span>前K个高频元素</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#739 每日温度</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const TEMPS=[73,74,75,71,69,72,76,73];
+const STEPS=[
+  {i:-1,stack:[],ans:[0,0,0,0,0,0,0,0],msg:'准备开始遍历'},
+  {i:0,stack:[0],ans:[0,0,0,0,0,0,0,0],msg:'i=0, T=73° → 栈空，0入栈'},
+  {i:1,stack:[1],ans:[1,0,0,0,0,0,0,0],msg:'i=1, T=74° > T[0]=73° → 弹出0, ans[0]=1-0=1；1入栈'},
+  {i:2,stack:[2],ans:[1,1,0,0,0,0,0,0],msg:'i=2, T=75° > T[1]=74° → 弹出1, ans[1]=2-1=1；2入栈'},
+  {i:3,stack:[2,3],ans:[1,1,0,0,0,0,0,0],msg:'i=3, T=71° < T[2]=75° → 不弹出，3入栈'},
+  {i:4,stack:[2,3,4],ans:[1,1,0,0,0,0,0,0],msg:'i=4, T=69° < T[3]=71° → 不弹出，4入栈'},
+  {i:5,stack:[2,5],ans:[1,1,0,2,1,0,0,0],msg:'i=5, T=72° > T[4]=69° → 弹出4,ans[4]=1; > T[3]=71° → 弹出3,ans[3]=2; < T[2]=75° → 5入栈'},
+  {i:6,stack:[6],ans:[1,1,4,2,1,1,0,0],msg:'i=6, T=76° > T[5]=72° → 弹出5,ans[5]=1; > T[2]=75° → 弹出2,ans[2]=4; 6入栈'},
+  {i:7,stack:[6,7],ans:[1,1,4,2,1,1,0,0],msg:'i=7, T=73° < T[6]=76° → 不弹出，7入栈。遍历结束！'},
+];
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  const chart=document.getElementById('barChart');
+  chart.innerHTML='';
+  const barW=60;
+  const maxT=80;
+  TEMPS.forEach((t,i)=>{
+    const col=document.createElement('div');
+    col.className='bar-col';
+    col.style.left=(i*barW+10)+'px';
+    const bar=document.createElement('div');
+    bar.className='bar';
+    if(s){
+      if(i===s.i) bar.classList.add('current');
+      else if(s.stack.includes(i)) bar.classList.add('in-stack');
+      else if(s.ans[i]>0) bar.classList.add('done');
+    }
+    bar.style.height=(t/maxT*180)+'px';
+    // value
+    const val=document.createElement('div');
+    val.className='bar-value';val.textContent=t+'°';
+    // answer
+    const ansEl=document.createElement('div');
+    ansEl.className='bar-answer';
+    if(s&&s.ans[i]>0) ansEl.textContent='→'+s.ans[i]+'天';
+    // label
+    const lbl=document.createElement('div');
+    lbl.className='bar-label';lbl.textContent='i='+i;
+    col.appendChild(ansEl);col.appendChild(val);col.appendChild(bar);col.appendChild(lbl);
+    chart.appendChild(col);
+  });
+  // stack
+  const stackEl=document.getElementById('demoStack');
+  stackEl.innerHTML='';
+  if(s){
+    s.stack.forEach(idx=>{
+      const d=document.createElement('span');
+      d.className='demo-stack-item';
+      d.textContent=idx+'('+TEMPS[idx]+'°)';
+      stackEl.appendChild(d);
+    });
+  }
+  // info
+  document.getElementById('demoInfo').innerHTML=s?s.msg:'点击 ▶ 开始逐步演示';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1500);
+}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>200. 岛屿数量 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.grid-vis{display:inline-grid;gap:5px;margin:0 auto 1rem;padding:1rem;border:4px solid var(--ink);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow-sm)}
+.g-cell{width:52px;height:52px;display:grid;place-items:center;border:4px solid var(--ink);border-radius:8px;font-family:"Roboto Mono",monospace;font-size:1.1rem;font-weight:700;background:#fff;box-shadow:2px 3px 0 var(--ink);transition:all .3s}
+.g-cell.land{background:var(--green-soft);color:var(--green)}
+.g-cell.water{background:#e8ecf0;color:#9aa0aa}
+.g-cell.current{background:var(--purple);color:#fff;transform:scale(1.08);box-shadow:3px 4px 0 var(--ink)}
+.g-cell.visited{background:var(--purple-soft);color:var(--purple)}
+.g-cell.island-done{background:var(--green);color:#fff}
+.demo-body{min-height:260px;display:flex;flex-direction:column;align-items:center}
+.island-counter{margin-top:.6rem;padding:4px 14px;border:3px solid var(--ink);border-radius:8px;background:var(--yellow-soft);font-family:"Baloo 2",sans-serif;font-size:.9rem;font-weight:800;box-shadow:2px 3px 0 var(--ink)}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">DFS</span>
+      <span class="hero-tag">BFS</span>
+      <span class="hero-tag">并查集</span>
+    </div>
+    <h1 class="hero-title">#200 <span class="accent">岛屿数量</span></h1>
+    <p class="hero-desc">给你一个由 <code>'1'</code>（陆地）和 <code>'0'</code>（水）组成的二维网格，请你计算网格中<strong>岛屿的数量</strong>。岛屿总是被水包围，并且每座岛屿只能由水平方向和/或竖直方向上相邻的陆地连接形成。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">grid = [["1","1","1","1","0"],["1","1","0","1","0"],["1","1","0","0","0"],["0","0","0","0","0"]]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">1</span></div>
+      <div class="example-explain">只有一座岛屿，所有陆地连通</div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">grid = [["1","1","0","0","0"],["1","1","0","0","0"],["0","0","1","0","0"],["0","0","0","1","1"]]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">3</span></div>
+      <div class="example-explain">三座岛屿：左上2×2、中间1格、右下2格</div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">二维网格</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill done">'1'=陆地 '0'=水</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">找连通陆地块</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">统计岛屿数</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>「相邻」仅指<strong>上下左右</strong>四个方向，不含对角线</li>
+        <li>岛屿 = 由相邻陆地组成的<strong>连通分量</strong></li>
+        <li>可以对网格进行<strong>原地修改</strong>标记已访问</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>DFS 淹没法 O(m×n)</strong>：遍历网格，遇到 '1' 就启动 DFS，把整个岛屿的 '1' 全部改成 '0'（淹没），岛屿计数 +1。</p>
+      <div class="step-flow">
+        <span class="step-pill">遍历每个格子</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">遇到 '1'?</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">DFS 淹没整岛</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">count++</span>
+      </div>
+      <p><strong>BFS</strong>：用队列替代递归，同样淹没。 <strong>并查集</strong>：把相邻陆地合并，最终统计集合数。</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">numIslands</span>(grid):</span>
+<span class="line">    <span class="kw">if not</span> grid: <span class="kw">return</span> <span class="num">0</span></span>
+<span class="line">    m, n = <span class="fn">len</span>(grid), <span class="fn">len</span>(grid[<span class="num">0</span>])</span>
+<span class="line">    count = <span class="num">0</span></span>
+<span class="line hl">    <span class="kw">def</span> <span class="fn">dfs</span>(i, j):</span>
+<span class="line hl">        <span class="kw">if</span> i &lt; <span class="num">0</span> <span class="kw">or</span> i &gt;= m <span class="kw">or</span> j &lt; <span class="num">0</span> <span class="kw">or</span> j &gt;= n <span class="kw">or</span> grid[i][j] != <span class="str">'1'</span>:</span>
+<span class="line hl">            <span class="kw">return</span></span>
+<span class="line hl">        grid[i][j] = <span class="str">'0'</span>  <span class="cmt"># 淹没</span></span>
+<span class="line hl">        dfs(i+<span class="num">1</span>, j); dfs(i-<span class="num">1</span>, j)</span>
+<span class="line hl">        dfs(i, j+<span class="num">1</span>); dfs(i, j-<span class="num">1</span>)</span>
+<span class="line">    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(m):</span>
+<span class="line">        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(n):</span>
+<span class="line">            <span class="kw">if</span> grid[i][j] == <span class="str">'1'</span>:</span>
+<span class="line">                dfs(i, j)</span>
+<span class="line">                count += <span class="num">1</span></span>
+<span class="line">    <span class="kw">return</span> count</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public</span> <span class="kw">int</span> <span class="fn">numIslands</span>(<span class="kw">char</span>[][] grid) {</span>
+<span class="line">    <span class="kw">int</span> m = grid.length, n = grid[<span class="num">0</span>].length, count = <span class="num">0</span>;</span>
+<span class="line hl">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; m; i++) {</span>
+<span class="line hl">        <span class="kw">for</span> (<span class="kw">int</span> j = <span class="num">0</span>; j &lt; n; j++) {</span>
+<span class="line hl">            <span class="kw">if</span> (grid[i][j] == <span class="str">'1'</span>) {</span>
+<span class="line hl">                dfs(grid, i, j);</span>
+<span class="line hl">                count++;</span>
+<span class="line">            }</span>
+<span class="line">        }</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> count;</span>
+<span class="line">}</span>
+<span class="line"><span class="kw">void</span> <span class="fn">dfs</span>(<span class="kw">char</span>[][] g, <span class="kw">int</span> i, <span class="kw">int</span> j) {</span>
+<span class="line hl">    <span class="kw">if</span> (i&lt;<span class="num">0</span>||i&gt;=g.length||j&lt;<span class="num">0</span>||j&gt;=g[<span class="num">0</span>].length||g[i][j]!=<span class="str">'1'</span>) <span class="kw">return</span>;</span>
+<span class="line hl">    g[i][j] = <span class="str">'0'</span>;</span>
+<span class="line hl">    dfs(g,i+<span class="num">1</span>,j); dfs(g,i-<span class="num">1</span>,j);</span>
+<span class="line hl">    dfs(g,i,j+<span class="num">1</span>); dfs(g,i,j-<span class="num">1</span>);</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">int</span> <span class="fn">numIslands</span>(<span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">char</span>&gt;&gt;&amp; grid) {</span>
+<span class="line">    <span class="kw">int</span> m = grid.size(), n = grid[<span class="num">0</span>].size(), cnt = <span class="num">0</span>;</span>
+<span class="line hl">    <span class="kw">for</span>(<span class="kw">int</span> i=<span class="num">0</span>;i&lt;m;i++)</span>
+<span class="line hl">      <span class="kw">for</span>(<span class="kw">int</span> j=<span class="num">0</span>;j&lt;n;j++)</span>
+<span class="line hl">        <span class="kw">if</span>(grid[i][j]==<span class="str">'1'</span>){dfs(grid,i,j);cnt++;}</span>
+<span class="line">    <span class="kw">return</span> cnt;</span>
+<span class="line">}</span>
+<span class="line"><span class="kw">void</span> <span class="fn">dfs</span>(<span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">char</span>&gt;&gt;&amp; g,<span class="kw">int</span> i,<span class="kw">int</span> j){</span>
+<span class="line hl">    <span class="kw">if</span>(i&lt;<span class="num">0</span>||i&gt;=g.size()||j&lt;<span class="num">0</span>||j&gt;=g[<span class="num">0</span>].size()||g[i][j]!=<span class="str">'1'</span>)<span class="kw">return</span>;</span>
+<span class="line hl">    g[i][j]=<span class="str">'0'</span>;</span>
+<span class="line hl">    dfs(g,i+<span class="num">1</span>,j);dfs(g,i-<span class="num">1</span>,j);dfs(g,i,j+<span class="num">1</span>);dfs(g,i,j-<span class="num">1</span>);</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">DFS 逐步淹没</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 10</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="grid-vis" id="gridVis" style="grid-template-columns:repeat(5,52px)"></div>
+        <div class="island-counter" id="islandCounter">岛屿数：0</div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>边界检查</strong>
+        <p>DFS 递归前必须检查 <code>i, j</code> 是否越界，否则数组越界报错。先检查边界再访问 <code>grid[i][j]</code>。</p>
+      </article>
+      <article class="note">
+        <strong>原地修改</strong>
+        <p>将访问过的 <code>'1'</code> 改为 <code>'0'</code>（淹没），避免重复访问。如果不能用原地修改，需额外 <code>visited</code> 数组。</p>
+      </article>
+      <article class="note">
+        <strong>对角线不算相邻</strong>
+        <p>题目定义相邻为上下左右四个方向，对角线相邻不算连通。DFS 只扩展四个方向。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>封闭岛屿</strong>：排除与边界相连的岛屿，DFS 时从边界出发先淹没</li>
+        <li><strong>岛屿周长</strong>：遍历每个 '1'，检查四边是否为水或边界，累加</li>
+        <li><strong>最大岛屿面积</strong>：DFS 时返回面积，取最大值</li>
+        <li><strong>并查集解法</strong>：将相邻 '1' 合并，最终统计集合数量</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="994-腐烂的橘子.html"><span class="num">#994</span>腐烂的橘子</a>
+      <a class="related-chip" href="207-课程表.html"><span class="num">#207</span>课程表</a>
+      <a class="related-chip" href="208-实现Trie(前缀树).html"><span class="num">#208</span>实现Trie(前缀树)</a>
+      <a class="related-chip" href="../10-回溯/200-岛屿数量.html"><span class="num">#695</span>岛屿的最大面积</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#200 岛屿数量</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+// Grid: 4 rows x 5 cols (example 2: 3 islands)
+const GRID=[
+  ['1','1','0','0','0'],
+  ['1','1','0','0','0'],
+  ['0','0','1','0','0'],
+  ['0','0','0','1','1']
+];
+const ROWS=4,COLS=5;
+
+// Pre-compute DFS steps
+function buildSteps(){
+  const g=GRID.map(r=>[...r]);
+  const steps=[];
+  let count=0;
+  function dfs(i,j,trace){
+    if(i<0||i>=ROWS||j<0||j>=COLS||g[i][j]!=='1')return;
+    g[i][j]='0';
+    trace.push([i,j]);
+    dfs(i+1,j,trace);dfs(i-1,j,trace);
+    dfs(i,j+1,trace);dfs(i,j-1,trace);
+  }
+  const state=GRID.map(r=>[...r]);
+  steps.push({grid:state.map(r=>[...r]),current:null,visited:[],count:0,msg:'初始网格，开始扫描'});
+  for(let i=0;i<ROWS;i++){
+    for(let j=0;j<COLS;j++){
+      if(g[i][j]==='1'){
+        const trace=[];
+        dfs(i,j,trace);
+        // Add step: found new island
+        count++;
+        const newState=GRID.map(r=>[...r]);
+        // Mark all visited so far as '0'
+        const allVisited=[];
+        for(const s of steps){
+          if(s._allVisited) allVisited.push(...s._allVisited);
+        }
+        allVisited.push(...trace);
+        for(const[vi,vj] of allVisited) newState[vi][vj]='0';
+        steps.push({grid:newState,current:trace[0],visited:trace,count:count,msg:`发现新岛屿！DFS 从 (${i},${j}) 开始，淹没 ${trace.length} 格，岛屿数 = ${count}`,_allVisited:allVisited});
+      }
+    }
+  }
+  return steps;
+}
+const STEPS=buildSteps();
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  const vis=document.getElementById('gridVis');
+  vis.innerHTML='';
+  const displayGrid=s?s.grid:GRID;
+  const visitedSet=s?new Set(s.visited.map(v=>v[0]+','+v[1])):new Set();
+  const currentKey=s&&s.current?s.current[0]+','+s.current[1]:null;
+  for(let i=0;i<ROWS;i++){
+    for(let j=0;j<COLS;j++){
+      const d=document.createElement('div');
+      d.className='g-cell';
+      const key=i+','+j;
+      if(s&&displayGrid[i][j]==='0'&&GRID[i][j]==='1'){
+        if(key===currentKey) d.classList.add('current');
+        else d.classList.add('island-done');
+        d.textContent='✓';
+      }else if(displayGrid[i][j]==='1'){
+        d.classList.add('land');
+        d.textContent='1';
+      }else{
+        d.classList.add('water');
+        d.textContent='0';
+      }
+      vis.appendChild(d);
+    }
+  }
+  document.getElementById('islandCounter').textContent='岛屿数：'+(s?s.count:0);
+  document.getElementById('demoInfo').innerHTML=s?s.msg:'点击 ▶ 开始逐步演示';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1500);
+}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>131. 分割回文串 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.card .highlight{display:inline;padding:1px 6px;border-radius:5px;background:var(--yellow-soft);font-weight:800}
+.demo-body{min-height:220px}
+.seg-cell{display:inline-grid;place-items:center;min-width:32px;height:36px;padding:0 8px;border:3px solid var(--ink);border-radius:6px;font-family:"Roboto Mono",monospace;font-size:.9rem;font-weight:700;background:#fff;box-shadow:2px 2px 0 var(--ink);transition:all .25s}
+.seg-cell.pal{background:var(--green-soft);color:var(--green)}
+.seg-cell.current{background:var(--purple);color:#fff;transform:translateY(-2px)}
+.seg-bracket{display:inline-flex;gap:2px;padding:2px 6px;border:2px dashed var(--purple);border-radius:6px;margin:2px}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">回溯</span>
+      <span class="hero-tag">DP</span>
+    </div>
+    <h1 class="hero-title">#131 <span class="accent">分割回文串</span></h1>
+    <p class="hero-desc">给定字符串 <code>s</code>，将 <code>s</code> 分割成一些子串，使每个子串都是<strong>回文串</strong>。返回 <code>s</code> 所有可能的分割方案。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">s = "aab"</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">[["a","a","b"],["aa","b"]]</span></div>
+      <div class="example-explain">两种分割方式：a|a|b 和 aa|b，每个子串都是回文</div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">s = "a"</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">[["a"]]</span></div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">字符串 s</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">枚举分割点</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">判断子串回文</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">收集合法分割</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>每个子串<strong>必须是回文</strong> → 需要高效判断</li>
+        <li>分割必须<strong>覆盖整个字符串</strong>，不能遗漏字符</li>
+        <li>同一位置可以有多种分割方式</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>回溯 + DP 预处理</strong>：先用 DP 预处理所有子串是否回文，再回溯枚举分割点。</p>
+      <div class="step-flow">
+        <span class="step-pill">DP 预处理回文表</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">从 start 枚举 end</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">s[start:end] 是回文?</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">是 → 加入路径，递归</span>
+      </div>
+      <p><strong>DP 预处理</strong>：<code>dp[i][j]</code> 表示 s[i..j] 是否回文。<code>dp[i][j] = s[i]==s[j] && (j-i<2 || dp[i+1][j-1])</code></p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">partition</span>(s):</span>
+<span class="line">    n = <span class="fn">len</span>(s)</span>
+<span class="line">    <span class="cmt"># DP 预处理回文表</span></span>
+<span class="line hl">    dp = [[<span class="kw">False</span>]*n <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(n)]</span>
+<span class="line hl">    <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(n):</span>
+<span class="line hl">        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(j+<span class="num">1</span>):</span>
+<span class="line hl">            dp[i][j] = s[i]==s[j] <span class="kw">and</span> (j-i&lt;<span class="num">2</span> <span class="kw">or</span> dp[i+<span class="num">1</span>][j-<span class="num">1</span>])</span>
+<span class="line">    res = []</span>
+<span class="line"></span>
+<span class="line">    <span class="kw">def</span> <span class="fn">backtrack</span>(start, path):</span>
+<span class="line hl">        <span class="kw">if</span> start == n:  <span class="cmt"># 分割完成</span></span>
+<span class="line hl">            res.append(path[:])</span>
+<span class="line hl">            <span class="kw">return</span></span>
+<span class="line">        <span class="kw">for</span> end <span class="kw">in</span> <span class="fn">range</span>(start, n):</span>
+<span class="line hl">            <span class="kw">if</span> dp[start][end]:  <span class="cmt"># 是回文才继续</span></span>
+<span class="line">                path.append(s[start:end+<span class="num">1</span>])</span>
+<span class="line hl">                backtrack(end+<span class="num">1</span>, path)</span>
+<span class="line">                path.pop()</span>
+<span class="line"></span>
+<span class="line">    backtrack(<span class="num">0</span>, [])</span>
+<span class="line">    <span class="kw">return</span> res</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public</span> List&lt;List&lt;String&gt;&gt; <span class="fn">partition</span>(String s) {</span>
+<span class="line">    <span class="kw">int</span> n = s.length();</span>
+<span class="line hl">    <span class="kw">boolean</span>[][] dp = <span class="kw">new boolean</span>[n][n];</span>
+<span class="line hl">    <span class="kw">for</span> (<span class="kw">int</span> j = <span class="num">0</span>; j &lt; n; j++)</span>
+<span class="line hl">        <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt;= j; i++)</span>
+<span class="line hl">            dp[i][j] = s.charAt(i)==s.charAt(j) && (j-i&lt;<span class="num">2</span> || dp[i+<span class="num">1</span>][j-<span class="num">1</span>]);</span>
+<span class="line">    List&lt;List&lt;String&gt;&gt; res = <span class="kw">new</span> ArrayList&lt;&gt;();</span>
+<span class="line">    backtrack(s, <span class="num">0</span>, dp, <span class="kw">new</span> ArrayList&lt;&gt;(), res);</span>
+<span class="line">    <span class="kw">return</span> res;</span>
+<span class="line">}</span>
+<span class="line"></span>
+<span class="line"><span class="kw">void</span> <span class="fn">backtrack</span>(String s, <span class="kw">int</span> start, <span class="kw">boolean</span>[][] dp,</span>
+<span class="line">               List&lt;String&gt; path, List&lt;List&lt;String&gt;&gt; res) {</span>
+<span class="line hl">    <span class="kw">if</span> (start == s.length()) { res.add(<span class="kw">new</span> ArrayList&lt;&gt;(path)); <span class="kw">return</span>; }</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> end = start; end &lt; s.length(); end++) {</span>
+<span class="line hl">        <span class="kw">if</span> (dp[start][end]) {</span>
+<span class="line">            path.add(s.substring(start, end+<span class="num">1</span>));</span>
+<span class="line hl">            backtrack(s, end+<span class="num">1</span>, dp, path, res);</span>
+<span class="line">            path.remove(path.size()-<span class="num">1</span>);</span>
+<span class="line">        }</span>
+<span class="line">    }</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">string</span>&gt;&gt; <span class="fn">partition</span>(<span class="kw">string</span> s) {</span>
+<span class="line">    <span class="kw">int</span> n = s.size();</span>
+<span class="line hl">    <span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">bool</span>&gt;&gt; dp(n, <span class="kw">vector</span>&lt;<span class="kw">bool</span>&gt;(n));</span>
+<span class="line hl">    <span class="kw">for</span> (<span class="kw">int</span> j = <span class="num">0</span>; j &lt; n; j++)</span>
+<span class="line hl">        <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt;= j; i++)</span>
+<span class="line hl">            dp[i][j] = s[i]==s[j] && (j-i&lt;<span class="num">2</span> || dp[i+<span class="num">1</span>][j-<span class="num">1</span>]);</span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">string</span>&gt;&gt; res;</span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">string</span>&gt; path;</span>
+<span class="line">    backtrack(s, <span class="num">0</span>, dp, path, res);</span>
+<span class="line">    <span class="kw">return</span> res;</span>
+<span class="line">}</span>
+<span class="line"></span>
+<span class="line"><span class="kw">void</span> <span class="fn">backtrack</span>(<span class="kw">string</span>&amp; s, <span class="kw">int</span> start, <span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">bool</span>&gt;&gt;&amp; dp,</span>
+<span class="line">               <span class="kw">vector</span>&lt;<span class="kw">string</span>&gt;&amp; path, <span class="kw">vector</span>&lt;<span class="kw">vector</span>&lt;<span class="kw">string</span>&gt;&gt;&amp; res) {</span>
+<span class="line hl">    <span class="kw">if</span> (start == s.size()) { res.push_back(path); <span class="kw">return</span>; }</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">int</span> end = start; end &lt; s.size(); end++) {</span>
+<span class="line hl">        <span class="kw">if</span> (dp[start][end]) {</span>
+<span class="line">            path.push_back(s.substr(start, end-start+<span class="num">1</span>));</span>
+<span class="line hl">            backtrack(s, end+<span class="num">1</span>, dp, path, res);</span>
+<span class="line">            path.pop_back();</span>
+<span class="line">        }</span>
+<span class="line">    }</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">分割回文串逐步演示 (s="aab")</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 7</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div id="demoStr" style="display:flex;gap:4px;justify-content:center;margin-bottom:.6rem"></div>
+        <div id="demoSegs" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:.6rem"></div>
+        <div id="demoResults" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:.6rem"></div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>DP 预处理顺序</strong>
+        <p>必须<strong>先枚举 j 再枚举 i</strong>（外层 j，内层 i≤j），这样计算 <code>dp[i][j]</code> 时 <code>dp[i+1][j-1]</code> 已经算好。如果反过来会出错。</p>
+      </article>
+      <article class="note">
+        <strong>不用 DP 也能做</strong>
+        <p>可以在回溯时直接判断回文，但每次判断 O(n)，总复杂度 O(n·2^n)。DP 预处理 O(n²) 一次，回溯时 O(1) 查表。</p>
+      </article>
+      <article class="note">
+        <strong>substring 边界</strong>
+        <p>Python <code>s[start:end+1]</code>，Java <code>s.substring(start, end+1)</code>，C++ <code>s.substr(start, end-start+1)</code>。注意 +1 别漏。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>#132 分割回文串 II</strong>：求最少分割次数，纯 DP 问题</li>
+        <li><strong>#5 最长回文子串</strong>：同样的 DP 预处理思路</li>
+        <li><strong>#647 回文子串</strong>：统计回文子串个数，DP 或中心扩展</li>
+        <li><strong>中心扩展法</strong>：判断回文也可以用中心扩展，O(n²) 但常数更小</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="78-子集.html"><span class="num">#78</span>子集</a>
+      <a class="related-chip" href="39-组合总和.html"><span class="num">#39</span>组合总和</a>
+      <a class="related-chip" href="46-全排列.html"><span class="num">#46</span>全排列</a>
+      <a class="related-chip" href="79-单词搜索.html"><span class="num">#79</span>单词搜索</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#131 分割回文串</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const S='aab';
+const STEPS=[
+  {start:0,end:0,path:['a'],msg:'start=0, end=0 → "a" 是回文 ✓ 加入路径'},
+  {start:1,end:1,path:['a','a'],msg:'start=1, end=1 → "a" 是回文 ✓ 加入路径'},
+  {start:2,end:2,path:['a','a','b'],msg:'start=2, end=2 → "b" 是回文 ✓ 收集 ["a","a","b"]',done:true},
+  {start:1,end:2,path:['a','ab'],msg:'回溯 → start=1, end=2 → "ab" 不是回文 ✗ 跳过',skip:true},
+  {start:0,end:1,path:['aa'],msg:'回溯到根 → start=0, end=1 → "aa" 是回文 ✓ 加入路径'},
+  {start:2,end:2,path:['aa','b'],msg:'start=2, end=2 → "b" 是回文 ✓ 收集 ["aa","b"]',done:true},
+  {start:0,end:2,path:['aab'],msg:'回溯到根 → start=0, end=2 → "aab" 不是回文 ✗ 结束',skip:true},
+];
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  const strEl=document.getElementById('demoStr');
+  const segsEl=document.getElementById('demoSegs');
+  const resEl=document.getElementById('demoResults');
+  const info=document.getElementById('demoInfo');
+  strEl.innerHTML='';segsEl.innerHTML='';resEl.innerHTML='';
+  if(s){
+    // string chars with highlight
+    S.split('').forEach((ch,i)=>{
+      const sp=document.createElement('span');sp.className='seg-cell';
+      if(i>=s.start&&i<=s.end) sp.classList.add('current');
+      sp.textContent=ch;strEl.appendChild(sp);
+    });
+    // current path segments
+    s.path.forEach(seg=>{
+      const wrap=document.createElement('span');wrap.className='seg-bracket';
+      seg.split('').forEach(ch=>{
+        const sp=document.createElement('span');sp.className='seg-cell pal';sp.textContent=ch;
+        wrap.appendChild(sp);
+      });
+      segsEl.appendChild(wrap);
+    });
+    // collected results
+    const results=[];
+    for(let i=0;i<=step;i++){if(STEPS[i].done)results.push('['+STEPS[i].path.map(x=>'"'+x+'"').join(',')+']')}
+    results.forEach(r=>{
+      const sp=document.createElement('span');sp.className='subset-item new';sp.textContent=r;resEl.appendChild(sp);
+    });
+    info.innerHTML=s.msg;
+  }else{
+    info.innerHTML='点击 ▶ 开始逐步演示';
+  }
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1500);
+}
+render();
+</script>
+</body>
+</html>

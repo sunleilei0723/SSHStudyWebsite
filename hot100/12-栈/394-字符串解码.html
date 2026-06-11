@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>394. 字符串解码 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.demo-body{min-height:280px}
+.demo-dual-stack{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+.demo-stack-col{display:flex;flex-direction:column;align-items:center;gap:4px}
+.demo-stack-title{font-family:"Baloo 2",sans-serif;font-size:.78rem;font-weight:800;color:var(--purple);margin-bottom:2px}
+.demo-stack-box{display:flex;flex-direction:column-reverse;gap:4px;min-width:60px;min-height:80px;padding:8px;border:3px dashed var(--ink);border-radius:8px;background:var(--purple-soft);align-items:center}
+.demo-stack-item{padding:2px 10px;border:3px solid var(--ink);border-radius:6px;font-family:"Roboto Mono",monospace;font-size:.82rem;font-weight:700;background:#fff;box-shadow:2px 2px 0 var(--ink);animation:popIn .3s ease;white-space:nowrap}
+.demo-stack-item.num-type{background:var(--yellow-soft);color:#b8860b;border-color:#b8860b}
+.demo-result-box{margin-top:.6rem;padding:.5rem .8rem;border:3px solid var(--green);border-radius:8px;background:var(--green-soft);font-family:"Roboto Mono",monospace;font-size:.82rem;font-weight:700;color:var(--green);min-height:30px}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">栈</span>
+      <span class="hero-tag">递归</span>
+      <span class="hero-tag">字符串</span>
+    </div>
+    <h1 class="hero-title">#394 <span class="accent">字符串解码</span></h1>
+    <p class="hero-desc">给定一个经过编码的字符串，返回它解码后的字符串。编码规则为 <code>k[encoded_string]</code>，表示其中 <code>encoded_string</code> 正好重复 <code>k</code> 次。注意 <code>k</code> 保证为正整数。你可以认为输入字符串总是有效的，且不存在额外空格。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例 1</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">s = "3[a]2[bc]"</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">"aaabcbc"</span></div>
+    </div>
+    <div class="example-card">
+      <div class="example-label">示例 2</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">s = "3[a2[c]]"</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">"accaccacc"</span></div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">遍历字符串</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">数字→记录倍数</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">[ → 入栈保存</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">] → 解码出栈</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li>可能有<strong>嵌套</strong>，如 <code>3[a2[c]]</code>，需要逐层解码</li>
+        <li><code>k</code> 可能是多位数，如 <code>10[a]</code></li>
+        <li>遇到 <code>[</code> 时需要保存当前状态，进入新层级</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>双栈法</strong>：一个栈存倍数，一个栈存之前的字符串。遇到 <code>[</code> 时保存现场，遇到 <code>]</code> 时解码出栈。</p>
+      <div class="step-flow">
+        <span class="step-pill">数字</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">解析完整k，入num栈</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">[</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">当前串入str栈，重置</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">]</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">重复k次+拼接str栈顶</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">def</span> <span class="fn">decodeString</span>(s: str) -> str:</span>
+<span class="line">    num_stack = []   <span class="cmt"># 数字栈</span></span>
+<span class="line">    str_stack = []   <span class="cmt"># 字符串栈</span></span>
+<span class="line">    cur_num = <span class="num">0</span></span>
+<span class="line">    cur_str = <span class="str">''</span></span>
+<span class="line">    <span class="kw">for</span> ch <span class="kw">in</span> s:</span>
+<span class="line hl">        <span class="kw">if</span> ch.isdigit():</span>
+<span class="line hl">            cur_num = cur_num * <span class="num">10</span> + <span class="fn">int</span>(ch)  <span class="cmt"># 多位数处理</span></span>
+<span class="line hl">        <span class="kw">elif</span> ch == <span class="str">'['</span>:</span>
+<span class="line hl">            num_stack.append(cur_num); str_stack.append(cur_str)</span>
+<span class="line hl">            cur_num = <span class="num">0</span>; cur_str = <span class="str">''</span>  <span class="cmt"># 保存现场，重置</span></span>
+<span class="line hl">        <span class="kw">elif</span> ch == <span class="str">']'</span>:</span>
+<span class="line hl">            cur_str = str_stack.pop() + num_stack.pop() * cur_str  <span class="cmt"># 解码</span></span>
+<span class="line">        <span class="kw">else</span>:</span>
+<span class="line">            cur_str += ch  <span class="cmt"># 普通字母追加</span></span>
+<span class="line">    <span class="kw">return</span> cur_str</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">public</span> String <span class="fn">decodeString</span>(String s) {</span>
+<span class="line">    Deque&lt;Integer&gt; numStack = <span class="kw">new</span> ArrayDeque&lt;&gt;();</span>
+<span class="line">    Deque&lt;String&gt; strStack = <span class="kw">new</span> ArrayDeque&lt;&gt;();</span>
+<span class="line">    <span class="kw">int</span> curNum = <span class="num">0</span>; String curStr = <span class="str">""</span>;</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">char</span> ch : s.toCharArray()) {</span>
+<span class="line hl">        <span class="kw">if</span> (Character.isDigit(ch))</span>
+<span class="line hl">            curNum = curNum * <span class="num">10</span> + (ch - <span class="str">'0'</span>);</span>
+<span class="line hl">        <span class="kw">else if</span> (ch == <span class="str">'['</span>) {</span>
+<span class="line hl">            numStack.push(curNum); strStack.push(curStr);</span>
+<span class="line hl">            curNum = <span class="num">0</span>; curStr = <span class="str">""</span>;</span>
+<span class="line hl">        } <span class="kw">else if</span> (ch == <span class="str">']'</span>) {</span>
+<span class="line hl">            <span class="kw">int</span> k = numStack.pop(); String prev = strStack.pop();</span>
+<span class="line hl">            curStr = prev + curStr.repeat(k);</span>
+<span class="line">        } <span class="kw">else</span> curStr += ch;</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> curStr;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">string</span> <span class="fn">decodeString</span>(<span class="kw">string</span> s) {</span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">int</span>&gt; numStk; <span class="kw">vector</span>&lt;<span class="kw">string</span>&gt; strStk;</span>
+<span class="line">    <span class="kw">int</span> curNum = <span class="num">0</span>; <span class="kw">string</span> curStr;</span>
+<span class="line">    <span class="kw">for</span> (<span class="kw">char</span> ch : s) {</span>
+<span class="line hl">        <span class="kw">if</span> (isdigit(ch)) curNum = curNum * <span class="num">10</span> + (ch - <span class="str">'0'</span>);</span>
+<span class="line hl">        <span class="kw">else if</span> (ch == <span class="str">'['</span>) {</span>
+<span class="line hl">            numStk.push_back(curNum); strStk.push_back(curStr);</span>
+<span class="line hl">            curNum = <span class="num">0</span>; curStr.clear();</span>
+<span class="line hl">        } <span class="kw">else if</span> (ch == <span class="str">']'</span>) {</span>
+<span class="line hl">            <span class="kw">int</span> k = numStk.back(); numStk.pop_back();</span>
+<span class="line hl">            <span class="kw">string</span> prev = strStk.back(); strStk.pop_back();</span>
+<span class="line hl">            <span class="kw">string</span> rep; <span class="kw">for</span>(<span class="kw">int</span> i=<span class="num">0</span>;i&lt;k;i++) rep+=curStr;</span>
+<span class="line hl">            curStr = prev + rep;</span>
+<span class="line">        } <span class="kw">else</span> curStr += ch;</span>
+<span class="line">    }</span>
+<span class="line">    <span class="kw">return</span> curStr;</span>
+<span class="line">}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">逐步演示：s = "3[a2[c]]"</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 9</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="demo-str-row">
+          <span class="demo-str-label">字符：</span>
+          <div id="demoChars" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+        </div>
+        <div class="demo-dual-stack">
+          <div class="demo-stack-col">
+            <div class="demo-stack-title">数字栈 num_stack</div>
+            <div class="demo-stack-box" id="demoNum"></div>
+          </div>
+          <div class="demo-stack-col">
+            <div class="demo-stack-title">字符串栈 str_stack</div>
+            <div class="demo-stack-box" id="demoStr"></div>
+          </div>
+        </div>
+        <div style="margin-top:.5rem">
+          <span style="font-family:'Baloo 2',sans-serif;font-size:.78rem;font-weight:800;color:var(--pink)">当前 cur_str = </span>
+          <span id="demoCurStr" style="font-family:'Roboto Mono',monospace;font-size:.82rem;font-weight:700">""</span>
+        </div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>多位数字</strong>
+        <p><code>cur_num = cur_num * 10 + int(ch)</code>，不能只取单个数字。如 <code>10[a]</code> 中 10 是两位数。</p>
+      </article>
+      <article class="note">
+        <strong>入栈时机</strong>
+        <p>遇到 <code>[</code> 时才入栈，不是遇到数字时。数字只是暂存在 <code>cur_num</code> 中，等 <code>[</code> 确认倍数。</p>
+      </article>
+      <article class="note">
+        <strong>解码拼接顺序</strong>
+        <p><code>] </code>时：<code>cur_str = str_stack.pop() + num_stack.pop() * cur_str</code>。注意是<strong>之前的串 + 重复后的当前串</strong>，顺序不能反。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>递归解法</strong>：遇到 <code>[</code> 递归处理子串，遇到 <code>]</code> 返回，天然处理嵌套</li>
+        <li><strong>更多编码规则</strong>：如果支持 <code>k{str}</code> 或 <code>k&lt;str&gt;</code>，只需扩展括号匹配逻辑</li>
+        <li><strong>编码问题</strong>：给定字符串，如何编码为最短形式？贪心找重复模式</li>
+        <li><strong>嵌套深度限制</strong>：如果嵌套深度有限制，递归解法需要加深度检查</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="20-有效的括号.html"><span class="num">#20</span>有效的括号</a>
+      <a class="related-chip" href="155-最小栈.html"><span class="num">#155</span>最小栈</a>
+      <a class="related-chip" href="739-每日温度.html"><span class="num">#739</span>每日温度</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#394 字符串解码</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const S="3[a2[c]]";
+const STEPS=[
+  {idx:-1,numStk:[],strStk:[],curStr:'',curNum:0,msg:'准备开始遍历'},
+  {idx:0,numStk:[],strStk:[],curStr:'',curNum:3,msg:'ch=\'3\' → 数字，cur_num = 3'},
+  {idx:1,numStk:[3],strStk:[''],curStr:'',curNum:0,msg:'ch=\'[\' → 入栈！num_stack入3, str_stack入""，重置'},
+  {idx:2,numStk:[3],strStk:[''],curStr:'a',curNum:0,msg:'ch=\'a\' → 字母，cur_str = "a"'},
+  {idx:3,numStk:[3],strStk:[''],curStr:'a',curNum:2,msg:'ch=\'2\' → 数字，cur_num = 2'},
+  {idx:4,numStk:[3,2],strStk:['','a'],curStr:'',curNum:0,msg:'ch=\'[\' → 入栈！num_stack入2, str_stack入"a"，重置'},
+  {idx:5,numStk:[3,2],strStk:['','a'],curStr:'c',curNum:0,msg:'ch=\'c\' → 字母，cur_str = "c"'},
+  {idx:6,numStk:[3],strStk:[''],curStr:'acc',curNum:0,msg:'ch=\']\' → 解码！k=2, prev="a" → cur_str = "a" + "c"×2 = "acc"'},
+  {idx:7,numStk:[],strStk:[],curStr:'accaccacc',curNum:0,msg:'ch=\']\' → 解码！k=3, prev="" → cur_str = "" + "acc"×3 = "accaccacc"'},
+  {idx:8,numStk:[],strStk:[],curStr:'accaccacc',curNum:0,msg:'遍历结束，结果 = <strong>"accaccacc"</strong>'},
+];
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  // chars
+  const charsEl=document.getElementById('demoChars');
+  charsEl.innerHTML='';
+  S.split('').forEach((ch,i)=>{
+    const d=document.createElement('div');
+    d.className='demo-str-cell';
+    if(s&&i===s.idx) d.classList.add('current');
+    if(s&&i<s.idx) d.classList.add('sorted');
+    d.textContent=ch;charsEl.appendChild(d);
+  });
+  // num stack
+  const numEl=document.getElementById('demoNum');
+  numEl.innerHTML='';
+  if(s){
+    [...s.numStk].reverse().forEach(v=>{
+      const d=document.createElement('div');
+      d.className='demo-stack-item num-type';
+      d.textContent=v;numEl.appendChild(d);
+    });
+  }
+  // str stack
+  const strEl=document.getElementById('demoStr');
+  strEl.innerHTML='';
+  if(s){
+    [...s.strStk].reverse().forEach(v=>{
+      const d=document.createElement('div');
+      d.className='demo-stack-item';
+      d.textContent=v===''?'""':v;strEl.appendChild(d);
+    });
+  }
+  // cur str
+  document.getElementById('demoCurStr').textContent=s?('"'+s.curStr+'"'):'""';
+  // info
+  document.getElementById('demoInfo').innerHTML=s?s.msg:'点击 ▶ 开始逐步演示';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1200);
+}
+render();
+</script>
+</body>
+</html>

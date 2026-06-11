@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>155. 最小栈 — 手绘视频风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+.demo-body{min-height:260px}
+.demo-dual-stack{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
+.demo-stack-col{display:flex;flex-direction:column;align-items:center;gap:4px}
+.demo-stack-title{font-family:"Baloo 2",sans-serif;font-size:.78rem;font-weight:800;color:var(--purple);margin-bottom:2px}
+.demo-stack-box{display:flex;flex-direction:column-reverse;gap:4px;min-width:56px;min-height:80px;padding:8px;border:3px dashed var(--ink);border-radius:8px;background:var(--purple-soft);align-items:center}
+.demo-stack-item{width:48px;height:36px;display:grid;place-items:center;border:3px solid var(--ink);border-radius:6px;font-family:"Roboto Mono",monospace;font-size:.95rem;font-weight:700;background:#fff;box-shadow:2px 2px 0 var(--ink);animation:popIn .3s ease}
+.demo-stack-item.min-val{background:var(--green-soft);color:var(--green);border-color:var(--green)}
+.demo-op-label{font-family:"Baloo 2",sans-serif;font-size:.82rem;font-weight:800;color:var(--pink);margin-bottom:4px}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<main class="frame">
+  <nav class="site-nav" aria-label="学习导航">
+    <a class="nav-brand" href="../../index.html"><span class="nav-dot"></span>孙雷雷的学习网页</a>
+    <div class="nav-links">
+      <a href="../../index.html">主页</a>
+      <a class="primary" href="../index.html">LeetCode Hot 100</a>
+    </div>
+  </nav>
+
+<!-- ===== 1. HERO ===== -->
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-badge medium">Medium</span>
+      <span class="hero-tag">栈</span>
+      <span class="hero-tag">设计</span>
+    </div>
+    <h1 class="hero-title">#155 <span class="accent">最小栈</span></h1>
+    <p class="hero-desc">设计一个支持 <code>push</code>，<code>pop</code>，<code>top</code> 操作，并能在<strong>常数时间</strong>内检索到最小元素的栈。实现 <code>MinStack</code> 类：<code>push(val)</code> 将元素入栈，<code>pop()</code> 移除栈顶元素，<code>top()</code> 获取栈顶元素，<code>getMin()</code> 获取栈中最小元素。</p>
+  </div>
+
+  <!-- ===== EXAMPLES ===== -->
+  <div class="examples">
+    <div class="example-card">
+      <div class="example-label">示例</div>
+      <div class="example-row"><span class="example-key">输入：</span><span class="example-val">["MinStack","push","push","push","getMin","pop","top","getMin"]</span></div>
+      <div class="example-row"><span class="example-key">参数：</span><span class="example-val">[[],[-2],[0],[-3],[],[],[],[]]</span></div>
+      <div class="example-row"><span class="example-key">输出：</span><span class="example-val">[null,null,null,null,-3,null,0,-2]</span></div>
+      <div class="example-explain">push(-2) → push(0) → push(-3) → getMin()=-3 → pop() → top()=0 → getMin()=-2</div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 题目拆解 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c2">2</span>
+      <span class="section-title">题目拆解</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="step-flow">
+        <span class="step-pill done">常规栈操作</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill active">O(1)获取最小值</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">辅助栈同步</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">pop时同步弹出</span>
+      </div>
+      <p><strong>关键约束：</strong></p>
+      <ul>
+        <li><code>getMin()</code> 必须 <strong>O(1)</strong>，不能遍历</li>
+        <li>所有操作都是栈顶操作，符合 LIFO</li>
+        <li>最小值可能随 pop 而变化</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3. 解题思路 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c3">3</span>
+      <span class="section-title">解题思路</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <p><strong>双栈法</strong>：一个主栈存数据，一个辅助栈存每个位置对应的最小值。两个栈同步 push/pop。</p>
+      <div class="step-flow">
+        <span class="step-pill">push(val)</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">主栈入val</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">辅助栈入min(栈顶, val)</span>
+        <span class="step-arrow">➜</span>
+        <span class="step-pill">getMin() → 辅助栈顶</span>
+      </div>
+      <p>优化：辅助栈只在最小值变化时入栈（存 <code>≤ 当前最小值</code> 的值），pop 时检查是否需要同步弹出。</p>
+    </div>
+  </div>
+
+  <!-- ===== 4. 代码演示 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c4">4</span>
+      <span class="section-title">代码演示</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="code-block">
+      <div class="code-tabs">
+        <button class="code-tab active" onclick="switchTab('py')">Python</button>
+        <button class="code-tab" onclick="switchTab('java')">Java</button>
+        <button class="code-tab" onclick="switchTab('cpp')">C++</button>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">COPY</button>
+
+      <div class="code-panel active" id="panel-py">
+        <div class="code-content">
+<span class="line"><span class="kw">class</span> <span class="fn">MinStack</span>:</span>
+<span class="line">    <span class="kw">def</span> <span class="fn">__init__</span>(self):</span>
+<span class="line">        self.stack = []</span>
+<span class="line">        self.min_stack = []  <span class="cmt"># 辅助栈：同步记录最小值</span></span>
+<span class="line"></span>
+<span class="line hl">    <span class="kw">def</span> <span class="fn">push</span>(self, val):</span>
+<span class="line hl">        self.stack.append(val)</span>
+<span class="line hl">        self.min_stack.append(<span class="fn">min</span>(val, self.min_stack[-1] <span class="kw">if</span> self.min_stack <span class="kw">else</span> val))</span>
+<span class="line"></span>
+<span class="line hl">    <span class="kw">def</span> <span class="fn">pop</span>(self):</span>
+<span class="line hl">        self.stack.pop()</span>
+<span class="line hl">        self.min_stack.pop()</span>
+<span class="line"></span>
+<span class="line">    <span class="kw">def</span> <span class="fn">top</span>(self):</span>
+<span class="line">        <span class="kw">return</span> self.stack[-1]</span>
+<span class="line"></span>
+<span class="line">    <span class="kw">def</span> <span class="fn">getMin</span>(self):</span>
+<span class="line">        <span class="kw">return</span> self.min_stack[-1]</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-java">
+        <div class="code-content">
+<span class="line"><span class="kw">class</span> <span class="fn">MinStack</span> {</span>
+<span class="line">    Deque&lt;Integer&gt; stack = <span class="kw">new</span> ArrayDeque&lt;&gt;();</span>
+<span class="line">    Deque&lt;Integer&gt; minStack = <span class="kw">new</span> ArrayDeque&lt;&gt;();</span>
+<span class="line"></span>
+<span class="line hl">    <span class="kw">public void</span> <span class="fn">push</span>(<span class="kw">int</span> val) {</span>
+<span class="line hl">        stack.push(val);</span>
+<span class="line hl">        minStack.push(minStack.isEmpty() ? val : Math.min(val, minStack.peek()));</span>
+<span class="line hl">    }</span>
+<span class="line"></span>
+<span class="line hl">    <span class="kw">public void</span> <span class="fn">pop</span>() { stack.pop(); minStack.pop(); }</span>
+<span class="line">    <span class="kw">public int</span> <span class="fn">top</span>() { <span class="kw">return</span> stack.peek(); }</span>
+<span class="line">    <span class="kw">public int</span> <span class="fn">getMin</span>() { <span class="kw">return</span> minStack.peek(); }</span>
+<span class="line">}</span>
+        </div>
+      </div>
+
+      <div class="code-panel" id="panel-cpp">
+        <div class="code-content">
+<span class="line"><span class="kw">class</span> <span class="fn">MinStack</span> {</span>
+<span class="line">    <span class="kw">vector</span>&lt;<span class="kw">int</span>&gt; stk, minStk;</span>
+<span class="line"><span class="kw">public</span>:</span>
+<span class="line hl">    <span class="kw">void</span> <span class="fn">push</span>(<span class="kw">int</span> val) {</span>
+<span class="line hl">        stk.push_back(val);</span>
+<span class="line hl">        minStk.push_back(minStk.empty() ? val : <span class="fn">min</span>(val, minStk.back()));</span>
+<span class="line hl">    }</span>
+<span class="line">    <span class="kw">void</span> <span class="fn">pop</span>() { stk.pop_back(); minStk.pop_back(); }</span>
+<span class="line">    <span class="kw">int</span> <span class="fn">top</span>() { <span class="kw">return</span> stk.back(); }</span>
+<span class="line">    <span class="kw">int</span> <span class="fn">getMin</span>() { <span class="kw">return</span> minStk.back(); }</span>
+<span class="line">};</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. 题解过程 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c5">5</span>
+      <span class="section-title">题解过程</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="demo" id="demo">
+      <div class="demo-header">
+        <span class="demo-header-title">逐步演示：双栈操作</span>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="prevStep()">◀</button>
+          <span class="demo-step-label" id="stepLabel">0 / 7</span>
+          <button class="demo-btn" onclick="nextStep()">▶</button>
+          <button class="demo-btn auto-btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="demo-op-label" id="demoOp">操作：—</div>
+        <div class="demo-dual-stack">
+          <div class="demo-stack-col">
+            <div class="demo-stack-title">主栈 stack</div>
+            <div class="demo-stack-box" id="demoMain"></div>
+          </div>
+          <div class="demo-stack-col">
+            <div class="demo-stack-title">辅助栈 min_stack</div>
+            <div class="demo-stack-box" id="demoMin"></div>
+          </div>
+        </div>
+        <div class="demo-info" id="demoInfo">点击 ▶ 开始逐步演示</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 易错要点 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c6">6</span>
+      <span class="section-title">易错要点</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="notes">
+      <article class="note">
+        <strong>同步弹出</strong>
+        <p><code>pop()</code> 时主栈和辅助栈必须<strong>同时弹出</strong>。只弹主栈会导致辅助栈记录的最小值与实际不一致。</p>
+      </article>
+      <article class="note">
+        <strong>辅助栈初始化</strong>
+        <p>第一个元素入栈时，辅助栈为空，<code>min_stack[-1]</code> 会越界。需要特判：空时直接入 <code>val</code>。</p>
+      </article>
+      <article class="note">
+        <strong>相等也要入栈</strong>
+        <p>如果 <code>val == minStack.top()</code>，辅助栈也要入栈！否则 pop 时会把最小值错误弹出。如连续两个 -3。</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ===== 7. 扩展思考 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c7">7</span>
+      <span class="section-title">扩展思考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>空间优化</strong>：辅助栈只在最小值变化时入栈（≤ 当前最小值），pop 时检查是否等于辅助栈顶</li>
+        <li><strong>最大栈</strong>：同理，再加一个辅助栈记录最大值即可</li>
+        <li><strong>差值法</strong>：主栈存 <code>val - min</code> 的差值，用一个变量记录当前最小值，空间 O(1) 但有溢出风险</li>
+        <li><strong>多线程安全</strong>：实际工程中需要加锁保证线程安全</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 8. 相关题目 ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num c8">8</span>
+      <span class="section-title">相关题目</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="related">
+      <a class="related-chip" href="20-有效的括号.html"><span class="num">#20</span>有效的括号</a>
+      <a class="related-chip" href="394-字符串解码.html"><span class="num">#394</span>字符串解码</a>
+      <a class="related-chip" href="739-每日温度.html"><span class="num">#739</span>每日温度</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">LeetCode <span>Hot 100</span> — 手绘视频风教学卡</span>
+    <span class="footer-text">#155 最小栈</span>
+  </div>
+
+</main>
+
+<script>
+// ===== SCROLL PROGRESS =====
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('scrollBar').style.width=pct+'%';
+});
+
+// ===== CODE TAB SWITCH =====
+function switchTab(lang){
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+lang).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(){
+  const active=document.querySelector('.code-panel.active .code-content');
+  const text=active.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED!';
+    setTimeout(()=>btn.textContent='COPY',1500);
+  });
+}
+
+// ===== INTERACTIVE DEMO =====
+const STEPS=[
+  {op:'MinStack()',main:[],min:[],msg:'初始化：两个空栈'},
+  {op:'push(-2)',main:[-2],min:[-2],msg:'push(-2)：主栈入 -2，辅助栈为空直接入 -2'},
+  {op:'push(0)',main:[-2,0],min:[-2,-2],msg:'push(0)：主栈入 0，min(0,-2)=-2，辅助栈入 -2'},
+  {op:'push(-3)',main:[-2,0,-3],min:[-2,-2,-3],msg:'push(-3)：主栈入 -3，min(-3,-2)=-3，辅助栈入 -3'},
+  {op:'getMin()',main:[-2,0,-3],min:[-2,-2,-3],msg:'getMin() → 辅助栈顶 = <strong>-3</strong>',highlight:'min'},
+  {op:'pop()',main:[-2,0],min:[-2,-2],msg:'pop()：主栈弹出 -3，辅助栈同步弹出 -3'},
+  {op:'top()',main:[-2,0],min:[-2,-2],msg:'top() → 主栈顶 = <strong>0</strong>',highlight:'main'},
+  {op:'getMin()',main:[-2,0],min:[-2,-2],msg:'getMin() → 辅助栈顶 = <strong>-2</strong>',highlight:'min'},
+];
+let step=-1,autoId=null;
+
+function render(){
+  const s=step<0?null:STEPS[step];
+  const mainEl=document.getElementById('demoMain');
+  const minEl=document.getElementById('demoMin');
+  mainEl.innerHTML='';minEl.innerHTML='';
+  if(s){
+    [...s.main].reverse().forEach((v,i)=>{
+      const d=document.createElement('div');
+      d.className='demo-stack-item';
+      if(s.highlight==='main'&&i===0) d.classList.add('min-val');
+      d.textContent=v;mainEl.appendChild(d);
+    });
+    [...s.min].reverse().forEach((v,i)=>{
+      const d=document.createElement('div');
+      d.className='demo-stack-item';
+      if(s.highlight==='min'&&i===0) d.classList.add('min-val');
+      d.textContent=v;minEl.appendChild(d);
+    });
+  }
+  document.getElementById('demoOp').textContent='操作：'+(s?s.op:'—');
+  document.getElementById('demoInfo').innerHTML=s?s.msg:'点击 ▶ 开始逐步演示';
+  document.getElementById('stepLabel').textContent=(step+1)+' / '+STEPS.length;
+}
+
+function nextStep(){if(step<STEPS.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function toggleAuto(){
+  const btn=document.getElementById('autoBtn');
+  if(autoId){clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO';return}
+  btn.classList.add('running');btn.textContent='STOP';
+  step=-1;render();
+  autoId=setInterval(()=>{
+    if(step<STEPS.length-1){step++;render()}
+    else{clearInterval(autoId);autoId=null;btn.classList.remove('running');btn.textContent='AUTO'}
+  },1200);
+}
+render();
+</script>
+</body>
+</html>
